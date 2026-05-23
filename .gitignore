@@ -1,0 +1,19 @@
+# 编译输出文件夹
+[Bb]in/
+[Oo]bj/
+out/
+
+# IDE 配置文件
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+
+# 忽略所有本地 DLL 和 PDB 文件，防止侵权
+*.dll
+*.pdb
+
+# 忽略本地构建日志
+构建.txt
+*.log
