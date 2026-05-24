@@ -61,6 +61,10 @@ namespace FullBrightMod.Core
 
             // ---- 面板布局列表 ----
             public List<PanelEntry> Panels = new List<PanelEntry>();
+
+            // ---- 聊天翻译设置 ----
+            public int TranslateSourceIndex;
+            public int TranslateTargetIndex;
         }
 
         /// <summary>可序列化的颜色（Unity Color 非 [Serializable]）</summary>
@@ -134,6 +138,9 @@ namespace FullBrightMod.Core
 
                 // --- 保存语言设置 ---
                 data.Language = (int)Settings.CurrentLanguage;
+
+                data.TranslateSourceIndex = Settings.TranslateSourceIndex;
+                data.TranslateTargetIndex = Settings.TranslateTargetIndex;
 
                 // --- 从 ModuleManager 复制模块状态 ---
                 foreach (var mod in modManager.GetAllModules())
@@ -221,6 +228,10 @@ namespace FullBrightMod.Core
                 // --- 恢复语言设置（必须在模块恢复之前，确保模块 Name 能正确渲染） ---
                 if (Enum.IsDefined(typeof(AppLanguage), data.Language))
                     Settings.CurrentLanguage = (AppLanguage)data.Language;
+                
+                Settings.TranslateSourceIndex = data.TranslateSourceIndex;
+                // 安全判定：防止旧存档里 Target 是 0，导致请求出错
+                Settings.TranslateTargetIndex = data.TranslateTargetIndex == 0 ? 1 : data.TranslateTargetIndex;
 
                 // --- 恢复到模块 ---
                 if (data.Modules != null)

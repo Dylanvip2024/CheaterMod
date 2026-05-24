@@ -98,6 +98,66 @@ namespace FullBrightMod.Modules
         public override ModuleCategory Category => ModuleCategory.Misc;
         public override void OnEnable()  => Settings.IsAutoTranslateEnabled = true;
         public override void OnDisable() => Settings.IsAutoTranslateEnabled = false;
+
+        // 对应 Settings 中 TranslateLangCodes 的前端显示名称
+        private static readonly string[] LangNames = { 
+            "自动 (Auto)", "中文 (ZH)", "英文 (EN)", "俄文 (RU)", "日文 (JA)", 
+            "韩文 (KO)", "西班牙文 (ES)", "法文 (FR)", "德文 (DE)" 
+        };
+
+        public override float GetSettingsHeight() => 60f; // 需要两行高度
+
+        public override void DrawSettings(float x, ref float y, float width, Event e)
+        {
+            // 完美白嫖音响模块的 UI 样式！
+            GUIStyle labelStyle = BoomboxStyles.GeekLabelStyle;
+            GUIStyle buttonStyle = BoomboxStyles.CustomButtonStyle;
+
+            // =====================================
+            // 第一行：源语言 (Source Language)
+            // =====================================
+            Rect sourceLabelRect = new Rect(x + 8, y, 70, 22);
+            GUI.Label(sourceLabelRect, $"  {Utils.I18n.Get("set_trans_source") ?? "源语言"}", labelStyle);
+
+            if (GUI.Button(new Rect(x + 78, y + 2, 22, 18), "‹", buttonStyle))
+            {
+                Settings.TranslateSourceIndex--;
+                if (Settings.TranslateSourceIndex < 0) Settings.TranslateSourceIndex = LangNames.Length - 1;
+            }
+
+            GUIStyle centerStyle = new GUIStyle(labelStyle) { alignment = TextAnchor.MiddleCenter, normal = { textColor = Color.white } };
+            GUI.Label(new Rect(x + 100, y, width - 130, 22), LangNames[Settings.TranslateSourceIndex], centerStyle);
+
+            if (GUI.Button(new Rect(x + width - 28, y + 2, 22, 18), "›", buttonStyle))
+            {
+                Settings.TranslateSourceIndex++;
+                if (Settings.TranslateSourceIndex >= LangNames.Length) Settings.TranslateSourceIndex = 0;
+            }
+            y += 30f;
+
+            // =====================================
+            // 第二行：目标语言 (Target Language)
+            // =====================================
+            Rect targetLabelRect = new Rect(x + 8, y, 70, 22);
+            GUI.Label(targetLabelRect, $"  {Utils.I18n.Get("set_trans_target") ?? "目标语言"}", labelStyle);
+
+            if (GUI.Button(new Rect(x + 78, y + 2, 22, 18), "‹", buttonStyle))
+            {
+                Settings.TranslateTargetIndex--;
+                // 目标语言不能是"自动(0)"，所以下限是 1
+                if (Settings.TranslateTargetIndex < 1) Settings.TranslateTargetIndex = LangNames.Length - 1; 
+            }
+
+            GUI.Label(new Rect(x + 100, y, width - 130, 22), LangNames[Settings.TranslateTargetIndex], centerStyle);
+
+            if (GUI.Button(new Rect(x + width - 28, y + 2, 22, 18), "›", buttonStyle))
+            {
+                Settings.TranslateTargetIndex++;
+                // 跳过索引 0
+                if (Settings.TranslateTargetIndex >= LangNames.Length) Settings.TranslateTargetIndex = 1; 
+            }
+            y += 30f;
+        }
     }
 
     public class IQ250 : ModuleBase

@@ -99,7 +99,7 @@ namespace FullBrightMod.Patches
             }
             else
             {
-                targetAngle = __instance.bandageAngle + 5f;
+                targetAngle = __instance.bandageAngle + 6f;
             }
 
             float rad = targetAngle * 0.017453292f;

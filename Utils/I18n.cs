@@ -20,6 +20,9 @@ namespace FullBrightMod.Utils
             { "mod_freecam", "灵魂出窍" },
             { "mod_longhands", "长手模式" },
             { "mod_throughwall", "隔墙取物" },
+            { "mod_shrapnel_maker", "破片制造者" },
+            { "mod_instant_amputation", "秒截肢" },
+            { "mod_instant_shrapnel", "秒拔破片" },
 
             // Render modules
             { "mod_fullbright", "全亮模式" },
@@ -39,9 +42,17 @@ namespace FullBrightMod.Utils
 
             // Misc modules
             { "mod_autotranslate", "聊天机翻" },
+            { "set_trans_source", "源语言" },
+            { "set_trans_target", "目标语言" },
             { "mod_iq250", "万事通模式" },
             { "mod_clickgui", "菜单设置" },
             { "mod_language", "Language" },
+            { "mod_antiragdoll", "反布娃娃" },
+            { "mod_fetch_macro", "捡取宏" },
+            { "set_fetch_distance", "拾取距离" },
+            { "mod_explosives_macro", "一键引爆" },
+            { "mod_human_boombox", "人形音响" },
+            { "set_boombox_track", "当前曲目" },
 
             // Settings labels
             { "set_intensity", "强度" },
@@ -68,6 +79,9 @@ namespace FullBrightMod.Utils
             { "mod_freecam", "Free Camera" },
             { "mod_longhands", "Extended Reach" },
             { "mod_throughwall", "Through Wall" },
+            { "mod_shrapnel_maker", "Shrapnel Maker" },
+            { "mod_instant_amputation", "Instant Amputation" },
+            { "mod_instant_shrapnel", "Instant Shrapnel Removal" },
 
             // Render modules
             { "mod_fullbright", "Full Luminance" },
@@ -87,9 +101,17 @@ namespace FullBrightMod.Utils
 
             // Misc modules
             { "mod_autotranslate", "Auto Translate" },
+            { "set_trans_source", "Source Lang" },
+            { "set_trans_target", "Target Lang" },
             { "mod_iq250", "Omniscience" },
             { "mod_clickgui", "GUI Config" },
             { "mod_language", "Language" },
+            { "mod_antiragdoll", "AntiRagdoll" },
+            { "mod_fetch_macro", "Fetch Macro" },
+            { "set_fetch_distance", "Fetch Distance" },
+            { "mod_explosives_macro", "Ignite Explosives Macro" },
+            { "mod_human_boombox", "Human Boombox" },
+            { "set_boombox_track", "Current Track" },
 
             // Settings labels
             { "set_intensity", "Intensity" },

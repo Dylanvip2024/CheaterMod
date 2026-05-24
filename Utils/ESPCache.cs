@@ -3,11 +3,6 @@ using UnityEngine;
 
 namespace FullBrightMod.Utils
 {
-    /// <summary>
-    /// 实体缓存管理器 —— 统一管理所有 ESP 需要的实体缓存数组。
-    /// 每 1 秒通过 FindObjectsOfType 刷新一次；物理射线在刷新时计算并存入 _cachedLines。
-    /// 【绝不破坏现有的"物理射线与 UI 渲染解耦"逻辑】
-    /// </summary>
     public static class ESPCache
     {
         public struct LineData
@@ -17,7 +12,6 @@ namespace FullBrightMod.Utils
             public Color color;
         }
 
-        // ---- 缓存的实体数组 ----
         public static Item[]              CachedItems;
         public static BuildingEntity[]    CachedEntities;
         public static BearTrap[]          CachedBearTraps;
@@ -35,35 +29,35 @@ namespace FullBrightMod.Utils
         public static RadioactiveObject[] CachedRadObjects;
         public static CaveTickSpawner[]   CachedTickSwarms;
 
-        // ---- 物理射线缓存（由 Refresh 计算，由 ESP 模块渲染） ----
         public static readonly List<LineData> CachedLines = new List<LineData>();
 
         private static float _scanTimer = 1.0f;
         private static int   _groundMask = -1;
-
+        private const float MAX_SCAN_DISTANCE = 150f;
         static ESPCache()
         {
             _groundMask = LayerMask.GetMask("Ground");
         }
 
-        /// <summary>
-        /// 由主插件 Update 每帧调用。内部仅在计时器到期时执行高频扫描。
-        /// </summary>
+        // 帮助函数：检查物体是否在范围内
+        public static bool IsInRange(Vector3 targetPos)
+        {
+            if (PlayerCamera.main == null || PlayerCamera.main.body == null) return false;
+            float distSqr = (PlayerCamera.main.body.transform.position - targetPos).sqrMagnitude;
+            return distSqr <= (MAX_SCAN_DISTANCE * MAX_SCAN_DISTANCE);
+        }
+
         public static void Tick(float deltaTime)
         {
             _scanTimer += deltaTime;
             if (_scanTimer < 1.0f) return;
             _scanTimer = 0f;
 
-            // 清空上一秒的射线缓存
             CachedLines.Clear();
 
-            // 扫描物品
             CachedItems   = GameObject.FindObjectsOfType<Item>();
-            // 扫描生物
             CachedEntities = GameObject.FindObjectsOfType<BuildingEntity>();
 
-            // 扫描所有陷阱
             RefreshTraps();
         }
 
@@ -84,14 +78,13 @@ namespace FullBrightMod.Utils
             CachedRadObjects  = GameObject.FindObjectsOfType<RadioactiveObject>();
             CachedTickSwarms  = GameObject.FindObjectsOfType<CaveTickSpawner>();
 
-            // ---- 物理射线集中计算（仅在有物理需求的陷阱上） ----
+            // ---- 物理射线集中计算（增加 IsInRange 距离判断） ----
 
-            // 致命地刺 — 向上射线
             if (CachedSpikes != null)
             {
                 foreach (var spike in CachedSpikes)
                 {
-                    if (spike == null) continue;
+                    if (spike == null || !IsInRange(spike.transform.position)) continue; // 距离检测
                     Vector3 startPos = spike.transform.position;
                     Vector3 dir = spike.transform.up;
                     float maxDist = 6f;
@@ -101,17 +94,16 @@ namespace FullBrightMod.Utils
                 }
             }
 
-            // 自动炮塔 — 射击方向射线
             if (CachedTurrets != null)
             {
                 foreach (var turret in CachedTurrets)
                 {
-                    if (turret == null) continue;
+                    if (turret == null || !IsInRange(turret.transform.position)) continue; // 距离检测
                     BuildingEntity build = turret.GetComponent<BuildingEntity>();
                     if (build != null && build.health > 0.5f)
                     {
                         Vector3 fireDir = (turret.transform.right * Mathf.Sign(turret.transform.localScale.x)).normalized;
-                        Vector3 startPos = turret.transform.position + fireDir * 0.6f;
+                        Vector3 startPos = turret.transform.position + fireDir * 2f;
                         float maxDist = 40f;
                         RaycastHit2D hit = Physics2D.Raycast(startPos, fireDir, maxDist, _groundMask);
                         Vector3 endPos = hit.collider != null ? (Vector3)hit.point : startPos + fireDir * maxDist;
@@ -120,16 +112,15 @@ namespace FullBrightMod.Utils
                 }
             }
 
-            // 滴水石锥 — 向下射线
             if (CachedDroppers != null)
             {
                 foreach (var dropper in CachedDroppers)
                 {
-                    if (dropper == null) continue;
+                    if (dropper == null || !IsInRange(dropper.transform.position)) continue; // 距离检测
                     BuildingEntity build = dropper.GetComponent<BuildingEntity>();
                     if (build != null && build.health > 0.5f)
                     {
-                        Vector3 startPos = dropper.transform.position + Vector3.down * 0.6f;
+                        Vector3 startPos = dropper.transform.position + Vector3.down * 2f;
                         float maxDist = 40f;
                         RaycastHit2D hit = Physics2D.Raycast(startPos, Vector3.down, maxDist, _groundMask);
                         Vector3 endPos = hit.collider != null ? (Vector3)hit.point : startPos + Vector3.down * maxDist;
@@ -138,12 +129,11 @@ namespace FullBrightMod.Utils
                 }
             }
 
-            // 间歇泉 — 向上射线
             if (CachedGeysers != null)
             {
                 foreach (var geyser in CachedGeysers)
                 {
-                    if (geyser == null) continue;
+                    if (geyser == null || !IsInRange(geyser.transform.position)) continue; // 距离检测
                     Vector3 startPos = geyser.transform.position;
                     float maxDist = 8f;
                     RaycastHit2D hit = Physics2D.Raycast(startPos, Vector3.up, maxDist, _groundMask);
@@ -152,12 +142,11 @@ namespace FullBrightMod.Utils
                 }
             }
 
-            // 弹跳跳板 — 向上射线
             if (CachedJumpPads != null)
             {
                 foreach (var pad in CachedJumpPads)
                 {
-                    if (pad != null && !pad.disabled)
+                    if (pad != null && !pad.disabled && IsInRange(pad.transform.position)) // 距离检测
                     {
                         Vector3 startPos = pad.transform.position;
                         float maxDist = 12f;

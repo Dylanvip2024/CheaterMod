@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace FullBrightMod.Core
 {
@@ -34,6 +35,15 @@ namespace FullBrightMod.Core
         public static bool IsJumpBoostEnabled    = false;
         public static bool IsNoClipEnabled       = false;
         public static bool IsAutoBandageEnabled  = false;
+        public static bool IsAntiRagdollEnabled  = false;
+        public static bool IsShrapnelMakerEnabled = false;
+        public static bool IsInstantAmputationEnabled = false;
+        public static bool IsExplosivesMacroEnabled = false;
+        public static bool IsFetchMacroEnabled = false;
+        public static bool IsInstantShrapnelRemovalEnabled = false;
+        public static bool IsBoomboxEnabled = false;
+        public static bool StopMusicWhenTalking = true;
+
 
         // ======== 动态调节数值 ========
         public static float BrightenIntensity    = 1.0f;
@@ -42,6 +52,14 @@ namespace FullBrightMod.Core
         public static int   EspFontSize          = 14;
         public static float CustomPickupRange    = 13.0f;
         public static float CustomJumpForce      = 18f;
+        public static float FetchDistance = 13f;
+        public static int CurrentTrackIndex = 0;
+        public static int TranslateSourceIndex = 0;
+        public static int TranslateTargetIndex = 1;
+        public static List<string> AvailableMusicTracks = new List<string>();
+        public static readonly string[] TranslateLangCodes = { 
+            "auto", "zh-CN", "en", "ru", "ja", "ko", "es", "fr", "de" 
+        };
         public static Color SelectedEspColor     = Color.green;
         public static Color SelectedCreatureColor= Color.cyan;
         public static Color SelectedTrapColor    = Color.red;

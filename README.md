@@ -8,6 +8,10 @@
   * **长手模式**：让你拥有更长的手臂
   * **隔墙取物**：让你可以隔墙拿取物品
   * **绷带高手**：自动高速完成包扎动作，并在完成后精准停止
+  * **破片制造者**：自动在开始扎针动作时制造破片
+  * **秒截肢**：让你快速截肢
+  * **反布娃娃**：阻止布娃娃状态，可以当做可能失败的无摔落使用
+  * **秒拔破片**：自动高速拔出破片
 
 * **👁️ 视觉模块 (Render)**
   * **物品透视**：在掉落的物品上显示物品名称
@@ -29,6 +33,9 @@
   * **万事通模式**：无视智力属性限制，强制看懂所有物品介绍
   * **语言设置 (Language)**：一键切换 ClickGUI 的显示语言 (中/英)
   * **菜单设置**：允许你自定义呼出菜单的快捷键
+  * **一键引爆**：开启后自动点燃背包内所有炸药
+  * **捡取宏**：开启后自动捡取鼠标所指的物品
+  * **人形音响**：允许你播放放置在/游戏文件夹/music/文件夹内的mp3文件
 
 ## 📥 安装指南
 1. 确保游戏已安装 BepInEx。
@@ -56,6 +63,10 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **Long Arms**: Extends your interaction reach.
   * **Grab Through Walls**: Allows you to pick up items through solid objects.
   * **Auto Bandage**: Rapidly automates the bandaging mini-game and stops precisely when the bleeding is healed.
+  * **Shrapnel Maker**: Automatically creates shrapnel when initiating a syringe injection.
+  * **Instant Amputation**: Allows you to perform amputations instantly.
+  * **Anti-Ragdoll**: Prevents the ragdoll state; can be used as a makeshift (though potentially unreliable) no-fall-damage feature.
+  * **Instant Shrapnel Removal**: Automatically extracts shrapnel at extremely high speed.
 
 * **👁️ Render Module**
   * **Item ESP**: Displays the names of dropped items through walls.
@@ -77,6 +88,9 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **Omniscient Mode**: Bypasses intelligence stat limits, allowing you to understand all item descriptions.
   * **Language**: One-click switch for ClickGUI display language (EN/ZH).
   * **Menu Keybind**: Allows you to customize the hotkey to toggle the mod menu.
+  * **Ignite Explosives Macro**: Automatically ignites all explosives in your inventory when enabled.
+  * **Fetch Macro**: Automatically picks up the item your mouse cursor is pointing at when enabled.
+  * **Human Boombox**: Allows you to play MP3 files placed in the `/GameDirectory/music/` folder.
 
 ## 📥 Installation
 

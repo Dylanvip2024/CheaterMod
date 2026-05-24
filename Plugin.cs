@@ -18,7 +18,7 @@ namespace FullBrightMod
     {
         private const string PluginGuid   = "com.mod.casualties.cheatermod";
         private const string PluginName   = "CheaterMod";
-        private const string PluginVersion = "1.0.0";
+        private const string PluginVersion = "1.0.1";
 
         public static FullBrightPlugin Instance { get; private set; }
 
@@ -54,6 +54,8 @@ namespace FullBrightMod
                     new LongHands(),      // 长手模式
                     new ThroughWall(),    // 隔墙取物
                     new AutoBandage(),    // 包扎大师
+                    new ShrapnelMaker(),
+                    new InstantAmputation(),
                     // --- Movement 分类 ---
                     new Flight(),         // 超级飞侠
                     new JumpBoost(),      // 跳跃增强
@@ -64,7 +66,12 @@ namespace FullBrightMod
                     new AutoTranslate(),  // 聊天机翻
                     new IQ250(),          // 万事通模式
                     new LanguageModule(), // 语言切换
-                    new ClickGUIModule()  // 菜单设置（默认 F6，可右键改键）
+                    new ClickGUIModule(), // 菜单设置（默认 F6，可右键改键）
+                    new AntiRagdoll(),    // 反布娃娃
+                    new ExplosivesMacro(),// 一键引爆
+                    new FetchMacro(),     // 捡取宏
+                    new InstantShrapnelRemoval(),// 秒拔破片
+                    new HumanBoombox()    // 人形音响
                 );
 
                 _clickGUI = new ClickGUIManager(_moduleManager);
@@ -212,8 +219,17 @@ namespace FullBrightMod
 
         private IEnumerator TranslateAndLogCoro(string plrname, string originalMsg, bool richtext)
         {
-            string url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=zh-CN&dt=t&q="
+            // 防越界安全校验
+            int sIdx = Mathf.Clamp(Settings.TranslateSourceIndex, 0, Settings.TranslateLangCodes.Length - 1);
+            int tIdx = Mathf.Clamp(Settings.TranslateTargetIndex, 1, Settings.TranslateLangCodes.Length - 1);
+
+            string sl = Settings.TranslateLangCodes[sIdx];
+            string tl = Settings.TranslateLangCodes[tIdx];
+
+            // 动态将 sl(源) 和 tl(目标) 拼接到 Google 翻译 API 中
+            string url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sl}&tl={tl}&dt=t&q="
                        + UnityWebRequest.EscapeURL(originalMsg);
+
             using (var req = UnityWebRequest.Get(url))
             {
                 yield return req.SendWebRequest();
