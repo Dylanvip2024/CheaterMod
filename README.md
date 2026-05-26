@@ -65,6 +65,14 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
 
 ## ✨ Features
 
+* **⚔️ Combat Module**
+  * **Custom Fire Rate**: Allows you to customize your weapon's fire rate (cooldown between shots).
+  * **No Jam**: Keep your firearm in pristine condition — never worry about a jam again.
+  * **Auto Reload**: Automatically reloads ammunition, including magazine changes.
+  * **No Recoil**: Eliminates weapon recoil, keeping your aim steady.
+  * **Auto Bolt**: Automatically cycles the bolt (useful for shotguns).
+  * **Mouse Aimbot**: Creatures become magnetically attracted to your crosshair, making aiming effortless.
+
 * **🙎‍♂️ Player Module**
   * **Freecam**: Allows you to detach and move the camera freely.
   * **Long Arms**: Extends your interaction reach.
