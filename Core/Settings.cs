@@ -43,6 +43,14 @@ namespace FullBrightMod.Core
         public static bool IsInstantShrapnelRemovalEnabled = false;
         public static bool IsBoomboxEnabled = false;
         public static bool StopMusicWhenTalking = true;
+        public static bool IsInfiniteAmmoEnabled = false;
+        public static bool IsNoSpreadEnabled = false;
+        public static bool IsRapidFireEnabled = false;
+        public static bool IsNoJamEnabled = false;
+        public static bool IsNoRecoilEnabled = false;
+        public static bool IsAutoReloadEnabled = false;
+        public static bool IsAutoBoltEnabled = false;
+        public static bool IsMouseAimbotEnabled = false;
 
 
         // ======== 动态调节数值 ========
@@ -56,6 +64,8 @@ namespace FullBrightMod.Core
         public static int CurrentTrackIndex = 0;
         public static int TranslateSourceIndex = 0;
         public static int TranslateTargetIndex = 1;
+        public static float CustomFireRateMultiplier = 1.0f;
+        public static float AimbotRadius = 150f;
         public static List<string> AvailableMusicTracks = new List<string>();
         public static readonly string[] TranslateLangCodes = { 
             "auto", "zh-CN", "en", "ru", "ja", "ko", "es", "fr", "de" 

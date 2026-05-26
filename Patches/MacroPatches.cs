@@ -67,26 +67,23 @@ namespace FullBrightMod.Patches
 
             foreach (Item item in allItems)
             {
-                if (item == null || item.Stats == null) continue;
+                if (item == null || item.id != "dynamite") continue;
 
-                if (item.id.ToLower().Contains("dynamite"))
+                // 根据分析：原版游戏中，将物品拖放到径向菜单中央调用的就是 body.UseItem()。
+                // 联机Mod已经使用 Harmony Patch 拦截了 body.UseItem，并在 Postfix 中自动处理了网络同步。
+                // 因此我们只需直接调用该方法，即可完美触发原版逻辑并顺延触发联机网络同步（自动发送30105），
+                // 从而告别了繁琐且容易因为联机Mod更新而失效的反射（Reflection）操作。
+                if (item.Stats != null && item.Stats.usable)
                 {
-                    if (item.Stats.usable && item.Stats.useAction != null)
-                    {
-                        item.Stats.useAction(body, item);
-                        ignitedCount++;
-                    }
+                    body.UseItem(item);
+                    ignitedCount++;
                 }
             }
 
             if (ignitedCount > 0)
-            {
-                PlayerCamera.main.DoAlert($"<color=red>警告：已点燃 {ignitedCount} 个炸药！赶紧跑！</color>", false);
-            }
+                PlayerCamera.main.DoAlert($"已引爆 {ignitedCount} 个炸药！", false);
             else
-            {
-                PlayerCamera.main.DoAlert("身上或背包内未发现炸药 (dynamite)！", false);
-            }
+                PlayerCamera.main.DoAlert("未找到可引爆的炸药！", false);
         }
     }
 }

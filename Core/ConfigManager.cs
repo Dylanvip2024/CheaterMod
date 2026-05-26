@@ -39,6 +39,23 @@ namespace FullBrightMod.Core
             public bool IsFlightEnabled;
             public bool IsJumpBoostEnabled;
             public bool IsNoClipEnabled;
+            public bool IsAutoBandageEnabled;
+            public bool IsAntiRagdollEnabled;
+            public bool IsShrapnelMakerEnabled;
+            public bool IsInstantAmputationEnabled;
+            public bool IsExplosivesMacroEnabled;
+            public bool IsFetchMacroEnabled;
+            public bool IsInstantShrapnelRemovalEnabled;
+            public bool IsBoomboxEnabled;
+            public bool StopMusicWhenTalking;
+            public bool IsInfiniteAmmoEnabled;
+            public bool IsNoSpreadEnabled;
+            public bool IsRapidFireEnabled;
+            public bool IsNoJamEnabled;
+            public bool IsNoRecoilEnabled;
+            public bool IsAutoReloadEnabled;
+            public bool IsAutoBoltEnabled;
+            public bool IsMouseAimbotEnabled;
 
             public float BrightenIntensity;
             public float CustomVisionRadius;
@@ -46,6 +63,10 @@ namespace FullBrightMod.Core
             public int EspFontSize;
             public float CustomPickupRange;
             public float CustomJumpForce;
+            public float CustomFireRateMultiplier;
+            public float FetchDistance;
+            public float AimbotRadius;
+            public int CurrentTrackIndex;
 
             public SColor SelectedEspColor;
             public SColor SelectedCreatureColor;
@@ -119,7 +140,25 @@ namespace FullBrightMod.Core
                 data.IsFreecamEnabled      = Settings.IsFreecamEnabled;
                 data.IsFlightEnabled       = Settings.IsFlightEnabled;
                 data.IsJumpBoostEnabled    = Settings.IsJumpBoostEnabled;
-                data.IsNoClipEnabled       = Settings.IsNoClipEnabled;
+                data.IsNoClipEnabled              = Settings.IsNoClipEnabled;
+                data.IsAutoBandageEnabled         = Settings.IsAutoBandageEnabled;
+                data.IsAntiRagdollEnabled         = Settings.IsAntiRagdollEnabled;
+                data.IsShrapnelMakerEnabled       = Settings.IsShrapnelMakerEnabled;
+                data.IsInstantAmputationEnabled   = Settings.IsInstantAmputationEnabled;
+                data.IsExplosivesMacroEnabled     = Settings.IsExplosivesMacroEnabled;
+                data.IsFetchMacroEnabled           = Settings.IsFetchMacroEnabled;
+                data.IsInstantShrapnelRemovalEnabled = Settings.IsInstantShrapnelRemovalEnabled;
+                data.IsBoomboxEnabled             = Settings.IsBoomboxEnabled;
+                data.StopMusicWhenTalking         = Settings.StopMusicWhenTalking;
+                data.IsInfiniteAmmoEnabled        = Settings.IsInfiniteAmmoEnabled;
+                data.IsNoSpreadEnabled            = Settings.IsNoSpreadEnabled;
+                data.IsRapidFireEnabled           = Settings.IsRapidFireEnabled;
+                data.IsNoJamEnabled               = Settings.IsNoJamEnabled;
+                data.IsNoRecoilEnabled            = Settings.IsNoRecoilEnabled;
+                data.IsAutoReloadEnabled          = Settings.IsAutoReloadEnabled;
+                data.IsAutoBoltEnabled            = Settings.IsAutoBoltEnabled;
+                data.IsMouseAimbotEnabled         = Settings.IsMouseAimbotEnabled;
+                data.CustomFireRateMultiplier     = Settings.CustomFireRateMultiplier;
 
                 data.BrightenIntensity  = Settings.BrightenIntensity;
                 data.CustomVisionRadius = Settings.CustomVisionRadius;
@@ -127,6 +166,9 @@ namespace FullBrightMod.Core
                 data.EspFontSize        = Settings.EspFontSize;
                 data.CustomPickupRange  = Settings.CustomPickupRange;
                 data.CustomJumpForce    = Settings.CustomJumpForce;
+                data.FetchDistance      = Settings.FetchDistance;
+                data.AimbotRadius       = Settings.AimbotRadius;
+                data.CurrentTrackIndex  = Settings.CurrentTrackIndex;
 
                 data.SelectedEspColor      = ToSColor(Settings.SelectedEspColor);
                 data.SelectedCreatureColor = ToSColor(Settings.SelectedCreatureColor);
@@ -210,7 +252,24 @@ namespace FullBrightMod.Core
                 Settings.IsFreecamEnabled      = data.IsFreecamEnabled;
                 Settings.IsFlightEnabled       = data.IsFlightEnabled;
                 Settings.IsJumpBoostEnabled    = data.IsJumpBoostEnabled;
-                Settings.IsNoClipEnabled       = data.IsNoClipEnabled;
+                Settings.IsNoClipEnabled              = data.IsNoClipEnabled;
+                Settings.IsAutoBandageEnabled         = data.IsAutoBandageEnabled;
+                Settings.IsAntiRagdollEnabled         = data.IsAntiRagdollEnabled;
+                Settings.IsShrapnelMakerEnabled       = data.IsShrapnelMakerEnabled;
+                Settings.IsInstantAmputationEnabled   = data.IsInstantAmputationEnabled;
+                Settings.IsExplosivesMacroEnabled     = data.IsExplosivesMacroEnabled;
+                Settings.IsFetchMacroEnabled           = data.IsFetchMacroEnabled;
+                Settings.IsInstantShrapnelRemovalEnabled = data.IsInstantShrapnelRemovalEnabled;
+                Settings.IsBoomboxEnabled             = data.IsBoomboxEnabled;
+                Settings.StopMusicWhenTalking         = data.StopMusicWhenTalking;
+                Settings.IsInfiniteAmmoEnabled        = data.IsInfiniteAmmoEnabled;
+                Settings.IsNoSpreadEnabled            = data.IsNoSpreadEnabled;
+                Settings.IsRapidFireEnabled           = data.IsRapidFireEnabled;
+                Settings.IsNoJamEnabled               = data.IsNoJamEnabled;
+                Settings.IsNoRecoilEnabled            = data.IsNoRecoilEnabled;
+                Settings.IsAutoReloadEnabled          = data.IsAutoReloadEnabled;
+                Settings.IsAutoBoltEnabled            = data.IsAutoBoltEnabled;
+                Settings.IsMouseAimbotEnabled         = data.IsMouseAimbotEnabled;
 
                 Settings.BrightenIntensity  = data.BrightenIntensity;
                 Settings.CustomVisionRadius = data.CustomVisionRadius;
@@ -218,6 +277,9 @@ namespace FullBrightMod.Core
                 Settings.EspFontSize        = data.EspFontSize;
                 Settings.CustomPickupRange  = data.CustomPickupRange;
                 Settings.CustomJumpForce    = data.CustomJumpForce;
+                Settings.FetchDistance      = data.FetchDistance;
+                Settings.AimbotRadius       = data.AimbotRadius;
+                Settings.CurrentTrackIndex  = data.CurrentTrackIndex;
 
                 Settings.SelectedEspColor      = ToColor(data.SelectedEspColor);
                 Settings.SelectedCreatureColor = ToColor(data.SelectedCreatureColor);
@@ -232,6 +294,7 @@ namespace FullBrightMod.Core
                 Settings.TranslateSourceIndex = data.TranslateSourceIndex;
                 // 安全判定：防止旧存档里 Target 是 0，导致请求出错
                 Settings.TranslateTargetIndex = data.TranslateTargetIndex == 0 ? 1 : data.TranslateTargetIndex;
+                Settings.CustomFireRateMultiplier = data.CustomFireRateMultiplier <= 0f ? 1.0f : data.CustomFireRateMultiplier;
 
                 // --- 恢复到模块 ---
                 if (data.Modules != null)

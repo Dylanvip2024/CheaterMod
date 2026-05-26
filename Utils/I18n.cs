@@ -15,6 +15,16 @@ namespace FullBrightMod.Utils
             { "cat_world", "🌍 世界" },
             { "cat_misc", "🔧 杂项" },
 
+            // Combat modules
+            { "mod_rapid_fire", "自定义射速" },
+            { "mod_no_jam", "不卡壳" },
+            { "set_fire_rate_mult", "射速倍率" },
+            { "mod_no_recoil", "无后座" },
+            { "mod_auto_reload", "自动装弹" },
+            { "mod_auto_bolt", "自动拉栓" },
+            { "mod_mouse_aimbot", "鼠标吸附" },
+            { "set_aimbot_radius", "吸附范围" },
+
             // Player modules
             { "mod_autobandage", "绷带高手" },
             { "mod_freecam", "灵魂出窍" },
@@ -73,6 +83,16 @@ namespace FullBrightMod.Utils
             { "cat_render", "👁 Render" },
             { "cat_world", "🌍 World" },
             { "cat_misc", "🔧 Misc" },
+
+            // Combat modules
+            { "mod_rapid_fire", "Custom Fire Rate" },
+            { "mod_no_jam", "Anti-Jam" },
+            { "set_fire_rate_mult", "Multiplier" },
+            { "mod_no_recoil", "No Recoil" },
+            { "mod_auto_reload", "Auto Reload" },
+            { "mod_auto_bolt", "Auto Bolt-Action" },
+            { "mod_mouse_aimbot", "Mouse Magnet" },
+            { "set_aimbot_radius", "Magnet Radius" },
 
             // Player modules
             { "mod_autobandage", "Auto Bandage" },

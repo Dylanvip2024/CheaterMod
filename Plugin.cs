@@ -18,7 +18,7 @@ namespace FullBrightMod
     {
         private const string PluginGuid   = "com.mod.casualties.cheatermod";
         private const string PluginName   = "CheaterMod";
-        private const string PluginVersion = "1.0.1";
+        private const string PluginVersion = "1.0.2";
 
         public static FullBrightPlugin Instance { get; private set; }
 
@@ -42,6 +42,13 @@ namespace FullBrightMod
                 _moduleManager = new ModuleManager();
                 // ★ 13 个原子功能模块，每个模块独立控制一个开关
                 _moduleManager.RegisterAll(
+                    // --- Combat 分类 ---
+                    new RapidFire(),      // 自定义射速
+                    new NoJam(),          // 不卡壳
+                    new NoRecoil(),       // 无后座
+                    new AutoReload(),     // 自动装弹
+                    new AutoBolt(),       // 自动拉栓
+                    new MouseAimbot(),    // 鼠标吸附
                     // --- Render 分类 ---
                     new ItemESP(),        // 物品透视
                     new CreatureESP(),    // 生物透视
@@ -54,8 +61,8 @@ namespace FullBrightMod
                     new LongHands(),      // 长手模式
                     new ThroughWall(),    // 隔墙取物
                     new AutoBandage(),    // 包扎大师
-                    new ShrapnelMaker(),
-                    new InstantAmputation(),
+                    new ShrapnelMaker(),  // 破片制造者
+                    new InstantAmputation(),// 秒截肢
                     // --- Movement 分类 ---
                     new Flight(),         // 超级飞侠
                     new JumpBoost(),      // 跳跃增强
