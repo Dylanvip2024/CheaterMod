@@ -17,7 +17,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static bool Prefix(string plrname, string msg, bool richtext)
         {
-            if (!Settings.IsAutoTranslateEnabled && !Settings.IsTwoWayTranslationEnabled) return true;
+            if (!Settings.IsAutoTranslateEnabled) return true;
 
             // 拦截空消息、或是我们自己发出的 [译] 消息，防止死循环无限翻译
             if (string.IsNullOrEmpty(msg) || msg.Contains("[译]")) return true;
@@ -80,7 +80,7 @@ namespace FullBrightMod.Patches
         [HarmonyPostfix]
         private static void Postfix()
         {
-            if (!Settings.IsAutoTranslateEnabled && !Settings.IsTwoWayTranslationEnabled) return;
+            if (!Settings.IsAutoTranslateEnabled) return;
 
             var lastMsg = GetLastMessage();
             if (lastMsg.msg == null || lastMsg.msg.Contains("[译]")) return;
