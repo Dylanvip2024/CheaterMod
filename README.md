@@ -10,6 +10,8 @@
   * **无后座**：让射击后坐力消失
   * **自动拉栓**：自动拉栓（适用于霰弹枪）
   * **鼠标吸附**：生物会对你的鼠标产生吸引力
+  * **杀戮光环**：自动近战攻击范围内的敌人（可自定义攻速与范围）
+  
 * **🙎‍♂️ 玩家模块 (Player)**
   * **灵魂出窍**：让你可以自由移动视角
   * **长手模式**：让你拥有更长的手臂
@@ -26,11 +28,16 @@
   * **陷阱警告**：在陷阱上标注陷阱名称
   * **局部光照扩大**：允许你扩大/缩小光照范围大小
   * **视距拉远**：扩大/缩小你的视野 (FOV)
+  * **投掷抛物线**：显示投掷物品的预测弹道与落点
 
 * **🏃 移动模块 (Movement)**
   * **超级飞侠**：允许你拥有飞行能力
   * **跳跃增强**：允许你自定义跳跃高度
   * **实体穿墙**：无视物理碰撞，允许你穿墙而过
+  * **速度修改**：自定义角色的移动速度倍率
+  * **反负重**：无视负重系统，始终保持满速移动
+  * **空气跳跃**：允许你在空中进行无限次跳跃
+  * **喷气背包**：按住空格键获得持续上升推力
 
 * **🌍 世界模块 (World)**
   * **秒开锁**：自动开锁（支持密码锁与撬锁）
@@ -72,6 +79,7 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **No Recoil**: Eliminates weapon recoil, keeping your aim steady.
   * **Auto Bolt**: Automatically cycles the bolt (useful for shotguns).
   * **Mouse Aimbot**: Creatures become magnetically attracted to your crosshair, making aiming effortless.
+  * **Kill Aura**: Automatically melee attacks nearby enemies (customizable attack speed and range).
 
 * **🙎‍♂️ Player Module**
   * **Freecam**: Allows you to detach and move the camera freely.
@@ -89,11 +97,16 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **Trap ESP**: Highlights and warns you about traps.
   * **Light Modifier**: Allows you to expand or shrink the local illumination radius.
   * **FOV Changer**: Customizes your Field of View.
+  * **Throw Trajectory**: Displays the predicted trajectory and landing point of thrown items.
 
 * **🏃 Movement Module**
   * **Fly Hack**: Grants you the ability to fly.
   * **Jump Boost**: Allows you to customize your jump height.
   * **NoClip**: Ignores physical collisions, allowing you to walk through walls.
+  * **Speed Modifier**: Customize your character's movement speed multiplier.
+  * **Anti-Weight**: Bypass the weight system, maintaining full movement speed at all times.
+  * **Air Jump**: Perform unlimited mid-air jumps.
+  * **Jetpack**: Hold the spacebar for continuous upward thrust.
 
 * **🌍 World Module**
   * **Instant Unlock**: Automatically opens locks (supports both combination locks and lockpicking).
