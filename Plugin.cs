@@ -18,7 +18,7 @@ namespace FullBrightMod
     {
         private const string PluginGuid   = "com.mod.casualties.cheatermod";
         private const string PluginName   = "CheaterMod";
-        private const string PluginVersion = "1.0.2";
+        private const string PluginVersion = "1.0.3";
 
         public static FullBrightPlugin Instance { get; private set; }
 
@@ -49,6 +49,7 @@ namespace FullBrightMod
                     new AutoReload(),     // 自动装弹
                     new AutoBolt(),       // 自动拉栓
                     new MouseAimbot(),    // 鼠标吸附
+                    new KillAura(),       // 杀戮光环
                     // --- Render 分类 ---
                     new ItemESP(),        // 物品透视
                     new CreatureESP(),    // 生物透视
@@ -56,6 +57,7 @@ namespace FullBrightMod
                     new FullBright(),     // 全亮模式
                     new VisionExpand(),   // 局部光照扩大
                     new CameraZoom(),     // 视距拉远
+                    new ThrowTrajectory(),// 投掷抛物线
                     // --- Player 分类 ---
                     new Freecam(),        // 灵魂出窍
                     new LongHands(),      // 长手模式
@@ -66,6 +68,10 @@ namespace FullBrightMod
                     // --- Movement 分类 ---
                     new Flight(),         // 超级飞侠
                     new JumpBoost(),      // 跳跃增强
+                    new SpeedModifier(),   // 速度修改
+                    new AntiWeight(),      // 反负重
+                    new AirJump(),         // 空气跳跃
+                    new Jetpack(),         // 喷气背包
                     new NoClip(),         // 实体穿墙
                     // --- World 分类 ---
                     new AutoUnlock(),     // 秒开锁
@@ -78,7 +84,9 @@ namespace FullBrightMod
                     new ExplosivesMacro(),// 一键引爆
                     new FetchMacro(),     // 捡取宏
                     new InstantShrapnelRemoval(),// 秒拔破片
-                    new HumanBoombox()    // 人形音响
+                    new HumanBoombox(),    // 人形音响
+                    new MinimapModule(),   // 小地图
+                    new LimbStatusModule() // 肢体状态 HUD
                 );
 
                 _clickGUI = new ClickGUIManager(_moduleManager);
@@ -91,6 +99,9 @@ namespace FullBrightMod
                 Logger.LogInfo("  已注册模块数: " + _moduleManager.GetAllModules().Count);
                 Logger.LogInfo("  ClickGUI: 默认按 [F6] 打开菜单");
                 Logger.LogInfo("========================================");
+
+                // ★ 挂载 UGUI Logo 管理器
+                gameObject.AddComponent<LogoOverlayManager>();
             }
             catch (System.Exception ex)
             {
@@ -163,18 +174,19 @@ namespace FullBrightMod
 
         private void OnGUI()
         {
-            // ClickGUI 菜单（纯代码手绘）
-            _clickGUI?.OnGUI();
-
-            // 模块扩展预留
+            // 1. 绘制各个模块的 GUI 元素（如抛物线等）
             _moduleManager?.OnGUIModules();
 
-            // ==== ESP 渲染（从旧 ESPModule 迁移至此，直接读取 Settings 开关） ====
-            if (_mainCam == null) return;
+            // 2. 绘制 ESP 渲染层
+            if (_mainCam != null)
+            {
+                if (Settings.IsItemEspEnabled)     ESPRenderer.DrawItems(_mainCam);
+                if (Settings.IsCreatureEspEnabled) ESPRenderer.DrawCreatures(_mainCam);
+                if (Settings.IsTrapEspEnabled)     ESPRenderer.DrawTraps(_mainCam);
+            }
 
-            if (Settings.IsItemEspEnabled)     ESPRenderer.DrawItems(_mainCam);
-            if (Settings.IsCreatureEspEnabled) ESPRenderer.DrawCreatures(_mainCam);
-            if (Settings.IsTrapEspEnabled)     ESPRenderer.DrawTraps(_mainCam);
+            // 3. 最后绘制 ClickGUI 菜单，确保它永远在最顶层，不被任何东西遮挡
+            _clickGUI?.OnGUI();
         }
 
         // =========================================================
@@ -226,43 +238,117 @@ namespace FullBrightMod
 
         private IEnumerator TranslateAndLogCoro(string plrname, string originalMsg, bool richtext)
         {
-            // 防越界安全校验
+            // 1. 去除原消息中的富文本颜色标签，防止干扰谷歌翻译
+            string cleanMsg = System.Text.RegularExpressions.Regex.Replace(originalMsg, "<.*?>", string.Empty);
+            if (string.IsNullOrWhiteSpace(cleanMsg)) yield break;
+
             int sIdx = Mathf.Clamp(Settings.TranslateSourceIndex, 0, Settings.TranslateLangCodes.Length - 1);
             int tIdx = Mathf.Clamp(Settings.TranslateTargetIndex, 1, Settings.TranslateLangCodes.Length - 1);
 
             string sl = Settings.TranslateLangCodes[sIdx];
             string tl = Settings.TranslateLangCodes[tIdx];
 
-            // 动态将 sl(源) 和 tl(目标) 拼接到 Google 翻译 API 中
+            // 2. 使用更兼容的 Uri.EscapeDataString 替代原版的 EscapeURL
             string url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sl}&tl={tl}&dt=t&q="
-                       + UnityWebRequest.EscapeURL(originalMsg);
+                       + System.Uri.EscapeDataString(cleanMsg);
+
+            using (var req = UnityEngine.Networking.UnityWebRequest.Get(url))
+            {
+                // 伪装请求头，防止被谷歌封锁
+                req.SetRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+                yield return req.SendWebRequest();
+
+                if (req.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
+                {
+                    try
+                    {
+                        // 3. 使用 Newtonsoft.Json 进行安全解析，彻底告别正则崩溃
+                        var arr = Newtonsoft.Json.Linq.JArray.Parse(req.downloadHandler.text);
+                        string translatedText = "";
+                        foreach (var chunk in arr[0])
+                        {
+                            translatedText += chunk[0].ToString();
+                        }
+
+                        // 如果翻译出来的结果和原文不同，才发送到聊天框
+                        if (!string.IsNullOrEmpty(translatedText) && translatedText.Trim() != cleanMsg.Trim())
+                        {
+                            Chat.LogMessage(plrname, "<color=#00FFFF>[译]</color> " + translatedText, true);
+                        }
+                    }
+                    catch (System.Exception ex)
+                    {
+                        UnityEngine.Debug.LogError($"[机翻解析失败]: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 向外翻译：将玩家输入内容翻译为目标语言，通过回调返回结果。
+        /// AutoTranslatePatch 在调用此方法后，会通过 onCompleted 回调拿到翻译结果。
+        /// </summary>
+        public void StartOutgoingTranslation(string originalMsg, System.Action<string> onCompleted)
+        {
+            StartCoroutine(TranslateOutgoingCoro(originalMsg, onCompleted));
+        }
+
+        private IEnumerator TranslateOutgoingCoro(string originalMsg, System.Action<string> onCompleted)
+        {
+            string sl = "auto";
+
+            // 【修复翻译方向】：外发翻译的目标语言，应该是设置里的“源语言”。
+            // 如果源语言是“自动”，那么我们无法翻译为自动，默认指定翻译为英语(2)
+            int targetIdx = Settings.TranslateSourceIndex;
+            if (targetIdx == 0) targetIdx = 2; // 默认英文
+
+            string tl = Settings.TranslateLangCodes[Mathf.Clamp(targetIdx, 1, Settings.TranslateLangCodes.Length - 1)];
+
+            string url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sl}&tl={tl}&dt=t&q="
+                       + System.Uri.EscapeDataString(originalMsg);
 
             using (var req = UnityWebRequest.Get(url))
             {
+                req.SetRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
                 yield return req.SendWebRequest();
                 if (req.result == UnityWebRequest.Result.Success)
                 {
-                    string translatedText = ExtractGoogleTranslate(req.downloadHandler.text);
-                    if (!string.IsNullOrEmpty(translatedText) && translatedText.Trim() != originalMsg.Trim())
-                        Chat.LogMessage(plrname, "<color=#00FFFF>[译]</color> " + translatedText, richtext);
+                    try
+                    {
+                        var arr = Newtonsoft.Json.Linq.JArray.Parse(req.downloadHandler.text);
+                        string result = "";
+                        foreach (var chunk in arr[0]) result += chunk[0].ToString();
+                        onCompleted?.Invoke(result);
+                    }
+                    catch
+                    {
+                        onCompleted?.Invoke(null);
+                    }
+                }
+                else
+                {
+                    onCompleted?.Invoke(null);
                 }
             }
         }
 
         private static string ExtractGoogleTranslate(string json)
         {
-            string result = "";
             try
             {
-                var matches = Regex.Matches(json, @"\[""(.*?)"",""");
-                foreach (Match m in matches)
+                // 4. 利用 Newtonsoft.Json 进行稳定的数组反序列化，彻底替代脆弱的正则表达式
+                var arr = Newtonsoft.Json.Linq.JArray.Parse(json);
+                string result = "";
+                foreach (var chunk in arr[0])
                 {
-                    if (m.Index > json.IndexOf("]],")) break;
-                    result += Regex.Unescape(m.Groups[1].Value);
+                    result += chunk[0].ToString();
                 }
+                return result;
             }
-            catch { }
-            return result;
+            catch
+            {
+                return "";
+            }
         }
 
         private void OnDestroy()

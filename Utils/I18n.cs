@@ -24,6 +24,12 @@ namespace FullBrightMod.Utils
             { "mod_auto_bolt", "自动拉栓" },
             { "mod_mouse_aimbot", "鼠标吸附" },
             { "set_aimbot_radius", "吸附范围" },
+            { "mod_killaura", "杀戮光环" },
+            { "set_ka_players", "攻击玩家" },
+            { "set_ka_aps", "攻击速度" },
+            { "set_ka_range", "攻击范围" },
+            { "set_ka_render_target", "目标渲染" },
+            { "set_ka_color", "目标颜色" },
 
             // Player modules
             { "mod_autobandage", "绷带高手" },
@@ -47,6 +53,13 @@ namespace FullBrightMod.Utils
             { "mod_noclip", "实体穿墙" },
             { "mod_jumpboost", "跳跃增强" },
 
+            // Movement modules - speed
+            { "mod_speed_modifier", "速度修改" },
+            { "set_speed_mult", "速度倍率" },
+            { "mod_anti_weight", "反负重" },
+            { "mod_airjump", "空气跳跃" },
+            { "mod_jetpack", "喷气背包" },
+
             // World modules
             { "mod_autounlock", "秒开锁" },
 
@@ -54,6 +67,7 @@ namespace FullBrightMod.Utils
             { "mod_autotranslate", "聊天机翻" },
             { "set_trans_source", "源语言" },
             { "set_trans_target", "目标语言" },
+            { "set_two_way_trans", "开启双向外发翻译" },
             { "mod_iq250", "万事通模式" },
             { "mod_clickgui", "菜单设置" },
             { "mod_language", "Language" },
@@ -64,6 +78,9 @@ namespace FullBrightMod.Utils
             { "mod_human_boombox", "人形音响" },
             { "set_boombox_track", "当前曲目" },
 
+            // Render modules - throw trajectory
+            { "mod_trajectory", "投掷抛物线" },
+
             // Settings labels
             { "set_intensity", "强度" },
             { "set_camera_size", "视距大小" },
@@ -72,6 +89,40 @@ namespace FullBrightMod.Utils
             { "set_item_color", "物品颜色" },
             { "set_creature_color", "生物颜色" },
             { "set_trap_color", "陷阱颜色" },
+            { "set_trajectory_color", "轨迹颜色" },
+            { "set_trajectory_length", "最大距离" },
+
+            // Tab labels
+            { "tab_modules", "功能模块" },
+            { "tab_globalsettings", "全局设置" },
+
+            // Global Settings - Grid Snapping section
+            { "gs_section_grid", "--- 网格吸附 ---" },
+            { "gs_enable_grid", "启用网格吸附" },
+            { "gs_grid_size", "网格大小" },
+
+            // Global Settings - Minimap section
+            { "gs_section_minimap", "--- 小地图 ---" },
+            { "gs_enable_minimap", "启用小地图" },
+            { "gs_minimap_size", "尺寸" },
+            { "gs_minimap_radius", "视野范围" },
+
+            // Global Settings - Limb HUD section
+            { "gs_section_limb", "--- 肢体状态 HUD ---" },
+            { "gs_enable_limb", "启用肢体 HUD" },
+            { "gs_limb_scale", "缩放比例" },
+            { "gs_limb_pos_x", "X 轴偏移" },
+            { "gs_limb_pos_y", "Y 轴偏移" },
+
+            // Global Settings - Logo Overlay section
+            { "gs_section_logo", "--- Logo 水印 ---" },
+            { "gs_enable_logo", "显示 Logo" },
+            { "gs_logo_height", "Logo 大小" },
+
+            // Unit suffixes (appended to slider values)
+            { "unit_px", "px" },
+            { "unit_m", "m" },
+            { "unit_x", "x" },
         };
 
         private static readonly Dictionary<string, string> _en = new Dictionary<string, string>
@@ -93,6 +144,12 @@ namespace FullBrightMod.Utils
             { "mod_auto_bolt", "Auto Bolt-Action" },
             { "mod_mouse_aimbot", "Mouse Magnet" },
             { "set_aimbot_radius", "Magnet Radius" },
+            { "mod_killaura", "Kill Aura" },
+            { "set_ka_players", "Attack Players" },
+            { "set_ka_aps", "Attack Speed" },
+            { "set_ka_range", "Attack Range" },
+            { "set_ka_render_target", "Render Target" },
+            { "set_ka_color", "Target Color" },
 
             // Player modules
             { "mod_autobandage", "Auto Bandage" },
@@ -111,10 +168,20 @@ namespace FullBrightMod.Utils
             { "mod_visionexpand", "Vision Expand" },
             { "mod_camerazoom", "Camera Zoom" },
 
+            // Render modules - throw trajectory
+            { "mod_trajectory", "Throw Trajectory" },
+
             // Movement modules
             { "mod_flight", "Flight" },
             { "mod_noclip", "No-Clip" },
             { "mod_jumpboost", "Jump Boost" },
+
+            // Movement modules - speed
+            { "mod_speed_modifier", "Speed Modifier" },
+            { "set_speed_mult", "Speed Multiplier" },
+            { "mod_anti_weight", "Anti-Weight" },
+            { "mod_airjump", "Air Jump" },
+            { "mod_jetpack", "Jetpack" },
 
             // World modules
             { "mod_autounlock", "Auto Unlock" },
@@ -123,6 +190,7 @@ namespace FullBrightMod.Utils
             { "mod_autotranslate", "Auto Translate" },
             { "set_trans_source", "Source Lang" },
             { "set_trans_target", "Target Lang" },
+            { "set_two_way_trans", "Enable Outgoing Translation" },
             { "mod_iq250", "Omniscience" },
             { "mod_clickgui", "GUI Config" },
             { "mod_language", "Language" },
@@ -141,6 +209,40 @@ namespace FullBrightMod.Utils
             { "set_item_color", "Item Color" },
             { "set_creature_color", "Creature Color" },
             { "set_trap_color", "Trap Color" },
+            { "set_trajectory_color", "Trajectory Color" },
+            { "set_trajectory_length", "Max Length" },
+
+            // Tab labels
+            { "tab_modules", "Modules" },
+            { "tab_globalsettings", "Global Settings" },
+
+            // Global Settings - Grid Snapping section
+            { "gs_section_grid", "--- Grid Snapping ---" },
+            { "gs_enable_grid", "Enable Grid Snap" },
+            { "gs_grid_size", "Grid Size" },
+
+            // Global Settings - Minimap section
+            { "gs_section_minimap", "--- Minimap ---" },
+            { "gs_enable_minimap", "Enable Minimap" },
+            { "gs_minimap_size", "Size" },
+            { "gs_minimap_radius", "View Radius" },
+
+            // Global Settings - Limb HUD section
+            { "gs_section_limb", "--- Limb Status HUD ---" },
+            { "gs_enable_limb", "Enable Limb HUD" },
+            { "gs_limb_scale", "Scale" },
+            { "gs_limb_pos_x", "X Offset" },
+            { "gs_limb_pos_y", "Y Offset" },
+
+            // Global Settings - Logo Overlay section
+            { "gs_section_logo", "--- Logo ---" },
+            { "gs_enable_logo", "Show Logo" },
+            { "gs_logo_height", "Logo Size" },
+
+            // Unit suffixes
+            { "unit_px", "px" },
+            { "unit_m", "m" },
+            { "unit_x", "x" },
         };
 
         public static string Get(string key)

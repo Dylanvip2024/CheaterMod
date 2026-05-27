@@ -29,6 +29,7 @@ namespace FullBrightMod.Core
         public static bool IsLongHandsEnabled    = false;
         public static bool IsThroughWallEnabled  = false;
         public static bool IsAutoTranslateEnabled= false;
+        public static bool IsTwoWayTranslationEnabled = false;
         public static bool IsAutoUnlockEnabled   = false;
         public static bool IsFreecamEnabled      = false;
         public static bool IsFlightEnabled       = false;
@@ -51,7 +52,22 @@ namespace FullBrightMod.Core
         public static bool IsAutoReloadEnabled = false;
         public static bool IsAutoBoltEnabled = false;
         public static bool IsMouseAimbotEnabled = false;
+        public static bool IsKillAuraEnabled       = false;
+        public static bool KillAuraAttackPlayers   = false;
+        public static float KillAuraAPS            = 10f;
+        public static float KillAuraRange          = 4f;
+        public static bool KillAuraRenderTarget    = true;
+        public static Color KillAuraTargetColor    = Color.red;
 
+        // ======== 速度修改 / 反负重 ========
+        public static bool IsSpeedModifierEnabled = false;
+        public static float CustomSpeedMultiplier = 1.5f;
+        public static bool IsAntiWeightEnabled    = false;
+        public static bool IsAirJumpEnabled       = false;
+        public static bool IsJetpackEnabled       = false;
+
+        // ======== Logo 水印 ========
+        public static bool IsLogoOverlayEnabled  = false;
 
         // ======== 动态调节数值 ========
         public static float BrightenIntensity    = 1.0f;
@@ -74,5 +90,10 @@ namespace FullBrightMod.Core
         public static Color SelectedCreatureColor= Color.cyan;
         public static Color SelectedTrapColor    = Color.red;
         public static Vector3 FreecamPosition    = Vector3.zero;
+
+        // ======== 投掷轨迹 ========
+        public static bool IsTrajectoryEnabled   = false;
+        public static float TrajectoryMaxLength  = 40f;
+        public static Color TrajectoryColor      = Color.red;
     }
 }

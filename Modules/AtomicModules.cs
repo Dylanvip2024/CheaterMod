@@ -105,7 +105,7 @@ namespace FullBrightMod.Modules
             "韩文 (KO)", "西班牙文 (ES)", "法文 (FR)", "德文 (DE)" 
         };
 
-        public override float GetSettingsHeight() => 60f; // 需要两行高度
+        public override float GetSettingsHeight() => 90f; // 两行语言 + 一行双向开关
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
@@ -156,6 +156,34 @@ namespace FullBrightMod.Modules
                 // 跳过索引 0
                 if (Settings.TranslateTargetIndex >= LangNames.Length) Settings.TranslateTargetIndex = 1; 
             }
+            y += 30f;
+
+            // =====================================
+            // 第三行：双向外发翻译开关
+            // =====================================
+            GUIStyle toggleStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 11,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = Color.white },
+                padding = new RectOffset(14, 0, 4, 0)
+            };
+            Rect toggleRect = new Rect(x, y, width, 24f);
+
+            GUI.color = Settings.IsTwoWayTranslationEnabled ? new Color(0.2f, 0.6f, 1.0f, 0.85f)
+                : (toggleRect.Contains(e.mousePosition) ? new Color(0.22f, 0.22f, 0.25f, 0.90f) : new Color(0.16f, 0.16f, 0.18f, 0.90f));
+            GUI.DrawTexture(toggleRect, ClickGUIManager.WhiteTexture);
+            GUI.color = Color.white;
+
+            string display = (Settings.IsTwoWayTranslationEnabled ? "[ON]  " : "[OFF] ") + Utils.I18n.Get("set_two_way_trans");
+            GUI.Label(toggleRect, display, toggleStyle);
+
+            if (e.type == EventType.MouseDown && e.button == 0 && toggleRect.Contains(e.mousePosition))
+            {
+                Settings.IsTwoWayTranslationEnabled = !Settings.IsTwoWayTranslationEnabled;
+                e.Use();
+            }
+
             y += 30f;
         }
     }

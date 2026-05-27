@@ -10,15 +10,11 @@ namespace FullBrightMod.Core
 {
     /// <summary>
     /// 配置持久化管理器 —— 基于 JSON 的保存/加载系统。
-    /// 将 Settings、模块状态、面板布局序列化到 BepInEx/config/CheaterMod.json。
+    /// 将 Settings、模块状态、面板布局以及 GlobalSettings 序列化到 BepInEx/config/CheaterMod.json。
     /// </summary>
     public static class ConfigManager
     {
         private static string ConfigPath => Path.Combine(BepInEx.Paths.ConfigPath, "CheaterMod.json");
-
-        // ============================================================
-        // 纯数据容器（用于 JSON 序列化）
-        // ============================================================
 
         [Serializable]
         public class SaveData
@@ -71,47 +67,85 @@ namespace FullBrightMod.Core
             public SColor SelectedEspColor;
             public SColor SelectedCreatureColor;
             public SColor SelectedTrapColor;
+            public SColor TrajectoryColor;
 
             public float FreecamX, FreecamY, FreecamZ;
 
-            // ---- 语言设置 ----
-            public int Language; // 0 = Chinese, 1 = English
+            // ---- 语言 ----
+            public int Language;
 
-            // ---- 模块状态列表 ----
+            // ---- 模块状态 ----
             public List<ModuleEntry> Modules = new List<ModuleEntry>();
 
-            // ---- 面板布局列表 ----
+            // ---- 面板布局 ----
             public List<PanelEntry> Panels = new List<PanelEntry>();
 
-            // ---- 聊天翻译设置 ----
+            // ---- 聊天翻译 ----
             public int TranslateSourceIndex;
             public int TranslateTargetIndex;
+            public bool IsTwoWayTranslationEnabled;
+
+            // ---- 投掷轨迹 ----
+            public bool IsTrajectoryEnabled;
+            public float TrajectoryMaxLength;
+
+            // ---- 速度修改 / 反负重 ----
+            public bool IsSpeedModifierEnabled;
+            public float CustomSpeedMultiplier;
+            public bool IsAntiWeightEnabled;
+            public bool IsAirJumpEnabled;
+            public bool IsJetpackEnabled;
+
+            // ---- KillAura ----
+            public bool IsKillAuraEnabled;
+            public bool KillAuraAttackPlayers;
+            public float KillAuraAPS;
+            public float KillAuraRange;
+            public bool KillAuraRenderTarget;
+            public SColor KillAuraTargetColor;
+
+            // ============================================================
+            // ★ GlobalSettings 持久化字段 ★
+            // ============================================================
+
+            // Grid Snapping
+            public bool EnableGridSnap;
+            public float GridSize;
+
+            // Minimap
+            public bool EnableMinimap;
+            public float MinimapRectX, MinimapRectY, MinimapRectW, MinimapRectH;
+            public float MinimapRadius;
+
+            // Limb HUD
+            public bool EnableLimbHUD;
+            public float LimbHUDPosX, LimbHUDPosY;
+            public float LimbHUDScale;
+
+            // Logo Overlay
+            public bool EnableLogoOverlay;
+            public float LogoOverlayHeight;
         }
 
-        /// <summary>可序列化的颜色（Unity Color 非 [Serializable]）</summary>
         [Serializable]
         public class SColor { public float r, g, b, a; }
 
-        /// <summary>单个模块的持久化状态（以类名 GetType().Name 标识，不受语言影响）</summary>
         [Serializable]
         public class ModuleEntry
         {
-            /// <summary>模块类名（如 "AutoBandage"），永远不变的唯一标识</summary>
             public string ClassName;
             public bool Enabled;
             public bool IsExpanded;
             public int BindKey;
 
-            /// <summary>旧版兼容：以 module.Name 保存的字段（仅在旧配置中出现）</summary>
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public string Name;
         }
 
-        /// <summary>单个面板的持久化布局</summary>
         [Serializable]
         public class PanelEntry
         {
-            public int Category; // ModuleCategory 枚举 int 值
+            public int Category;
             public float X, Y;
             public bool IsExpanded;
         }
@@ -125,7 +159,7 @@ namespace FullBrightMod.Core
             {
                 SaveData data = new SaveData();
 
-                // --- 从 Settings 静态类复制 ---
+                // --- Settings ---
                 data.IsFullBrightEnabled   = Settings.IsFullBrightEnabled;
                 data.IsVisionExpandEnabled = Settings.IsVisionExpandEnabled;
                 data.IsItemEspEnabled      = Settings.IsItemEspEnabled;
@@ -158,6 +192,20 @@ namespace FullBrightMod.Core
                 data.IsAutoReloadEnabled          = Settings.IsAutoReloadEnabled;
                 data.IsAutoBoltEnabled            = Settings.IsAutoBoltEnabled;
                 data.IsMouseAimbotEnabled         = Settings.IsMouseAimbotEnabled;
+                data.IsTrajectoryEnabled          = Settings.IsTrajectoryEnabled;
+                data.TrajectoryMaxLength          = Settings.TrajectoryMaxLength;
+                data.IsSpeedModifierEnabled       = Settings.IsSpeedModifierEnabled;
+                data.CustomSpeedMultiplier        = Settings.CustomSpeedMultiplier;
+                data.IsAntiWeightEnabled          = Settings.IsAntiWeightEnabled;
+                data.IsAirJumpEnabled             = Settings.IsAirJumpEnabled;
+                data.IsJetpackEnabled             = Settings.IsJetpackEnabled;
+
+                data.IsKillAuraEnabled          = Settings.IsKillAuraEnabled;
+                data.KillAuraAttackPlayers      = Settings.KillAuraAttackPlayers;
+                data.KillAuraAPS                = Settings.KillAuraAPS;
+                data.KillAuraRange              = Settings.KillAuraRange;
+                data.KillAuraRenderTarget       = Settings.KillAuraRenderTarget;
+                data.KillAuraTargetColor        = ToSColor(Settings.KillAuraTargetColor);
                 data.CustomFireRateMultiplier     = Settings.CustomFireRateMultiplier;
 
                 data.BrightenIntensity  = Settings.BrightenIntensity;
@@ -173,18 +221,19 @@ namespace FullBrightMod.Core
                 data.SelectedEspColor      = ToSColor(Settings.SelectedEspColor);
                 data.SelectedCreatureColor = ToSColor(Settings.SelectedCreatureColor);
                 data.SelectedTrapColor     = ToSColor(Settings.SelectedTrapColor);
+                data.TrajectoryColor       = ToSColor(Settings.TrajectoryColor);
 
                 data.FreecamX = Settings.FreecamPosition.x;
                 data.FreecamY = Settings.FreecamPosition.y;
                 data.FreecamZ = Settings.FreecamPosition.z;
 
-                // --- 保存语言设置 ---
                 data.Language = (int)Settings.CurrentLanguage;
 
                 data.TranslateSourceIndex = Settings.TranslateSourceIndex;
                 data.TranslateTargetIndex = Settings.TranslateTargetIndex;
+                data.IsTwoWayTranslationEnabled = Settings.IsTwoWayTranslationEnabled;
 
-                // --- 从 ModuleManager 复制模块状态 ---
+                // --- ModuleManager ---
                 foreach (var mod in modManager.GetAllModules())
                 {
                     data.Modules.Add(new ModuleEntry
@@ -196,7 +245,7 @@ namespace FullBrightMod.Core
                     });
                 }
 
-                // --- 从 ClickGUIManager 复制面板布局 ---
+                // --- 面板布局 ---
                 if (guiManager != null)
                 {
                     foreach (var panel in guiManager.Panels)
@@ -210,6 +259,27 @@ namespace FullBrightMod.Core
                         });
                     }
                 }
+
+                // ============================================================
+                // ★ GlobalSettings ★
+                // ============================================================
+                data.EnableGridSnap = GlobalSettings.EnableGridSnap;
+                data.GridSize       = GlobalSettings.GridSize;
+
+                data.EnableMinimap    = GlobalSettings.EnableMinimap;
+                data.MinimapRectX     = GlobalSettings.MinimapRect.x;
+                data.MinimapRectY     = GlobalSettings.MinimapRect.y;
+                data.MinimapRectW     = GlobalSettings.MinimapRect.width;
+                data.MinimapRectH     = GlobalSettings.MinimapRect.height;
+                data.MinimapRadius    = GlobalSettings.MinimapRadius;
+
+                data.EnableLimbHUD    = GlobalSettings.EnableLimbHUD;
+                data.LimbHUDPosX      = GlobalSettings.LimbHUDPosition.x;
+                data.LimbHUDPosY      = GlobalSettings.LimbHUDPosition.y;
+                data.LimbHUDScale     = GlobalSettings.LimbHUDScale;
+
+                data.EnableLogoOverlay    = GlobalSettings.EnableLogoOverlay;
+                data.LogoOverlayHeight    = GlobalSettings.LogoOverlayHeight;
 
                 string json = JsonConvert.SerializeObject(data, Formatting.Indented);
                 File.WriteAllText(ConfigPath, json);
@@ -237,7 +307,7 @@ namespace FullBrightMod.Core
                 SaveData data = JsonConvert.DeserializeObject<SaveData>(json);
                 if (data == null) return;
 
-                // --- 恢复到 Settings ---
+                // --- Settings ---
                 Settings.IsFullBrightEnabled   = data.IsFullBrightEnabled;
                 Settings.IsVisionExpandEnabled = data.IsVisionExpandEnabled;
                 Settings.IsItemEspEnabled      = data.IsItemEspEnabled;
@@ -270,6 +340,21 @@ namespace FullBrightMod.Core
                 Settings.IsAutoReloadEnabled          = data.IsAutoReloadEnabled;
                 Settings.IsAutoBoltEnabled            = data.IsAutoBoltEnabled;
                 Settings.IsMouseAimbotEnabled         = data.IsMouseAimbotEnabled;
+                Settings.IsTrajectoryEnabled          = data.IsTrajectoryEnabled;
+                Settings.TrajectoryMaxLength          = data.TrajectoryMaxLength > 0f ? data.TrajectoryMaxLength : 20f;
+                Settings.IsSpeedModifierEnabled       = data.IsSpeedModifierEnabled;
+                Settings.CustomSpeedMultiplier        = data.CustomSpeedMultiplier > 0f ? data.CustomSpeedMultiplier : 1.5f;
+                Settings.IsAntiWeightEnabled          = data.IsAntiWeightEnabled;
+                Settings.IsAirJumpEnabled             = data.IsAirJumpEnabled;
+                Settings.IsJetpackEnabled             = data.IsJetpackEnabled;
+
+                Settings.IsKillAuraEnabled          = data.IsKillAuraEnabled;
+                Settings.KillAuraAttackPlayers      = data.KillAuraAttackPlayers;
+                Settings.KillAuraAPS                = data.KillAuraAPS > 0f ? data.KillAuraAPS : 10f;
+                Settings.KillAuraRange              = data.KillAuraRange > 0f ? data.KillAuraRange : 4f;
+                Settings.KillAuraRenderTarget       = data.KillAuraRenderTarget;
+                if (data.KillAuraTargetColor != null)
+                    Settings.KillAuraTargetColor    = ToColor(data.KillAuraTargetColor);
 
                 Settings.BrightenIntensity  = data.BrightenIntensity;
                 Settings.CustomVisionRadius = data.CustomVisionRadius;
@@ -284,34 +369,30 @@ namespace FullBrightMod.Core
                 Settings.SelectedEspColor      = ToColor(data.SelectedEspColor);
                 Settings.SelectedCreatureColor = ToColor(data.SelectedCreatureColor);
                 Settings.SelectedTrapColor     = ToColor(data.SelectedTrapColor);
+                if (data.TrajectoryColor != null)
+                    Settings.TrajectoryColor  = ToColor(data.TrajectoryColor);
 
                 Settings.FreecamPosition = new Vector3(data.FreecamX, data.FreecamY, data.FreecamZ);
 
-                // --- 恢复语言设置（必须在模块恢复之前，确保模块 Name 能正确渲染） ---
                 if (Enum.IsDefined(typeof(AppLanguage), data.Language))
                     Settings.CurrentLanguage = (AppLanguage)data.Language;
-                
+
                 Settings.TranslateSourceIndex = data.TranslateSourceIndex;
-                // 安全判定：防止旧存档里 Target 是 0，导致请求出错
                 Settings.TranslateTargetIndex = data.TranslateTargetIndex == 0 ? 1 : data.TranslateTargetIndex;
+                Settings.IsTwoWayTranslationEnabled = data.IsTwoWayTranslationEnabled;
                 Settings.CustomFireRateMultiplier = data.CustomFireRateMultiplier <= 0f ? 1.0f : data.CustomFireRateMultiplier;
 
-                // --- 恢复到模块 ---
+                // --- 模块状态 ---
                 if (data.Modules != null)
                 {
                     var allMods = modManager.GetAllModules();
                     foreach (var entry in data.Modules)
                     {
-                        // 优先按 ClassName 匹配（新版）
                         ModuleBase mod = allMods.Find(m => m.GetType().Name == entry.ClassName);
-
-                        // 兼容旧版：尝试按本地化 Name 匹配（仅当 ClassName 为空或未匹配到时）
                         if (mod == null && !string.IsNullOrEmpty(entry.Name))
                             mod = allMods.Find(m => m.Name == entry.Name);
-
                         if (mod == null) continue;
 
-                        // 迁移：如果旧配置有 Name 但没有 ClassName，自动补上
                         if (string.IsNullOrEmpty(entry.ClassName) && !string.IsNullOrEmpty(entry.Name))
                             entry.ClassName = mod.GetType().Name;
 
@@ -319,13 +400,12 @@ namespace FullBrightMod.Core
                         mod.IsExpanded = entry.IsExpanded;
                         mod.BindKey = (KeyCode)entry.BindKey;
 
-                        // 如果模块在存档中是启用状态，触发 OnEnable
                         if (mod.Enabled)
                             mod.OnEnable();
                     }
                 }
 
-                // --- 恢复到面板布局 ---
+                // --- 面板布局 ---
                 if (data.Panels != null && guiManager != null)
                 {
                     foreach (var entry in data.Panels)
@@ -340,6 +420,42 @@ namespace FullBrightMod.Core
                     }
                 }
 
+                // ============================================================
+                // ★ GlobalSettings 恢复 ★
+                // ============================================================
+                GlobalSettings.EnableGridSnap = data.EnableGridSnap;
+                GlobalSettings.GridSize       = data.GridSize > 1f ? data.GridSize : 20f;
+
+                GlobalSettings.EnableMinimap = data.EnableMinimap;
+                if (data.MinimapRectW > 0f && data.MinimapRectH > 0f)
+                {
+                    GlobalSettings.MinimapRect = new Rect(data.MinimapRectX, data.MinimapRectY, data.MinimapRectW, data.MinimapRectH);
+                }
+                else
+                {
+                    // 默认安全位置
+                    GlobalSettings.MinimapRect = new Rect(Screen.width - 230f, Screen.height - 230f, 210f, 210f);
+                }
+                
+                GlobalSettings.MinimapRadius = data.MinimapRadius > 0f ? data.MinimapRadius : 30f;
+                GlobalSettings.EnableLimbHUD = data.EnableLimbHUD;
+
+                // 核心修复：防止旧配置文件默认读取到 (0, 0) 从而卡在屏幕最边缘只露一个角
+                if (data.LimbHUDPosX == 0f && data.LimbHUDPosY == 0f)
+                {
+                    // 使用一个远离右下角死角的安全位置 (X 往左偏移250, Y 往上偏移150)
+                    GlobalSettings.LimbHUDPosition = new Vector2(-250f, 150f); 
+                }
+                else
+                {
+                    GlobalSettings.LimbHUDPosition = new Vector2(data.LimbHUDPosX, data.LimbHUDPosY);
+                }
+                
+                GlobalSettings.LimbHUDScale = data.LimbHUDScale > 0f ? data.LimbHUDScale : 0.6f;
+
+                GlobalSettings.EnableLogoOverlay = data.EnableLogoOverlay;
+                GlobalSettings.LogoOverlayHeight = data.LogoOverlayHeight > 0f ? data.LogoOverlayHeight : 300f;
+
                 Debug.Log("[CheaterMod] 配置加载成功！");
             }
             catch (Exception ex)
@@ -349,7 +465,7 @@ namespace FullBrightMod.Core
         }
 
         // ============================================================
-        // 颜色转换辅助
+        // 颜色转换
         // ============================================================
         private static SColor ToSColor(Color c) => new SColor { r = c.r, g = c.g, b = c.b, a = c.a };
         private static Color ToColor(SColor c) => new Color(c.r, c.g, c.b, c.a);

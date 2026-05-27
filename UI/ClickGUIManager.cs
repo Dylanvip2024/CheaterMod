@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FullBrightMod.Core;
+using FullBrightMod.Modules;
 using UnityEngine;
 
 namespace FullBrightMod.UI
@@ -9,12 +10,17 @@ namespace FullBrightMod.UI
     /// 不使用 GUI.Window / GUILayout / GUI.Button 等内置组件。
     ///
     /// 交互逻辑：
-    ///   - 鼠标左键拖拽标题栏 → 移动面板
+    ///   - 鼠标左键拖拽标题栏 → 移动面板（若启用 GridSnap 则吸附到网格）
     ///   - 鼠标右键点击标题栏 → 折叠/展开整个分类面板
     ///   - 鼠标左键点击模块行   → 切换模块启用/禁用
     ///   - 鼠标右键点击模块行   → 展开/收起模块设置子菜单
     ///   - 展开后第一行          → Keybind 绑定（点击进入监听，按键确认）
     ///   - 展开后后续行          → 模块自定义设置（如 Slider）
+    ///
+    /// 新增功能：
+    ///   1. 顶部 Tabs：Modules（功能界面）vs Global Settings（全局设置）
+    ///   2. 面板拖拽网格吸附（Grid Snapping）
+    ///   3. Global Settings 面板：控制小地图、肢体 HUD、网格吸附等
     /// </summary>
     public class ClickGUIManager
     {
@@ -25,7 +31,11 @@ namespace FullBrightMod.UI
         /// <summary>暴露面板列表，供 ConfigManager 持久化 UI 布局</summary>
         public List<ClickGUIPanel> Panels => _panels;
 
-        // ---- 渲染材质（internal 供模块 DrawSettings 使用） ----
+        // ---- Tab 系统 ----
+        private enum ActiveTab { Modules, GlobalSettings }
+        private ActiveTab _activeTab = ActiveTab.Modules;
+
+        // ---- 渲染材质 ----
         private static Texture2D _whiteTexture;
         internal static Texture2D WhiteTexture
         {
@@ -49,9 +59,17 @@ namespace FullBrightMod.UI
         private static readonly Color ColorModuleBgHover   = new Color(0.22f, 0.22f, 0.25f, 0.90f);
         private static readonly Color ColorModuleBgEnabled = new Color(0.2f, 0.6f, 1.0f, 0.85f);
         private static readonly Color ColorDisabledText    = new Color(1.0f, 1.0f, 1.0f, 1.0f);
-        private static readonly Color ColorSubBg           = new Color(0.325f, 0.325f, 0.34f, 0.95f); // 子面板更深背景
-        private static readonly Color ColorSubBgHover      = new Color(0.18f, 0.18f, 0.22f, 0.90f); // 子面板行悬停
-        private static readonly Color ColorSliderFill      = new Color(0.2f, 0.6f, 1.0f, 0.7f);     // 滑块填充色
+        private static readonly Color ColorSubBg           = new Color(0.325f, 0.325f, 0.34f, 0.95f);
+        private static readonly Color ColorSubBgHover      = new Color(0.18f, 0.18f, 0.22f, 0.90f);
+        private static readonly Color ColorSliderFill      = new Color(0.2f, 0.6f, 1.0f, 0.7f);
+        private static readonly Color ColorTabActive       = new Color(0.2f, 0.6f, 1.0f, 0.85f);
+        private static readonly Color ColorTabInactive     = new Color(0.16f, 0.16f, 0.18f, 0.90f);
+        private static readonly Color ColorTabHover        = new Color(0.22f, 0.22f, 0.25f, 0.90f);
+
+        // ---- Tab 栏尺寸 ----
+        private const float TabHeight = 30f;
+        private const float TabWidth  = 160f;
+        private const float TabBarY   = 28f;
 
         // ---- 事件状态 ----
         private bool _menuVisible;
@@ -82,8 +100,8 @@ namespace FullBrightMod.UI
 
             GUI.color = Color.white;
 
-            // ==== 按键绑定监听（全局：任何模块处于 IsBinding 状态时拦截按键） ====
-            if (e.type == EventType.KeyDown && e.keyCode != KeyCode.None)
+            // ==== 按键绑定监听 ====
+            if (_activeTab == ActiveTab.Modules && e.type == EventType.KeyDown && e.keyCode != KeyCode.None)
             {
                 foreach (var panel in _panels)
                 {
@@ -92,7 +110,6 @@ namespace FullBrightMod.UI
                     {
                         if (mod.IsBinding)
                         {
-                            // Esc 或 Backspace = 取消绑定
                             if (e.keyCode == KeyCode.Escape || e.keyCode == KeyCode.Backspace)
                                 mod.BindKey = KeyCode.None;
                             else
@@ -105,51 +122,102 @@ namespace FullBrightMod.UI
                 }
             }
 
-            // 鼠标松开清除拖拽
             if (e.type == EventType.MouseUp && e.button == 0)
             {
                 for (int i = 0; i < _panels.Count; i++)
                     _panels[i].IsDragging = false;
             }
 
-            // 找出拖拽中的面板，放到最后绘制（最上层）
-            int draggingIdx = -1;
-            for (int i = 0; i < _panels.Count; i++)
-                if (_panels[i].IsDragging) { draggingIdx = i; break; }
+            DrawTabBar(e);
 
-            for (int i = 0; i < _panels.Count; i++)
-                if (i != draggingIdx) DrawPanel(i, e);
+            if (_activeTab == ActiveTab.Modules)
+            {
+                int draggingIdx = -1;
+                for (int i = 0; i < _panels.Count; i++)
+                    if (_panels[i].IsDragging) { draggingIdx = i; break; }
 
-            if (draggingIdx >= 0)
-                DrawPanel(draggingIdx, e);
+                for (int i = 0; i < _panels.Count; i++)
+                    if (i != draggingIdx) DrawPanel(i, e);
+
+                if (draggingIdx >= 0)
+                    DrawPanel(draggingIdx, e);
+            }
+            else
+            {
+                DrawGlobalSettingsPanel(e);
+            }
+
+            GUI.color = Color.white;
         }
 
         // =========================================================
-        // 面板绘制
+        // Tab 栏绘制
+        // =========================================================
+        private void DrawTabBar(Event e)
+        {
+            float barWidth = TabWidth * 2 + 4f;
+            float barX = Screen.width * 0.5f - barWidth * 0.5f;
+
+            Rect modulesTabRect = new Rect(barX, TabBarY, TabWidth, TabHeight);
+            bool modulesHover = modulesTabRect.Contains(e.mousePosition);
+            GUI.color = _activeTab == ActiveTab.Modules ? ColorTabActive : (modulesHover ? ColorTabHover : ColorTabInactive);
+            GUI.DrawTexture(modulesTabRect, WhiteTexture);
+            GUI.color = Color.white;
+            GUIStyle tabStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 13,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = Color.white }
+            };
+            GUI.Label(modulesTabRect, Utils.I18n.Get("tab_modules"), tabStyle);
+
+            Rect settingsTabRect = new Rect(barX + TabWidth + 4f, TabBarY, TabWidth, TabHeight);
+            bool settingsHover = settingsTabRect.Contains(e.mousePosition);
+            GUI.color = _activeTab == ActiveTab.GlobalSettings ? ColorTabActive : (settingsHover ? ColorTabHover : ColorTabInactive);
+            GUI.DrawTexture(settingsTabRect, WhiteTexture);
+            GUI.color = Color.white;
+            GUI.Label(settingsTabRect, Utils.I18n.Get("tab_globalsettings"), tabStyle);
+
+            if (e.type == EventType.MouseDown && e.button == 0)
+            {
+                if (modulesTabRect.Contains(e.mousePosition))
+                {
+                    _activeTab = ActiveTab.Modules;
+                    e.Use();
+                }
+                else if (settingsTabRect.Contains(e.mousePosition))
+                {
+                    _activeTab = ActiveTab.GlobalSettings;
+                    e.Use();
+                }
+            }
+        }
+
+        // =========================================================
+        // 面板绘制（Modules Tab）
         // =========================================================
         private void DrawPanel(int panelIndex, Event e)
         {
             ClickGUIPanel panel = _panels[panelIndex];
             List<ModuleBase> modules = GetModulesForCategory(panel.Category);
 
-            // ==== 计算面板总高度（含展开模块的子菜单） ====
             float totalHeight = ClickGUIPanel.TitleHeight;
             if (panel.IsExpanded)
             {
                 foreach (var mod in modules)
                 {
-                    totalHeight += ClickGUIPanel.ModuleRowHeight; // 模块行本身
+                    totalHeight += ClickGUIPanel.ModuleRowHeight;
                     if (mod.IsExpanded)
                     {
-                        totalHeight += ClickGUIPanel.ModuleRowHeight; // Keybind 行
-                        totalHeight += mod.GetSettingsHeight();       // 自定义设置
+                        totalHeight += ClickGUIPanel.ModuleRowHeight;
+                        totalHeight += mod.GetSettingsHeight();
                     }
                 }
             }
 
             Rect panelRect = new Rect(panel.Position.x, panel.Position.y, panel.Position.width, totalHeight);
 
-            // ====== 标题栏 ======
             Rect titleRect = new Rect(panelRect.x, panelRect.y, panelRect.width, ClickGUIPanel.TitleHeight);
 
             Rect accentRect = new Rect(titleRect.x, titleRect.y, titleRect.width, ClickGUIPanel.AccentLineThickness);
@@ -172,7 +240,6 @@ namespace FullBrightMod.UI
             };
             GUI.Label(titleRect, GetCategoryDisplayName(panel.Category), titleStyle);
 
-            // ====== 模块列表（含展开子菜单） ======
             if (panel.IsExpanded)
             {
                 float currentY = panelRect.y + ClickGUIPanel.TitleHeight;
@@ -181,7 +248,6 @@ namespace FullBrightMod.UI
                 {
                     ModuleBase module = modules[m];
 
-                    // -- 模块行 --
                     Rect rowRect = new Rect(panelRect.x, currentY, panelRect.width, ClickGUIPanel.ModuleRowHeight);
 
                     bool isHovering = rowRect.Contains(e.mousePosition);
@@ -204,18 +270,15 @@ namespace FullBrightMod.UI
 
                     currentY += ClickGUIPanel.ModuleRowHeight;
 
-                    // -- 展开子菜单（模块右键展开） --
                     if (module.IsExpanded)
                     {
                         float subStartY = currentY;
                         float subTotalHeight = ClickGUIPanel.ModuleRowHeight + module.GetSettingsHeight();
 
-                        // 子面板背景
                         Rect subBgRect = new Rect(panelRect.x, subStartY, panelRect.width, subTotalHeight);
                         GUI.color = ColorSubBg;
                         GUI.DrawTexture(subBgRect, WhiteTexture);
 
-                        // --- Keybind 行 ---
                         Rect bindRect = new Rect(panelRect.x, currentY, panelRect.width, ClickGUIPanel.ModuleRowHeight);
                         bool bindHover = bindRect.Contains(e.mousePosition);
                         if (bindHover) { GUI.color = ColorSubBgHover; GUI.DrawTexture(bindRect, WhiteTexture); }
@@ -240,27 +303,22 @@ namespace FullBrightMod.UI
                         GUI.Label(bindRect, bindText, bindStyle);
                         currentY += ClickGUIPanel.ModuleRowHeight;
 
-                        // --- Keybind 行点击事件 ---
                         if (e.type == EventType.MouseDown && e.button == 0 && bindRect.Contains(e.mousePosition))
                         {
-                            module.IsBinding = !module.IsBinding; // 切换监听状态
+                            module.IsBinding = !module.IsBinding;
                             e.Use();
                         }
 
                         GUI.color = Color.white;
 
-                        // --- 模块自定义设置项 ---
                         float settingsX = panelRect.x;
-                        float settingsStartY = currentY;
                         module.DrawSettings(settingsX, ref currentY, panelRect.width, e);
 
-                        // --- 子面板底部分割线 ---
                         Rect subSep = new Rect(panelRect.x, subStartY + subTotalHeight - 1, panelRect.width, 1);
                         GUI.color = new Color(0.05f, 0.05f, 0.07f, 0.6f);
                         GUI.DrawTexture(subSep, WhiteTexture);
                     }
 
-                    // -- 模块行底部分割线（未展开时） --
                     if (!module.IsExpanded && m < modules.Count - 1)
                     {
                         Rect sepRect = new Rect(panelRect.x, currentY - 1, panelRect.width, 1);
@@ -270,25 +328,32 @@ namespace FullBrightMod.UI
                 }
             }
 
-            // ====== 事件处理 ======
             if (e.isMouse)
             {
                 if (panel.IsDragging && e.type == EventType.MouseDrag && e.button == 0)
                 {
-                    panel.Position.x = e.mousePosition.x - panel.DragOffset.x;
-                    panel.Position.y = e.mousePosition.y - panel.DragOffset.y;
+                    float newX = e.mousePosition.x - panel.DragOffset.x;
+                    float newY = e.mousePosition.y - panel.DragOffset.y;
+
+                    if (GlobalSettings.EnableGridSnap && GlobalSettings.GridSize > 1f)
+                    {
+                        float gs = GlobalSettings.GridSize;
+                        newX = Mathf.Round(newX / gs) * gs;
+                        newY = Mathf.Round(newY / gs) * gs;
+                    }
+
+                    panel.Position.x = newX;
+                    panel.Position.y = newY;
                     e.Use();
                 }
 
                 if (e.type == EventType.MouseDown)
                 {
-                    // 标题栏右键 → 折叠/展开分类面板
                     if (e.button == 1 && titleRect.Contains(e.mousePosition))
                     {
                         panel.IsExpanded = !panel.IsExpanded;
                         e.Use(); return;
                     }
-                    // 标题栏左键 → 拖拽
                     if (e.button == 0 && titleRect.Contains(e.mousePosition))
                     {
                         panel.IsDragging = true;
@@ -296,7 +361,6 @@ namespace FullBrightMod.UI
                         e.Use(); return;
                     }
 
-                    // 模块行事件
                     if (panel.IsExpanded)
                     {
                         float scanY = panelRect.y + ClickGUIPanel.TitleHeight;
@@ -309,13 +373,11 @@ namespace FullBrightMod.UI
                             {
                                 if (e.button == 1)
                                 {
-                                    // 右键 → 展开/收起模块设置
                                     module.IsExpanded = !module.IsExpanded;
                                     e.Use(); return;
                                 }
                                 if (e.button == 0)
                                 {
-                                    // 左键 → 切换启用
                                     module.Enabled = !module.Enabled;
                                     if (module.Enabled) module.OnEnable();
                                     else module.OnDisable();
@@ -334,39 +396,247 @@ namespace FullBrightMod.UI
         }
 
         // =========================================================
-        // Slider 绘制工具（供模块 DrawSettings 调用）
+        // ★ 辅助方法：同步 GlobalSettings 开关到 ModuleBase 生命周期 ★
         // =========================================================
-        /// <summary>在指定矩形区域内绘制一个水平滑动条，返回滑块值 [min, max]</summary>
+        private void SyncModuleLifecycle<T>(bool enabled) where T : ModuleBase
+        {
+            var mod = _moduleManager.GetModule<T>();
+            if (mod == null) return;
+            if (mod.Enabled == enabled) return; // 无变化跳过
+            mod.Enabled = enabled;
+            if (enabled) mod.OnEnable();
+            else         mod.OnDisable();
+        }
+
+        // =========================================================
+        // Global Settings Tab —— 一次绘制，无冗余重绘
+        // =========================================================
+        private void DrawGlobalSettingsPanel(Event e)
+        {
+            float panelX = Screen.width * 0.5f - 200f;
+            float panelY = TabBarY + TabHeight + 10f;
+            float panelW = 400f;
+            float rowH = 26f;
+
+            GUIStyle sectionStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 14,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = new Color(0.2f, 0.6f, 1.0f, 1f) },
+                padding = new RectOffset(10, 0, 0, 0)
+            };
+
+            // ---- 先计算总高度（用于绘制背景） ----
+            float contentHeight = EstimateContentHeight(rowH);
+            float totalPanelHeight = contentHeight + 20f; // 10px padding top + 10px padding bottom
+
+            // ---- 绘制背景和标题线（先画，仅一次） ----
+            Rect bgRect = new Rect(panelX, panelY, panelW, totalPanelHeight);
+            GUI.color = new Color(0.16f, 0.16f, 0.18f, 0.95f);
+            GUI.DrawTexture(bgRect, WhiteTexture);
+
+            Rect accentRect = new Rect(panelX, panelY, panelW, 2f);
+            GUI.color = ColorAccent;
+            GUI.DrawTexture(accentRect, WhiteTexture);
+            GUI.color = Color.white;
+
+            // ---- 按顺序依次绘制所有行（仅一次） ----
+            float currentY = panelY + 10f;
+            bool prevGrid   = GlobalSettings.EnableGridSnap;
+            bool prevMinimap = GlobalSettings.EnableMinimap;
+            bool prevLimb   = GlobalSettings.EnableLimbHUD;
+
+            // ======== Grid Snapping ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("gs_section_grid"), sectionStyle);
+            currentY += rowH + 2f;
+
+            DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                Utils.I18n.Get("gs_enable_grid"), ref GlobalSettings.EnableGridSnap);
+
+            if (GlobalSettings.EnableGridSnap)
+            {
+                float val = GlobalSettings.GridSize;
+                DrawSliderRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_grid_size") + $": {val:F0}" + Utils.I18n.Get("unit_px"), ref val, 4f, 80f);
+                GlobalSettings.GridSize = val;
+            }
+
+            currentY += 6f;
+
+            // ======== Minimap ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("gs_section_minimap"), sectionStyle);
+            currentY += rowH + 2f;
+
+            DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                Utils.I18n.Get("gs_enable_minimap"), ref GlobalSettings.EnableMinimap);
+
+            if (GlobalSettings.EnableMinimap)
+            {
+                float size = GlobalSettings.MinimapRect.width;
+                DrawSliderRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_minimap_size") + $": {size:F0}" + Utils.I18n.Get("unit_px"), ref size, 80f, 400f);
+                // ★ Bug2 修复：只改宽高，不修改 xy ★
+                Rect r = GlobalSettings.MinimapRect;
+                GlobalSettings.MinimapRect = new Rect(r.x, r.y, size, size);
+
+                float radius = GlobalSettings.MinimapRadius;
+                DrawSliderRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_minimap_radius") + $": {radius:F0}" + Utils.I18n.Get("unit_m"), ref radius, 10f, 100f);
+                GlobalSettings.MinimapRadius = radius;
+            }
+
+            currentY += 6f;
+
+            // ======== Limb HUD ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("gs_section_limb"), sectionStyle);
+            currentY += rowH + 2f;
+
+            DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                Utils.I18n.Get("gs_enable_limb"), ref GlobalSettings.EnableLimbHUD);
+
+            if (GlobalSettings.EnableLimbHUD)
+            {
+                float scale = GlobalSettings.LimbHUDScale;
+                DrawSliderRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_limb_scale") + $": {scale:F2}" + Utils.I18n.Get("unit_x"), ref scale, 0.3f, 1.5f);
+                GlobalSettings.LimbHUDScale = scale;
+
+                float posX = GlobalSettings.LimbHUDPosition.x;
+                DrawSliderRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_limb_pos_x") + $": {posX:F0}" + Utils.I18n.Get("unit_px"), ref posX, -2000f, 0f);
+                float posY = GlobalSettings.LimbHUDPosition.y;
+                DrawSliderRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_limb_pos_y") + $": {posY:F0}" + Utils.I18n.Get("unit_px"), ref posY, 0f, 1500f);
+
+                GlobalSettings.LimbHUDPosition = new Vector2(posX, posY);
+            }
+
+            currentY += 6f;
+
+            // ======== Logo Overlay ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("gs_section_logo"), sectionStyle);
+            currentY += rowH + 2f;
+
+            DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                Utils.I18n.Get("gs_enable_logo"), ref GlobalSettings.EnableLogoOverlay);
+
+            if (GlobalSettings.EnableLogoOverlay)
+            {
+                float h = GlobalSettings.LogoOverlayHeight;
+                DrawSliderRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_logo_height") + $": {h:F0}" + Utils.I18n.Get("unit_px"), ref h, 200f, 500f);
+                GlobalSettings.LogoOverlayHeight = h;
+            }
+
+            // ★ Bug1 修复：同步 ModuleBase 生命周期 ★
+            if (prevGrid != GlobalSettings.EnableGridSnap) { /* GridSnap 无对应 Module */ }
+            if (prevMinimap != GlobalSettings.EnableMinimap)
+                SyncModuleLifecycle<MinimapModule>(GlobalSettings.EnableMinimap);
+            if (prevLimb != GlobalSettings.EnableLimbHUD)
+                SyncModuleLifecycle<LimbStatusModule>(GlobalSettings.EnableLimbHUD);
+        }
+
+        /// <summary>预先估算 Global Settings 面板的内容高度（不含背景 padding）</summary>
+        private float EstimateContentHeight(float rowH)
+        {
+            float h = 0f;
+            // Grid Snapping section
+            h += rowH + 2f; // section title
+            h += rowH;      // toggle
+            if (GlobalSettings.EnableGridSnap) h += rowH; // slider
+            h += 6f;
+            // Minimap section
+            h += rowH + 2f;
+            h += rowH;
+            if (GlobalSettings.EnableMinimap) h += rowH + rowH; // size slider + radius slider
+            h += 6f;
+            // Limb HUD section
+            h += rowH + 2f;
+            h += rowH;
+            if (GlobalSettings.EnableLimbHUD) h += rowH + rowH + rowH; // scale + posX + posY
+            // Logo Overlay section
+            h += rowH + 2f;
+            h += rowH;
+            if (GlobalSettings.EnableLogoOverlay) h += rowH; // height slider
+            return h;
+        }
+
+        // =========================================================
+        // 辅助绘制方法
+        // =========================================================
+        private void DrawToggleRow(float panelX, ref float y, float width, float rowHeight, Event e,
+            string label, ref bool value)
+        {
+            Rect rowRect = new Rect(panelX, y, width, rowHeight);
+            bool hover = rowRect.Contains(e.mousePosition);
+            GUI.color = value ? ColorModuleBgEnabled : (hover ? ColorModuleBgHover : ColorModuleBg);
+            GUI.DrawTexture(rowRect, WhiteTexture);
+            GUI.color = Color.white;
+
+            string display = (value ? "[ON]  " : "[OFF] ") + label;
+            GUIStyle s = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 12,
+                normal = { textColor = value ? Color.white : ColorDisabledText },
+                padding = new RectOffset(14, 0, 4, 0)
+            };
+            GUI.Label(rowRect, display, s);
+
+            if (e.type == EventType.MouseDown && e.button == 0 && rowRect.Contains(e.mousePosition))
+            {
+                value = !value;
+                e.Use();
+            }
+
+            y += rowHeight;
+        }
+
+        private void DrawSliderRow(float panelX, ref float y, float width, float rowHeight, Event e,
+            string label, ref float value, float min, float max)
+        {
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 11,
+                normal = { textColor = Color.white },
+                padding = new RectOffset(14, 0, 4, 0)
+            };
+            GUI.Label(new Rect(panelX, y, width, rowHeight * 0.5f), label, labelStyle);
+
+            float sliderY = y + rowHeight * 0.4f;
+            float sliderH = rowHeight * 0.5f;
+            Rect sliderRect = new Rect(panelX + 14f, sliderY, width - 28f, sliderH);
+
+            float newVal = DrawSlider(sliderRect, value, min, max, e, ColorSliderFill, 8f);
+            if (Mathf.Abs(newVal - value) > 0.001f) value = newVal;
+
+            y += rowHeight;
+        }
+
         public static float DrawSlider(Rect sliderRect, float currentValue, float min, float max,
             Event e, Color? fillColor = null, float handleWidth = 8f)
         {
-            // 背景槽
             float slotHeight = 6f;
             Rect slotRect = new Rect(sliderRect.x, sliderRect.y + (sliderRect.height - slotHeight) / 2,
                 sliderRect.width, slotHeight);
             GUI.color = new Color(0.25f, 0.25f, 0.28f, 1f);
             GUI.DrawTexture(slotRect, WhiteTexture);
 
-            // 填充部分
             float t = Mathf.InverseLerp(min, max, currentValue);
             Rect fillRect = new Rect(slotRect.x, slotRect.y, slotRect.width * t, slotHeight);
             GUI.color = fillColor ?? ColorSliderFill;
             GUI.DrawTexture(fillRect, WhiteTexture);
 
-            // 手柄
             float handleX = slotRect.x + slotRect.width * t - handleWidth / 2;
             Rect handleRect = new Rect(handleX, sliderRect.y, handleWidth, sliderRect.height);
             GUI.color = Color.white;
             GUI.DrawTexture(handleRect, WhiteTexture);
 
-            // 鼠标拖拽交互
             if (e.type == EventType.MouseDrag && e.button == 0 && sliderRect.Contains(e.mousePosition))
             {
                 float mouseT = (e.mousePosition.x - slotRect.x) / slotRect.width;
                 currentValue = Mathf.Lerp(min, max, Mathf.Clamp01(mouseT));
                 e.Use();
             }
-            // 点击跳转
             if (e.type == EventType.MouseDown && e.button == 0 && sliderRect.Contains(e.mousePosition))
             {
                 float mouseT = (e.mousePosition.x - slotRect.x) / slotRect.width;
