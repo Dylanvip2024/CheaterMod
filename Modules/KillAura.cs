@@ -1,15 +1,14 @@
+using System.Collections;
+using System.Reflection;
 using FullBrightMod.Core;
+using FullBrightMod.Patches;
 using FullBrightMod.UI;
 using FullBrightMod.Utils;
-using System.Reflection;
+using KrokoshaCasualtiesMP;
 using UnityEngine;
 
 namespace FullBrightMod.Modules
 {
-    /// <summary>
-    /// 杀戮光环 (KillAura) —— 瞬移打击 (Blink Strike) 终极安全版
-    /// 彻底舍弃高危的 Harmony 参数篡改，采用单帧瞬移欺骗机制，完美绕过攻击范围限制！
-    /// </summary>
     public class KillAura : ModuleBase
     {
         public override string Name => Utils.I18n.Get("mod_killaura") ?? "杀戮光环";
@@ -18,9 +17,9 @@ namespace FullBrightMod.Modules
         public override void OnDisable() => Settings.IsKillAuraEnabled = false;
 
         private float _attackTimer;
-        private BuildingEntity _currentTarget;
+        private Transform _currentTarget;
+        private bool _isBlinking;
 
-        // 缓存底层反射，避免 Traverse 造成 GC 内存雪崩
         private FieldInfo _cooldownField;
         private MethodInfo _useItemMethod;
 
@@ -32,6 +31,9 @@ namespace FullBrightMod.Modules
             h += 28f;        // 目标渲染
             if (Settings.KillAuraRenderTarget)
                 h += 28f;    // 颜色选择器
+            h += 28f;        // 传送攻击
+            if (Settings.KillAuraTeleportAttack)
+                h += 28f;    // 传送范围
             return h;
         }
 
@@ -50,8 +52,16 @@ namespace FullBrightMod.Modules
             DrawCustomToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_render_target") ?? "渲染目标", ref Settings.KillAuraRenderTarget);
 
             if (Settings.KillAuraRenderTarget)
-            {
                 ItemESP.DrawColorPicker(x, ref y, width, e, (Utils.I18n.Get("set_ka_color") ?? "目标颜色") + ":", ref Settings.KillAuraTargetColor);
+
+            // 传送攻击
+            DrawCustomToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_tp_attack") ?? "传送攻击", ref Settings.KillAuraTeleportAttack);
+
+            if (Settings.KillAuraTeleportAttack)
+            {
+                float tpRange = Settings.KillAuraTeleportRange;
+                DrawCustomSlider(x, ref y, width, e, (Utils.I18n.Get("set_ka_tp_range") ?? "传送最大范围") + $": {tpRange:F0}m", ref tpRange, 10f, 100f);
+                Settings.KillAuraTeleportRange = tpRange;
             }
         }
 
@@ -67,86 +77,160 @@ namespace FullBrightMod.Modules
             _attackTimer = 0f;
 
             _currentTarget = FindClosestTarget(body);
-            if (_currentTarget == null || !_currentTarget || _currentTarget.gameObject == null) return;
+            if (_currentTarget == null || !_currentTarget) return;
 
+            if (Settings.KillAuraTeleportAttack)
+            {
+                // 传送攻击：走协程防 Rubber-banding
+                if (!_isBlinking)
+                    FullBrightPlugin.Instance.StartCoroutine(TeleportAttackCoroutine(body, _currentTarget));
+            }
+            else
+            {
+                // 原版瞬移打击
+                DoBlinkStrike(body);
+            }
+        }
+
+        private void DoBlinkStrike(Body body)
+        {
             try
             {
-                // 初始化底层反射方法
                 if (_cooldownField == null)
                     _cooldownField = typeof(Body).GetField("attackCooldown", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                 if (_useItemMethod == null)
                     _useItemMethod = typeof(Body).GetMethod("UseItemInHand", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-                // 备份当前的坐标和视角
                 Vector3 backupPos = body.transform.position;
                 Vector3 backupLook = body.targetLookPos;
 
-                // 计算玩家朝向怪物的方向
-                Vector3 dir = (backupPos - _currentTarget.transform.position).normalized;
+                Vector3 dir = (backupPos - _currentTarget.position).normalized;
                 if (dir == Vector3.zero) dir = Vector3.up;
 
-                // ========================================================
-                // ✨ 瞬移打击 (Blink Strike) 核心欺骗机制 ✨
-                // 瞬间将玩家传送到怪物脸上 (距离 1.0 米)，强行进入原版武器短手判定区
-                // ========================================================
-                body.transform.position = _currentTarget.transform.position + dir * 1.0f;
-                body.targetLookPos = _currentTarget.transform.position;
+                body.transform.position = _currentTarget.position + dir * 1.0f;
+                body.targetLookPos = _currentTarget.position;
 
-                // 清空原版武器攻击后摇
                 if (_cooldownField != null) _cooldownField.SetValue(body, 0f);
-                
-                // 执行挥刀
                 if (_useItemMethod != null) _useItemMethod.Invoke(body, null);
 
-                // ========================================================
-                // ✨ 瞬间归位 ✨
-                // 由于都在同一帧完成，画面不会发生任何闪烁，物理引擎也不会察觉！
-                // ========================================================
                 body.transform.position = backupPos;
                 body.targetLookPos = backupLook;
             }
-            catch { /* 屏蔽攻击中的极小概率异常 */ }
+            catch { }
+        }
+
+        private IEnumerator TeleportAttackCoroutine(Body body, Transform target)
+        {
+            _isBlinking = true;
+            Vector3 originalPos = body.transform.position;
+            bool error = false;
+
+            try
+            {
+                float dist = Vector2.Distance(body.transform.position, target.position);
+                if (dist > Settings.KillAuraTeleportRange)
+                {
+                    _isBlinking = false;
+                    yield break;
+                }
+
+                Vector3 safePos = TPHelper.GetSafeTeleportPosition(originalPos, target.position, 1.5f);
+                body.transform.position = safePos;
+                body.targetLookPos = target.position;
+                ClientMain.Client_SendCharacterSyncPacket();
+            }
+            catch { error = true; }
+
+            if (error) { _isBlinking = false; yield break; }
+
+            // ⑤ 等服务器确认坐标
+            yield return new WaitForSeconds(0.12f);
+
+            try
+            {
+                if (_cooldownField == null)
+                    _cooldownField = typeof(Body).GetField("attackCooldown", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                if (_useItemMethod == null)
+                    _useItemMethod = typeof(Body).GetMethod("UseItemInHand", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+                if (_cooldownField != null) _cooldownField.SetValue(body, 0f);
+                if (_useItemMethod != null) _useItemMethod.Invoke(body, null);
+            }
+            catch { }
+
+            // ⑦ 等攻击包发送
+            yield return new WaitForSeconds(0.12f);
+
+            // ⑧ 移回 + 发包
+            try
+            {
+                body.transform.position = originalPos;
+                ClientMain.Client_SendCharacterSyncPacket();
+            }
+            catch { }
+
+            yield return null;
+            _isBlinking = false;
         }
 
         public override void OnGUI()
         {
             if (!Settings.IsKillAuraEnabled || !Settings.KillAuraRenderTarget) return;
-
-            if (_currentTarget == null || !_currentTarget || _currentTarget.gameObject == null) return;
+            if (_currentTarget == null || !_currentTarget) return;
 
             try
             {
                 var cam = Camera.main;
                 if (cam == null) return;
-
-                RenderUtils.DrawWorldCircle(cam, _currentTarget.transform.position, 0.8f, Settings.KillAuraTargetColor, 24);
+                RenderUtils.DrawWorldCircle(cam, _currentTarget.position, 0.8f, Settings.KillAuraTargetColor, 24);
             }
             catch { }
         }
 
-        private BuildingEntity FindClosestTarget(Body body)
+        private Transform FindClosestTarget(Body myBody)
         {
-            if (ESPCache.CachedEntities == null) return null;
+            float minDist = Settings.KillAuraTeleportAttack
+                ? Settings.KillAuraTeleportRange
+                : Settings.KillAuraRange;
+            Transform best = null;
+            Vector2 myPos = myBody.transform.position;
 
-            float minDist = Settings.KillAuraRange;
-            BuildingEntity best = null;
-            Vector2 myPos = body.transform.position;
-
-            foreach (var entity in ESPCache.CachedEntities)
+            if (ESPCache.CachedEntities != null)
             {
-                if (entity == null || !entity) continue;
-                if (entity.health < 0.5f) continue;
-                if (entity.transform.position == body.transform.position) continue;
-
-                if (!entity.animal && !Settings.KillAuraAttackPlayers) continue;
-
-                float dist = Vector2.Distance(myPos, entity.transform.position);
-                if (dist < minDist)
+                foreach (var entity in ESPCache.CachedEntities)
                 {
-                    minDist = dist;
-                    best = entity;
+                    if (entity == null || !entity) continue;
+                    if (!entity.animal) continue;
+                    if (entity.health < 0.5f) continue;
+                    if (entity.transform.position == myBody.transform.position) continue;
+
+                    float dist = Vector2.Distance(myPos, entity.transform.position);
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        best = entity.transform;
+                    }
                 }
             }
+
+            if (Settings.KillAuraAttackPlayers)
+            {
+                var allBodies = Object.FindObjectsOfType<Body>();
+                foreach (var targetBody in allBodies)
+                {
+                    if (targetBody == null || !targetBody) continue;
+                    if (targetBody == myBody) continue;
+                    if (!targetBody.alive) continue;
+
+                    float dist = Vector2.Distance(myPos, targetBody.transform.position);
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        best = targetBody.transform;
+                    }
+                }
+            }
+
             return best;
         }
 

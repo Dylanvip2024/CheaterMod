@@ -77,6 +77,42 @@ namespace FullBrightMod.Utils
             GUI.matrix = matrixBackup;
         }
 
+        /// <summary>
+        /// 从屏幕中心画一条线到目标屏幕坐标（Tracer 模式）
+        /// </summary>
+        public static void DrawTracerLine(Vector2 targetScreenPos, Color color, float thickness)
+        {
+            Vector2 center = new Vector2(Screen.width / 2f, Screen.height / 2f);
+            DrawScreenLine(center, targetScreenPos, color, thickness);
+        }
+
+        /// <summary>
+        /// 围绕中心点画一个空心的 2D 矩形框
+        /// </summary>
+        public static void DrawScreenBox(Vector2 center, Vector2 size, Color color, float thickness)
+        {
+            float halfW = size.x * 0.5f;
+            float halfH = size.y * 0.5f;
+            float left   = center.x - halfW;
+            float top    = center.y - halfH;
+            float right  = center.x + halfW;
+            float bottom = center.y + halfH;
+
+            Color colorBackup = GUI.color;
+            GUI.color = color;
+
+            // 上边
+            GUI.DrawTexture(new Rect(left, top, size.x, thickness), WhiteTexture);
+            // 下边
+            GUI.DrawTexture(new Rect(left, bottom - thickness, size.x, thickness), WhiteTexture);
+            // 左边
+            GUI.DrawTexture(new Rect(left, top, thickness, size.y), WhiteTexture);
+            // 右边
+            GUI.DrawTexture(new Rect(right - thickness, top, thickness, size.y), WhiteTexture);
+
+            GUI.color = colorBackup;
+        }
+
         /// <summary>世界空间线段 → 屏幕空间绘制</summary>
         public static void DrawWorldLine(Camera cam, Vector3 start, Vector3 end, Color color)
         {

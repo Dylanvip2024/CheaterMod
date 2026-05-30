@@ -7,7 +7,7 @@ using UnityEngine.Rendering.Universal;
 namespace FullBrightMod.Patches
 {
     // =========================================================
-    // Light2D.LateUpdate — 不闪烁光照控制
+    // Light2D.LateUpdate — 不闪烁光照控制 (修复渲染管线重载版)
     // =========================================================
     [HarmonyPatch(typeof(Light2D), "LateUpdate")]
     internal static class Light2DLateUpdatePatch
@@ -21,8 +21,12 @@ namespace FullBrightMod.Patches
             {
                 if (__instance.lightType == Light2D.LightType.Global)
                 {
-                    __instance.intensity = Settings.BrightenIntensity;
-                    __instance.color = Color.white;
+                    // 【优化点】：只在数值真正不同时才赋值，防止 URP 光照图每帧重绘引发掉帧
+                    if (Mathf.Abs(__instance.intensity - Settings.BrightenIntensity) > 0.01f)
+                        __instance.intensity = Settings.BrightenIntensity;
+                    
+                    if (__instance.color != Color.white)
+                        __instance.color = Color.white;
                 }
                 if (__instance.shadowsEnabled)
                 {
@@ -34,8 +38,13 @@ namespace FullBrightMod.Patches
             {
                 if (__instance.lightType == Light2D.LightType.Point || __instance.lightType == Light2D.LightType.Freeform)
                 {
-                    __instance.pointLightOuterRadius = Settings.CustomVisionRadius;
-                    __instance.pointLightInnerRadius = Settings.CustomVisionRadius * 0.1f;
+                    // 同理，加入防抖判断
+                    if (Mathf.Abs(__instance.pointLightOuterRadius - Settings.CustomVisionRadius) > 0.01f)
+                        __instance.pointLightOuterRadius = Settings.CustomVisionRadius;
+
+                    float innerRad = Settings.CustomVisionRadius * 0.1f;
+                    if (Mathf.Abs(__instance.pointLightInnerRadius - innerRad) > 0.01f)
+                        __instance.pointLightInnerRadius = innerRad;
                 }
                 if (__instance.shadowsEnabled)
                 {

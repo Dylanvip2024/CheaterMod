@@ -14,6 +14,7 @@ namespace FullBrightMod.Utils
 
         public static Item[]              CachedItems;
         public static BuildingEntity[]    CachedEntities;
+        public static Body[]              CachedPlayers;
         public static BearTrap[]          CachedBearTraps;
         public static MineScript[]        CachedMines;
         public static SpikeStabberScript[]CachedSpikes;
@@ -55,10 +56,31 @@ namespace FullBrightMod.Utils
 
             CachedLines.Clear();
 
-            CachedItems   = GameObject.FindObjectsOfType<Item>();
+            CachedItems    = GameObject.FindObjectsOfType<Item>();
             CachedEntities = GameObject.FindObjectsOfType<BuildingEntity>();
-
+            RefreshPlayers();
             RefreshTraps();
+        }
+
+        private static void RefreshPlayers()
+        {
+            var allBodies = GameObject.FindObjectsOfType<Body>();
+            if (allBodies == null || allBodies.Length == 0)
+            {
+                CachedPlayers = null;
+                return;
+            }
+
+            var localBody = PlayerCamera.main?.body;
+            var list = new System.Collections.Generic.List<Body>(allBodies.Length);
+            foreach (var body in allBodies)
+            {
+                if (body == null || !body || !body.alive) continue;
+                if (localBody != null && body == localBody) continue;
+                if (!IsInRange(body.transform.position)) continue;
+                list.Add(body);
+            }
+            CachedPlayers = list.Count > 0 ? list.ToArray() : null;
         }
 
         private static void RefreshTraps()

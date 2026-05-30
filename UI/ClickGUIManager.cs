@@ -147,6 +147,8 @@ namespace FullBrightMod.UI
                 DrawGlobalSettingsPanel(e);
             }
 
+            DrawAuthorCredit();
+
             GUI.color = Color.white;
         }
 
@@ -671,6 +673,25 @@ namespace FullBrightMod.UI
                 case ModuleCategory.Misc:     return Utils.I18n.Get("cat_misc");
                 default:                      return cat.ToString();
             }
+        }
+
+        // =========================================================
+        // 作者署名 — 屏幕右下角，低调半透明，始终可见
+        // =========================================================
+        private static void DrawAuthorCredit()
+        {
+            float authorW = 190f, authorH = 22f;
+            // 紧贴屏幕右下角，留 6px 边距
+            Rect authorRect = new Rect(Screen.width - authorW - 6f, Screen.height - authorH - 6f, authorW, authorH);
+
+            GUIStyle authorStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleRight,
+                fontSize = 10,
+                fontStyle = FontStyle.Italic,
+                normal = { textColor = new Color(0.2f, 0.6f, 1.0f, 0.7f) }
+            };
+            GUI.Label(authorRect, "作者: BilBil Dylanvip2024", authorStyle);
         }
     }
 }

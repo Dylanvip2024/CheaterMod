@@ -19,19 +19,35 @@ namespace FullBrightMod.Patches
     }
 
     // =========================================================
-    // 速度修改 —— Postfix Body.legSpeedMult 乘上倍率
-    // 仅对本地玩家生效，不修改其他 Body 的速度
+    // 速度修改 —— FixedUpdate Postfix 直接覆写水平速度
+    //     不再 Hook legSpeedMult（会污染 actualJumpSpeed 跳跃力）
+    //     仅修改 rb.velocity.x，严格保留 rb.velocity.y
     // =========================================================
-    [HarmonyPatch(typeof(Body), "get_legSpeedMult")]
+    [HarmonyPatch(typeof(Body), "FixedUpdate")]
     internal static class SpeedModifierPatch
     {
+        private static readonly Traverse _moveDirT =
+            Traverse.Create(typeof(Body)).Property("moveDir");
+
         [HarmonyPostfix]
-        private static void Postfix(ref float __result, Body __instance)
+        private static void Postfix(Body __instance)
         {
             if (!Settings.IsSpeedModifierEnabled) return;
             if (PlayerCamera.main == null || PlayerCamera.main.body != __instance) return;
+            if (!__instance.standing || !__instance.conscious || __instance.rb == null) return;
 
-            __result *= Settings.CustomSpeedMultiplier;
+            // 获取原始速度上限（legSpeedMult 未受 Hook 污染）
+            float originalMaxSpeed = __instance.actualMaxSpeed;
+
+            Vector2 moveDir = _moveDirT.GetValue<Vector2>(__instance);
+
+            if (moveDir.x != 0f)
+            {
+                float targetSpeed = originalMaxSpeed * Settings.CustomSpeedMultiplier;
+                __instance.rb.velocity = new Vector2(
+                    targetSpeed * Mathf.Sign(moveDir.x),
+                    __instance.rb.velocity.y);  // ★ 严格保留 Y 轴重力/跳跃
+            }
         }
     }
 

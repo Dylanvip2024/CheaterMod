@@ -9,6 +9,18 @@ namespace FullBrightMod.Core
         English
     }
 
+    public enum InventorySortMode
+    {
+        Space,
+        Weight
+    }
+
+    public enum TranslationEngine
+    {
+        Google,
+        OpenAI
+    }
+
     /// <summary>
     /// 全局状态仓库 —— 所有模块的功能开关与动态参数集中于此。
     /// 各个 Module 和 Harmony Patch 均可通过 Settings.Xxx 读写。
@@ -24,6 +36,12 @@ namespace FullBrightMod.Core
         public static bool IsItemEspEnabled      = false;
         public static bool IsCreatureEspEnabled  = false;
         public static bool IsTrapEspEnabled      = false;
+        public static bool IsPlayerEspEnabled    = false;
+        public static bool IsItemEspWireframeEnabled     = false;
+        public static bool IsCreatureEspWireframeEnabled = false;
+        public static bool IsTrapEspWireframeEnabled     = false;
+        public static bool IsPlayerEspWireframeEnabled   = false;
+        public static float EspLineWidth         = 2f;
         public static bool IsCameraZoomEnabled   = false;
         public static bool IsIQ250Enabled        = false;
         public static bool IsLongHandsEnabled    = false;
@@ -44,6 +62,12 @@ namespace FullBrightMod.Core
         public static bool IsInstantShrapnelRemovalEnabled = false;
         public static bool IsBoomboxEnabled = false;
         public static bool StopMusicWhenTalking = true;
+        public static bool IsSTTEnabled = false;
+        public static bool IsSTTTranslateLinkEnabled = false;
+
+        // 库存整理（一键执行，始终为 false，仅为持久化一致性）
+        public static bool IsAutoSortSpaceEnabled = false;
+        public static bool IsAutoSortWeightEnabled = false;
         public static bool IsInfiniteAmmoEnabled = false;
         public static bool IsNoSpreadEnabled = false;
         public static bool IsRapidFireEnabled = false;
@@ -66,8 +90,39 @@ namespace FullBrightMod.Core
         public static bool IsAirJumpEnabled       = false;
         public static bool IsJetpackEnabled       = false;
 
+        // ======== CPR ========
+        public static bool IsInstantReviveEnabled  = false;
+        public static bool IsRibCrusherEnabled    = false;
+
+        // ======== 自动推人 / 强制背人 ========
+        public static bool IsAutoPushEnabled   = false;
+        public static float AutoPushDistance   = 1.5f;
+        public static bool IsAutoCarryEnabled  = false;
+
+        // ======== 正骨大师 ========
+        public static bool IsAutoDislocationEnabled = false;
+
+        // ======== 长手 TP 模式 ========
+        public static bool IsLongHandsTPModeEnabled = false;
+
+        // ======== 相机传送 ========
+        public static bool IsCameraTeleportEnabled = false;
+
+        // ======== 杀戮光环传送攻击 ========
+        public static bool KillAuraTeleportAttack  = false;
+        public static float KillAuraTeleportRange  = 50f;
+
         // ======== Logo 水印 ========
         public static bool IsLogoOverlayEnabled  = false;
+
+        public static TranslationEngine CurrentTranslationEngine = TranslationEngine.Google;
+        public static string OpenAIBaseUrl  = "https://api.openai.com/v1";
+        public static string OpenAIApiKey   = "";
+        public static string OpenAIModel    = "gpt-4o-mini";
+        public static bool IsTranslationContextEnabled = false;
+        public static System.Collections.Generic.Queue<string> ChatHistory = new System.Collections.Generic.Queue<string>();
+
+        public static InventorySortMode InventorySortMode = InventorySortMode.Space;
 
         // ======== 动态调节数值 ========
         public static float BrightenIntensity    = 1.0f;
@@ -82,6 +137,7 @@ namespace FullBrightMod.Core
         public static int TranslateTargetIndex = 1;
         public static float CustomFireRateMultiplier = 1.0f;
         public static float AimbotRadius = 150f;
+        public static float SunCheckTimer = 0f;
         public static List<string> AvailableMusicTracks = new List<string>();
         public static readonly string[] TranslateLangCodes = { 
             "auto", "zh-CN", "en", "ru", "ja", "ko", "es", "fr", "de" 
@@ -89,6 +145,7 @@ namespace FullBrightMod.Core
         public static Color SelectedEspColor     = Color.green;
         public static Color SelectedCreatureColor= Color.cyan;
         public static Color SelectedTrapColor    = Color.red;
+        public static Color SelectedPlayerColor  = Color.magenta;
         public static Vector3 FreecamPosition    = Vector3.zero;
 
         // ======== 投掷轨迹 ========

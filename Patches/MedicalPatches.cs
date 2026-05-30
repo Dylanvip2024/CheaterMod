@@ -1,6 +1,10 @@
+using System.Collections;
 using HarmonyLib;
+using LiteNetLib;
+using LiteNetLib.Utils;
 using UnityEngine;
 using FullBrightMod.Core;
+using KrokoshaCasualtiesMP;
 
 namespace FullBrightMod.Patches
 {
@@ -55,6 +59,121 @@ namespace FullBrightMod.Patches
             Minigame.game.handVelocity = new Vector2(25000f, 0f); 
         }
     }
+    // ==========================================
+    // 🦴 正骨大师 — 生命周期重置 (解决对象池复用导致的失效)
+    // ==========================================
+    [HarmonyPatch(typeof(DislocationMinigame), "Start")]
+    internal static class AutoDislocationStartPatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix(DislocationMinigame __instance)
+        {
+            int id = __instance.GetHashCode();
+            AutoDislocationPatch._instanceStates[id] = 0;
+            AutoDislocationPatch._aliveTimers[id] = 0f;
+        }
+    }
+
+    // ==========================================
+    // 🦴 正骨大师 — 渐进式伪造发包 (多实例独立状态追踪防重入)
+    // ==========================================
+    [HarmonyPatch(typeof(DislocationMinigame), "Update")]
+    internal static class AutoDislocationPatch
+    {
+        // 状态机: 0=初始化缓冲中, 1=发包中, 2=结算完成
+        internal static readonly System.Collections.Generic.Dictionary<int, int> _instanceStates = new System.Collections.Generic.Dictionary<int, int>();
+        internal static readonly System.Collections.Generic.Dictionary<int, float> _aliveTimers = new System.Collections.Generic.Dictionary<int, float>();
+
+        [HarmonyPrefix]
+        private static bool Prefix(DislocationMinigame __instance)
+        {
+            if (!Settings.IsAutoDislocationEnabled) return true;
+            if (Minigame.game == null) return true;
+
+            // 核心修复：获取当前实例的唯一物理 ID
+            int id = __instance.GetHashCode();
+
+            // 初始化该实例的独立状态
+            if (!_instanceStates.ContainsKey(id))
+            {
+                _instanceStates[id] = 0;
+                _aliveTimers[id] = 0f;
+            }
+
+            int state = _instanceStates[id];
+
+            // 状态 2：已经发包完毕。永远放行原版代码去自动检测距离并关闭 UI！
+            if (state == 2) return true; 
+
+            // 状态 1：正在发包中。拦截原版 Update，冻结本地物理计算。
+            if (state == 1) return false; 
+
+            // 状态 0：初始化阶段。给予 0.6 秒缓冲，让游戏完成骨头的 UI 排版。
+            _aliveTimers[id] += Time.deltaTime;
+            if (_aliveTimers[id] < 0.6f) return true;
+
+            // 缓冲期结束，切入状态 1，启动协程。
+            // 因为是按 ID 锁死的，绝对不可能再次重入！
+            _instanceStates[id] = 1;
+            FullBrightPlugin.Instance.StartCoroutine(SpoofDislocationRoutine(__instance, id));
+
+            return false;
+        }
+
+        private static IEnumerator SpoofDislocationRoutine(DislocationMinigame minigame, int id)
+        {
+
+            Vector2 startPos = Vector2.zero;
+            RectTransform bone = null;
+            try
+            {
+                bone = Traverse.Create(minigame).Field("bone").GetValue<RectTransform>();
+                if (bone != null) startPos = bone.anchoredPosition;
+            }
+            catch { }
+
+            Vector2 targetPos = new Vector2(375f, 54.6f);
+            Vector2 dir = (targetPos - startPos).normalized;
+            if (dir == Vector2.zero) dir = Vector2.left;
+
+            // 3 次大锤：1250f 威力，0.95s 间隔确保衰减到 <60 通过守卫
+            for (int i = 0; i < 3; i++)
+            {
+                // ---- 存活检测（发包前） ----
+                if (minigame == null || Minigame.game == null)
+                    break;
+
+                SendHitPacket(dir * 1250f);
+
+                // 安全 UI 更新
+                float progress = (i + 1f) / 3f;
+                if (bone != null && bone.gameObject != null && bone.gameObject.activeInHierarchy)
+                    bone.anchoredPosition = Vector2.Lerp(startPos, targetPos, progress);
+
+                yield return new WaitForSeconds(0.95f);
+
+                // ---- 存活检测（等待后） ----
+                if (minigame == null || Minigame.game == null)
+                    break;
+            }
+
+            // 确保骨头精准停在胜利坐标
+            if (bone != null && bone.gameObject != null && bone.gameObject.activeInHierarchy)
+                bone.anchoredPosition = targetPos;
+
+            // 不论正常完成还是提前退出，解锁状态
+            _instanceStates[id] = 2;
+        }
+
+        private static void SendHitPacket(Vector2 velocityDelta)
+        {
+            var writer = Net.CreateWriter(30065);
+            MyLiteNetLibExtensions.Put(writer, velocityDelta);
+            writer.Put(true);
+            Net.Client_Send(DeliveryMethod.ReliableOrdered, in writer);
+        }
+    }
+
     // ==========================================
     // 🩺 秒拔破片小游戏劫持
     // ==========================================

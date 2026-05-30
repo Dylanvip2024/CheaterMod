@@ -11,13 +11,44 @@ namespace FullBrightMod.Modules
         public override void OnEnable()  => Settings.IsItemEspEnabled = true;
         public override void OnDisable() => Settings.IsItemEspEnabled = false;
 
-        public override float GetSettingsHeight() => 30f;
+        public override float GetSettingsHeight() => 60f;
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
+            DrawToggle(x, ref y, width, e,
+                Utils.I18n.Get("set_esp_wireframe"),
+                ref Settings.IsItemEspWireframeEnabled);
+
             DrawColorPicker(x, ref y, width, e,
                 Utils.I18n.Get("set_item_color") + ":",
                 ref Settings.SelectedEspColor);
+        }
+
+        /// <summary>线框模式开关（模仿 KillAura.DrawCustomToggle 样式）</summary>
+        internal static void DrawToggle(float x, ref float y, float width, Event e,
+            string label, ref bool value)
+        {
+            Rect rowRect = new Rect(x, y, width, 24f);
+            bool hover = rowRect.Contains(e.mousePosition);
+            GUI.color = value ? new Color(0.2f, 0.6f, 1.0f, 0.85f)
+                : (hover ? new Color(0.22f, 0.22f, 0.25f, 0.90f) : new Color(0.16f, 0.16f, 0.18f, 0.90f));
+            GUI.DrawTexture(rowRect, ClickGUIManager.WhiteTexture);
+            GUI.color = Color.white;
+
+            GUIStyle s = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 11, fontStyle = FontStyle.Bold,
+                normal = { textColor = value ? Color.white : new Color(0.7f, 0.7f, 0.7f) },
+                padding = new RectOffset(14, 0, 4, 0)
+            };
+            GUI.Label(rowRect, (value ? "[ON]  " : "[OFF] ") + label, s);
+
+            if (e.type == EventType.MouseDown && e.button == 0 && rowRect.Contains(e.mousePosition))
+            {
+                value = !value;
+                e.Use();
+            }
+            y += 30f;
         }
 
         /// <summary>纯手绘颜色选择器：横向排列色块，点击选中，当前选中加白色边框</summary>

@@ -10,17 +10,22 @@
   * **无后座**：让射击后坐力消失
   * **自动拉栓**：自动拉栓（适用于霰弹枪）
   * **鼠标吸附**：生物会对你的鼠标产生吸引力
-  * **杀戮光环**：自动近战攻击范围内的敌人（可自定义攻速与范围）
+  * **杀戮光环**：自动近战攻击范围内的敌人（可自定义攻速与范围，支持传送攻击）
   
 * **🙎‍♂️ 玩家模块 (Player)**
   * **灵魂出窍**：让你可以自由移动视角
-  * **长手模式**：让你拥有更长的手臂
+  * **长手模式**：让你拥有更长的手臂（有传送模式）
   * **隔墙取物**：让你可以隔墙拿取物品
   * **绷带高手**：自动高速完成包扎动作，并在完成后精准停止
   * **破片制造者**：自动在开始扎针动作时制造破片
   * **秒截肢**：让你快速截肢
   * **反布娃娃**：阻止布娃娃状态，可以当做可能失败的无摔落使用
   * **秒拔破片**：自动高速拔出破片
+  * **正骨大师**：尝试瞬间治愈脱臼，有概率失败
+  * **自动推人**：自动推你附近的人
+  * **强制背人**：对着目标右键后会将他推倒并背起，和长手有联动
+  * **肋骨粉碎者**：打开CPR小游戏后自动粉碎目标的肋骨（会导致自己疲劳）
+  * **相机传送**：开启并关闭后传送到屏幕中央位置，可与灵魂出窍搭配使用
 
 * **👁️ 视觉模块 (Render)**
   * **物品透视**：在掉落的物品上显示物品名称
@@ -79,17 +84,22 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **No Recoil**: Eliminates weapon recoil, keeping your aim steady.
   * **Auto Bolt**: Automatically cycles the bolt (useful for shotguns).
   * **Mouse Aimbot**: Creatures become magnetically attracted to your crosshair, making aiming effortless.
-  * **Kill Aura**: Automatically melee attacks nearby enemies (customizable attack speed and range).
+  * **Kill Aura**: Automatically melee attacks nearby enemies (customizable attack speed and range, supports teleport attacks).
 
 * **🙎‍♂️ Player Module**
   * **Freecam**: Allows you to detach and move the camera freely.
-  * **Long Arms**: Extends your interaction reach.
+  * **Long Arms**: Extends your interaction reach (includes a teleport mode).
   * **Grab Through Walls**: Allows you to pick up items through solid objects.
   * **Auto Bandage**: Rapidly automates the bandaging mini-game and stops precisely when the bleeding is healed.
   * **Shrapnel Maker**: Automatically creates shrapnel when initiating a syringe injection.
   * **Instant Amputation**: Allows you to perform amputations instantly.
   * **Anti-Ragdoll**: Prevents the ragdoll state; can be used as a makeshift (though potentially unreliable) no-fall-damage feature.
   * **Instant Shrapnel Removal**: Automatically extracts shrapnel at extremely high speed.
+  * **Auto Bone Setter**: Attempts to instantly heal a dislocated joint have a chance of failure.
+  * **Auto-Push**: Automatically pushes people near you.
+  * **Force Carry**: Right-click on a target to knock them down and carry them on your back; synergizes with Long Arm Mode.
+  * **Rib Crusher**: Automatically crushes the target's ribs upon opening the CPR minigame (causes fatigue to yourself).
+  * **Camera Teleport**: Teleports you to the center of the screen after toggling it on and off; can be used in combination with Freecam (Out-of-Body mode).
 
 * **👁️ Render Module**
   * **Item ESP**: Displays the names of dropped items through walls.

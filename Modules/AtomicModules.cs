@@ -1,5 +1,6 @@
 using FullBrightMod.Core;
 using FullBrightMod.UI;
+using KrokoshaCasualtiesMP;
 using UnityEngine;
 
 namespace FullBrightMod.Modules
@@ -7,7 +8,7 @@ namespace FullBrightMod.Modules
     // ============================================================
     //  原子功能模块 —— 每个模块仅负责一个功能的开关切换
     //  已单独提取到独立文件的模块：ItemESP, CreatureESP, TrapESP,
-    //    VisionExpand, CameraZoom, FullBright
+    //    VisionExpand, CameraZoom, FullBright, PlayerESP
     // ============================================================
 
     public class FullBright : ModuleBase
@@ -66,6 +67,30 @@ namespace FullBrightMod.Modules
         public override ModuleCategory Category => ModuleCategory.Player;
         public override void OnEnable()  => Settings.IsLongHandsEnabled = true;
         public override void OnDisable() => Settings.IsLongHandsEnabled = false;
+
+        public override float GetSettingsHeight() => 60f;
+
+        public override void DrawSettings(float x, ref float y, float width, Event e)
+        {
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleLeft,
+                fontSize = 10,
+                normal = { textColor = new Color(0.7f, 0.7f, 0.7f) },
+                padding = new RectOffset(0, 0, 0, 0)
+            };
+            GUI.Label(new Rect(x + 8, y, 70, 20),
+                $"  {Utils.I18n.Get("set_interact_distance") ?? "交互距离"}: {Settings.CustomPickupRange:F1}m", labelStyle);
+
+            Rect barRect = new Rect(x + 78, y + 5, width - 90, 14);
+            Settings.CustomPickupRange = ClickGUIManager.DrawSlider(barRect, Settings.CustomPickupRange, 3f, 30f, e);
+            y += 30f;
+
+            // TP 模式开关 (模仿 ItemESP.DrawToggle 样式)
+            ItemESP.DrawToggle(x, ref y, width, e,
+                Utils.I18n.Get("set_longhands_tp"),
+                ref Settings.IsLongHandsTPModeEnabled);
+        }
     }
 
     public class ThroughWall : ModuleBase
@@ -105,7 +130,13 @@ namespace FullBrightMod.Modules
             "韩文 (KO)", "西班牙文 (ES)", "法文 (FR)", "德文 (DE)" 
         };
 
-        public override float GetSettingsHeight() => 90f; // 两行语言 + 一行双向开关
+        public override float GetSettingsHeight()
+        {
+            float h = 120f;
+            if (Settings.CurrentTranslationEngine == FullBrightMod.Core.TranslationEngine.OpenAI)
+                h += 130f; // BaseUrl, ApiKey, Model + 上下文开关
+            return h;
+        }
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
@@ -159,6 +190,63 @@ namespace FullBrightMod.Modules
             y += 30f;
 
             // =====================================
+            // 引擎切换按钮
+            // =====================================
+            Rect engineRect = new Rect(x + 8, y + 4, width - 16, 22);
+            bool isOpenAI = Settings.CurrentTranslationEngine == FullBrightMod.Core.TranslationEngine.OpenAI;
+            Color engineColor = isOpenAI ? new Color(0.2f, 0.8f, 0.4f, 0.85f) : new Color(0.2f, 0.6f, 1.0f, 0.85f);
+            GUI.color = engineColor;
+            GUI.DrawTexture(engineRect, ClickGUIManager.WhiteTexture);
+            GUI.color = Color.white;
+            GUIStyle engineLabelStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 12, fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter, normal = { textColor = Color.white }
+            };
+            GUI.Label(engineRect, isOpenAI ? "Engine: OpenAI" : "Engine: Google Translate", engineLabelStyle);
+            if (e.type == EventType.MouseDown && e.button == 0 && engineRect.Contains(e.mousePosition))
+            {
+                Settings.CurrentTranslationEngine = isOpenAI
+                    ? FullBrightMod.Core.TranslationEngine.Google
+                    : FullBrightMod.Core.TranslationEngine.OpenAI;
+                e.Use();
+            }
+            y += 32f;
+
+            // =====================================
+            // OpenAI 配置输入
+            // =====================================
+            if (isOpenAI)
+            {
+                GUIStyle inputStyle = new GUIStyle(GUI.skin.textField)
+                {
+                    fontSize = 10, normal = { textColor = Color.white, background = ClickGUIManager.WhiteTexture },
+                    padding = new RectOffset(4, 4, 2, 2)
+                };
+                GUIStyle fieldLabelStyle = new GUIStyle(GUI.skin.label)
+                {
+                    fontSize = 10, normal = { textColor = new Color(0.7f, 0.7f, 0.7f) },
+                    padding = new RectOffset(14, 0, 2, 0)
+                };
+
+                GUI.Label(new Rect(x, y, width, 16f), "Base URL", fieldLabelStyle);
+                Settings.OpenAIBaseUrl = GUI.TextField(
+                    new Rect(x + 14, y + 16f, width - 28, 20f), Settings.OpenAIBaseUrl, inputStyle);
+                y += 40f;
+
+                GUI.Label(new Rect(x, y, width, 16f), "API Key", fieldLabelStyle);
+                string key = GUI.PasswordField(
+                    new Rect(x + 14, y + 16f, width - 28, 20f), Settings.OpenAIApiKey, '*', inputStyle);
+                if (key != Settings.OpenAIApiKey) Settings.OpenAIApiKey = key;
+                y += 40f;
+
+                GUI.Label(new Rect(x, y, width, 16f), "Model", fieldLabelStyle);
+                Settings.OpenAIModel = GUI.TextField(
+                    new Rect(x + 14, y + 16f, width - 28, 20f), Settings.OpenAIModel, inputStyle);
+                y += 38f;
+            }
+
+            // =====================================
             // 第三行：双向外发翻译开关
             // =====================================
             GUIStyle toggleStyle = new GUIStyle(GUI.skin.label)
@@ -183,8 +271,25 @@ namespace FullBrightMod.Modules
                 Settings.IsTwoWayTranslationEnabled = !Settings.IsTwoWayTranslationEnabled;
                 e.Use();
             }
-
+            
             y += 30f;
+
+            // AI Context Memory toggle (仅 OpenAI 模式)
+            if (Settings.CurrentTranslationEngine == FullBrightMod.Core.TranslationEngine.OpenAI)
+            {
+                Rect contextRect = new Rect(x, y, width, 24f);
+                GUI.color = Settings.IsTranslationContextEnabled ? new Color(0.2f, 0.6f, 1.0f, 0.85f)
+                    : (contextRect.Contains(e.mousePosition) ? new Color(0.22f, 0.22f, 0.25f, 0.90f) : new Color(0.16f, 0.16f, 0.18f, 0.90f));
+                GUI.DrawTexture(contextRect, ClickGUIManager.WhiteTexture);
+                GUI.color = Color.white;
+                GUI.Label(contextRect, (Settings.IsTranslationContextEnabled ? "[ON]  " : "[OFF] ") + "AI Context Memory", toggleStyle);
+                if (e.type == EventType.MouseDown && e.button == 0 && contextRect.Contains(e.mousePosition))
+                {
+                    Settings.IsTranslationContextEnabled = !Settings.IsTranslationContextEnabled;
+                    e.Use();
+                }
+                y += 30f;
+            }
         }
     }
 
@@ -194,5 +299,57 @@ namespace FullBrightMod.Modules
         public override ModuleCategory Category => ModuleCategory.Misc;
         public override void OnEnable()  => Settings.IsIQ250Enabled = true;
         public override void OnDisable() => Settings.IsIQ250Enabled = false;
+    }
+
+    // ============================================================
+    //  玩家透视 (Player ESP)
+    // ============================================================
+    public class PlayerESP : ModuleBase
+    {
+        public override string Name => Utils.I18n.Get("mod_playeresp");
+        public override ModuleCategory Category => ModuleCategory.Render;
+        public override void OnEnable()  => Settings.IsPlayerEspEnabled = true;
+        public override void OnDisable() => Settings.IsPlayerEspEnabled = false;
+
+        public override float GetSettingsHeight() => 60f;
+
+        public override void DrawSettings(float x, ref float y, float width, Event e)
+        {
+            ItemESP.DrawToggle(x, ref y, width, e,
+                Utils.I18n.Get("set_esp_wireframe"),
+                ref Settings.IsPlayerEspWireframeEnabled);
+
+            ItemESP.DrawColorPicker(x, ref y, width, e,
+                Utils.I18n.Get("set_player_color") + ":",
+                ref Settings.SelectedPlayerColor);
+        }
+    }
+
+    // ============================================================
+    //  相机传送 (Camera Teleport) — 关模块时传送到相机位置
+    // ============================================================
+    public class CameraTeleport : ModuleBase
+    {
+        public override string Name => Utils.I18n.Get("mod_camerateleport");
+        public override ModuleCategory Category => ModuleCategory.Player;
+
+        public override void OnEnable()  => Settings.IsCameraTeleportEnabled = true;
+        public override void OnDisable()
+        {
+            Settings.IsCameraTeleportEnabled = false;
+
+            Body myBody = PlayerCamera.main?.body;
+            Camera cam = Camera.main;
+            if (myBody == null || cam == null) return;
+
+            try
+            {
+                Vector3 safePos = Patches.TPHelper.GetSafeTeleportPosition(
+                    myBody.transform.position, cam.transform.position, 0.5f);
+                myBody.transform.position = safePos;
+                ClientMain.Client_SendCharacterSyncPacket();
+            }
+            catch { }
+        }
     }
 }

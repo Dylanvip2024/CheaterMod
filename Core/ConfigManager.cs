@@ -25,6 +25,12 @@ namespace FullBrightMod.Core
             public bool IsItemEspEnabled;
             public bool IsCreatureEspEnabled;
             public bool IsTrapEspEnabled;
+            public bool IsPlayerEspEnabled;
+            public bool IsItemEspWireframeEnabled;
+            public bool IsCreatureEspWireframeEnabled;
+            public bool IsTrapEspWireframeEnabled;
+            public bool IsPlayerEspWireframeEnabled;
+            public float EspLineWidth;
             public bool IsCameraZoomEnabled;
             public bool IsIQ250Enabled;
             public bool IsLongHandsEnabled;
@@ -44,6 +50,13 @@ namespace FullBrightMod.Core
             public bool IsInstantShrapnelRemovalEnabled;
             public bool IsBoomboxEnabled;
             public bool StopMusicWhenTalking;
+            public int InventorySortMode; // 0=Space, 1=Weight
+            public bool IsSTTEnabled;
+            public bool IsSTTTranslateLinkEnabled;
+
+            // ---- 库存整理 (一键执行，状态始终为 false，显式注册以防 ModuleEntry 遗漏) ----
+            public bool AutoSortSpaceEnabled;
+            public bool AutoSortWeightEnabled;
             public bool IsInfiniteAmmoEnabled;
             public bool IsNoSpreadEnabled;
             public bool IsRapidFireEnabled;
@@ -67,6 +80,7 @@ namespace FullBrightMod.Core
             public SColor SelectedEspColor;
             public SColor SelectedCreatureColor;
             public SColor SelectedTrapColor;
+            public SColor SelectedPlayerColor;
             public SColor TrajectoryColor;
 
             public float FreecamX, FreecamY, FreecamZ;
@@ -84,6 +98,11 @@ namespace FullBrightMod.Core
             public int TranslateSourceIndex;
             public int TranslateTargetIndex;
             public bool IsTwoWayTranslationEnabled;
+            public int CurrentTranslationEngine; // 0=Google, 1=OpenAI
+            public string OpenAIBaseUrl;
+            public string OpenAIApiKey;
+            public string OpenAIModel;
+            public bool IsTranslationContextEnabled;
 
             // ---- 投掷轨迹 ----
             public bool IsTrajectoryEnabled;
@@ -95,6 +114,28 @@ namespace FullBrightMod.Core
             public bool IsAntiWeightEnabled;
             public bool IsAirJumpEnabled;
             public bool IsJetpackEnabled;
+
+            // ---- CPR ----
+            public bool IsInstantReviveEnabled;
+            public bool IsRibCrusherEnabled;
+
+            // ---- 自动推人 / 强制背人 ----
+            public bool IsAutoPushEnabled;
+            public float AutoPushDistance;
+            public bool IsAutoCarryEnabled;
+
+            // ---- 正骨大师 ----
+            public bool IsAutoDislocationEnabled;
+
+            // ---- 长手 TP 模式 ----
+            public bool IsLongHandsTPModeEnabled;
+
+            // ---- 相机传送 ----
+            public bool IsCameraTeleportEnabled;
+
+            // ---- 杀戮光环传送攻击 ----
+            public bool KillAuraTeleportAttack;
+            public float KillAuraTeleportRange;
 
             // ---- KillAura ----
             public bool IsKillAuraEnabled;
@@ -165,6 +206,12 @@ namespace FullBrightMod.Core
                 data.IsItemEspEnabled      = Settings.IsItemEspEnabled;
                 data.IsCreatureEspEnabled  = Settings.IsCreatureEspEnabled;
                 data.IsTrapEspEnabled      = Settings.IsTrapEspEnabled;
+                data.IsPlayerEspEnabled    = Settings.IsPlayerEspEnabled;
+                data.IsItemEspWireframeEnabled     = Settings.IsItemEspWireframeEnabled;
+                data.IsCreatureEspWireframeEnabled = Settings.IsCreatureEspWireframeEnabled;
+                data.IsTrapEspWireframeEnabled     = Settings.IsTrapEspWireframeEnabled;
+                data.IsPlayerEspWireframeEnabled   = Settings.IsPlayerEspWireframeEnabled;
+                data.EspLineWidth          = Settings.EspLineWidth;
                 data.IsCameraZoomEnabled   = Settings.IsCameraZoomEnabled;
                 data.IsIQ250Enabled        = Settings.IsIQ250Enabled;
                 data.IsLongHandsEnabled    = Settings.IsLongHandsEnabled;
@@ -184,6 +231,11 @@ namespace FullBrightMod.Core
                 data.IsInstantShrapnelRemovalEnabled = Settings.IsInstantShrapnelRemovalEnabled;
                 data.IsBoomboxEnabled             = Settings.IsBoomboxEnabled;
                 data.StopMusicWhenTalking         = Settings.StopMusicWhenTalking;
+                data.InventorySortMode            = (int)Settings.InventorySortMode;
+                data.IsSTTEnabled                 = Settings.IsSTTEnabled;
+                data.IsSTTTranslateLinkEnabled  = Settings.IsSTTTranslateLinkEnabled;
+                data.AutoSortSpaceEnabled     = Settings.IsAutoSortSpaceEnabled;
+                data.AutoSortWeightEnabled    = Settings.IsAutoSortWeightEnabled;
                 data.IsInfiniteAmmoEnabled        = Settings.IsInfiniteAmmoEnabled;
                 data.IsNoSpreadEnabled            = Settings.IsNoSpreadEnabled;
                 data.IsRapidFireEnabled           = Settings.IsRapidFireEnabled;
@@ -199,6 +251,19 @@ namespace FullBrightMod.Core
                 data.IsAntiWeightEnabled          = Settings.IsAntiWeightEnabled;
                 data.IsAirJumpEnabled             = Settings.IsAirJumpEnabled;
                 data.IsJetpackEnabled             = Settings.IsJetpackEnabled;
+                data.IsInstantReviveEnabled        = Settings.IsInstantReviveEnabled;
+                data.IsRibCrusherEnabled          = Settings.IsRibCrusherEnabled;
+
+                data.IsAutoPushEnabled          = Settings.IsAutoPushEnabled;
+                data.AutoPushDistance           = Settings.AutoPushDistance;
+                data.IsAutoCarryEnabled         = Settings.IsAutoCarryEnabled;
+                data.IsAutoDislocationEnabled  = Settings.IsAutoDislocationEnabled;
+                data.IsLongHandsTPModeEnabled   = Settings.IsLongHandsTPModeEnabled;
+
+                data.IsCameraTeleportEnabled    = Settings.IsCameraTeleportEnabled;
+
+                data.KillAuraTeleportAttack     = Settings.KillAuraTeleportAttack;
+                data.KillAuraTeleportRange      = Settings.KillAuraTeleportRange;
 
                 data.IsKillAuraEnabled          = Settings.IsKillAuraEnabled;
                 data.KillAuraAttackPlayers      = Settings.KillAuraAttackPlayers;
@@ -221,6 +286,7 @@ namespace FullBrightMod.Core
                 data.SelectedEspColor      = ToSColor(Settings.SelectedEspColor);
                 data.SelectedCreatureColor = ToSColor(Settings.SelectedCreatureColor);
                 data.SelectedTrapColor     = ToSColor(Settings.SelectedTrapColor);
+                data.SelectedPlayerColor   = ToSColor(Settings.SelectedPlayerColor);
                 data.TrajectoryColor       = ToSColor(Settings.TrajectoryColor);
 
                 data.FreecamX = Settings.FreecamPosition.x;
@@ -232,6 +298,11 @@ namespace FullBrightMod.Core
                 data.TranslateSourceIndex = Settings.TranslateSourceIndex;
                 data.TranslateTargetIndex = Settings.TranslateTargetIndex;
                 data.IsTwoWayTranslationEnabled = Settings.IsTwoWayTranslationEnabled;
+                data.CurrentTranslationEngine = (int)Settings.CurrentTranslationEngine;
+                data.OpenAIBaseUrl = Settings.OpenAIBaseUrl;
+                data.OpenAIApiKey = Settings.OpenAIApiKey;
+                data.OpenAIModel = Settings.OpenAIModel;
+                data.IsTranslationContextEnabled = Settings.IsTranslationContextEnabled;
 
                 // --- ModuleManager ---
                 foreach (var mod in modManager.GetAllModules())
@@ -313,6 +384,12 @@ namespace FullBrightMod.Core
                 Settings.IsItemEspEnabled      = data.IsItemEspEnabled;
                 Settings.IsCreatureEspEnabled  = data.IsCreatureEspEnabled;
                 Settings.IsTrapEspEnabled      = data.IsTrapEspEnabled;
+                Settings.IsPlayerEspEnabled    = data.IsPlayerEspEnabled;
+                Settings.IsItemEspWireframeEnabled     = data.IsItemEspWireframeEnabled;
+                Settings.IsCreatureEspWireframeEnabled = data.IsCreatureEspWireframeEnabled;
+                Settings.IsTrapEspWireframeEnabled     = data.IsTrapEspWireframeEnabled;
+                Settings.IsPlayerEspWireframeEnabled   = data.IsPlayerEspWireframeEnabled;
+                Settings.EspLineWidth          = data.EspLineWidth > 0f ? data.EspLineWidth : 2f;
                 Settings.IsCameraZoomEnabled   = data.IsCameraZoomEnabled;
                 Settings.IsIQ250Enabled        = data.IsIQ250Enabled;
                 Settings.IsLongHandsEnabled    = data.IsLongHandsEnabled;
@@ -332,6 +409,12 @@ namespace FullBrightMod.Core
                 Settings.IsInstantShrapnelRemovalEnabled = data.IsInstantShrapnelRemovalEnabled;
                 Settings.IsBoomboxEnabled             = data.IsBoomboxEnabled;
                 Settings.StopMusicWhenTalking         = data.StopMusicWhenTalking;
+                if (Enum.IsDefined(typeof(InventorySortMode), data.InventorySortMode))
+                    Settings.InventorySortMode    = (InventorySortMode)data.InventorySortMode;
+                Settings.IsSTTEnabled                 = data.IsSTTEnabled;
+                Settings.IsSTTTranslateLinkEnabled  = data.IsSTTTranslateLinkEnabled;
+                Settings.IsAutoSortSpaceEnabled     = data.AutoSortSpaceEnabled;
+                Settings.IsAutoSortWeightEnabled    = data.AutoSortWeightEnabled;
                 Settings.IsInfiniteAmmoEnabled        = data.IsInfiniteAmmoEnabled;
                 Settings.IsNoSpreadEnabled            = data.IsNoSpreadEnabled;
                 Settings.IsRapidFireEnabled           = data.IsRapidFireEnabled;
@@ -347,6 +430,19 @@ namespace FullBrightMod.Core
                 Settings.IsAntiWeightEnabled          = data.IsAntiWeightEnabled;
                 Settings.IsAirJumpEnabled             = data.IsAirJumpEnabled;
                 Settings.IsJetpackEnabled             = data.IsJetpackEnabled;
+                Settings.IsInstantReviveEnabled        = data.IsInstantReviveEnabled;
+                Settings.IsRibCrusherEnabled          = data.IsRibCrusherEnabled;
+
+                Settings.IsAutoPushEnabled          = data.IsAutoPushEnabled;
+                Settings.AutoPushDistance           = data.AutoPushDistance > 0f ? data.AutoPushDistance : 1.5f;
+                Settings.IsAutoCarryEnabled         = data.IsAutoCarryEnabled;
+                Settings.IsAutoDislocationEnabled  = data.IsAutoDislocationEnabled;
+                Settings.IsLongHandsTPModeEnabled   = data.IsLongHandsTPModeEnabled;
+
+                Settings.IsCameraTeleportEnabled    = data.IsCameraTeleportEnabled;
+
+                Settings.KillAuraTeleportAttack     = data.KillAuraTeleportAttack;
+                Settings.KillAuraTeleportRange      = data.KillAuraTeleportRange > 0f ? data.KillAuraTeleportRange : 50f;
 
                 Settings.IsKillAuraEnabled          = data.IsKillAuraEnabled;
                 Settings.KillAuraAttackPlayers      = data.KillAuraAttackPlayers;
@@ -369,6 +465,8 @@ namespace FullBrightMod.Core
                 Settings.SelectedEspColor      = ToColor(data.SelectedEspColor);
                 Settings.SelectedCreatureColor = ToColor(data.SelectedCreatureColor);
                 Settings.SelectedTrapColor     = ToColor(data.SelectedTrapColor);
+                if (data.SelectedPlayerColor != null)
+                    Settings.SelectedPlayerColor = ToColor(data.SelectedPlayerColor);
                 if (data.TrajectoryColor != null)
                     Settings.TrajectoryColor  = ToColor(data.TrajectoryColor);
 
@@ -380,6 +478,12 @@ namespace FullBrightMod.Core
                 Settings.TranslateSourceIndex = data.TranslateSourceIndex;
                 Settings.TranslateTargetIndex = data.TranslateTargetIndex == 0 ? 1 : data.TranslateTargetIndex;
                 Settings.IsTwoWayTranslationEnabled = data.IsTwoWayTranslationEnabled;
+                if (Enum.IsDefined(typeof(TranslationEngine), data.CurrentTranslationEngine))
+                    Settings.CurrentTranslationEngine = (TranslationEngine)data.CurrentTranslationEngine;
+                if (!string.IsNullOrEmpty(data.OpenAIBaseUrl)) Settings.OpenAIBaseUrl = data.OpenAIBaseUrl;
+                if (data.OpenAIApiKey != null) Settings.OpenAIApiKey = data.OpenAIApiKey;
+                if (!string.IsNullOrEmpty(data.OpenAIModel)) Settings.OpenAIModel = data.OpenAIModel;
+                Settings.IsTranslationContextEnabled = data.IsTranslationContextEnabled;
                 Settings.CustomFireRateMultiplier = data.CustomFireRateMultiplier <= 0f ? 1.0f : data.CustomFireRateMultiplier;
 
                 // --- 模块状态 ---

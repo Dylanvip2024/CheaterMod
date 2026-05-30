@@ -19,6 +19,7 @@ namespace FullBrightMod.Utils
             { "mod_rapid_fire", "自定义射速" },
             { "mod_no_jam", "不卡壳" },
             { "set_fire_rate_mult", "射速倍率" },
+            { "set_interact_distance", "交互距离" },
             { "mod_no_recoil", "无后座" },
             { "mod_auto_reload", "自动装弹" },
             { "mod_auto_bolt", "自动拉栓" },
@@ -30,21 +31,28 @@ namespace FullBrightMod.Utils
             { "set_ka_range", "攻击范围" },
             { "set_ka_render_target", "目标渲染" },
             { "set_ka_color", "目标颜色" },
+            { "set_ka_tp_attack", "传送攻击" },
+            { "set_ka_tp_range", "传送最大范围" },
 
             // Player modules
             { "mod_autobandage", "绷带高手" },
             { "mod_freecam", "灵魂出窍" },
+            { "mod_camerateleport", "相机传送" },
             { "mod_longhands", "长手模式" },
             { "mod_throughwall", "隔墙取物" },
             { "mod_shrapnel_maker", "破片制造者" },
             { "mod_instant_amputation", "秒截肢" },
             { "mod_instant_shrapnel", "秒拔破片" },
+            { "mod_auto_dislocation", "正骨大师" },
 
             // Render modules
             { "mod_fullbright", "全亮模式" },
             { "mod_itemesp", "物品透视" },
             { "mod_creatureesp", "生物透视" },
             { "mod_trapesp", "陷阱警告" },
+            { "mod_playeresp", "玩家透视" },
+            { "set_esp_wireframe", "线框模式" },
+            { "set_esp_line_width", "线条粗细" },
             { "mod_visionexpand", "局部光照扩大" },
             { "mod_camerazoom", "视距拉远" },
 
@@ -60,6 +68,16 @@ namespace FullBrightMod.Utils
             { "mod_airjump", "空气跳跃" },
             { "mod_jetpack", "喷气背包" },
 
+            // Player modules - CPR
+            { "mod_instant_revive", "秒救人" },
+            { "mod_rib_crusher", "肋骨粉碎者" },
+
+            // Player modules - 自动推人 / 强制背人
+            { "mod_autopush", "自动推人" },
+            { "mod_autocarry", "强制背人" },
+            { "set_autopush_distance", "推人距离" },
+            { "set_longhands_tp", "TP 模式 (突破服务端距离限制)" },
+
             // World modules
             { "mod_autounlock", "秒开锁" },
 
@@ -72,10 +90,19 @@ namespace FullBrightMod.Utils
             { "mod_clickgui", "菜单设置" },
             { "mod_language", "Language" },
             { "mod_antiragdoll", "反布娃娃" },
+            { "mod_inventory_sort", "背包整理" },
+            { "inv_mode_space", "模式: 空间优先" },
+            { "inv_mode_weight", "模式: 负重优先" },
+            { "inv_execute", "▶ 执行整理" },
             { "mod_fetch_macro", "捡取宏" },
             { "set_fetch_distance", "拾取距离" },
             { "mod_explosives_macro", "一键引爆" },
             { "mod_human_boombox", "人形音响" },
+            { "mod_stt", "语音转文字" },
+
+            // Inventory sort modules
+            { "mod_autosort_space", "整理背包 (空间优先)" },
+            { "mod_autosort_weight", "整理背包 (负重优先)" },
             { "set_boombox_track", "当前曲目" },
 
             // Render modules - throw trajectory
@@ -89,6 +116,7 @@ namespace FullBrightMod.Utils
             { "set_item_color", "物品颜色" },
             { "set_creature_color", "生物颜色" },
             { "set_trap_color", "陷阱颜色" },
+            { "set_player_color", "玩家颜色" },
             { "set_trajectory_color", "轨迹颜色" },
             { "set_trajectory_length", "最大距离" },
 
@@ -139,6 +167,7 @@ namespace FullBrightMod.Utils
             { "mod_rapid_fire", "Custom Fire Rate" },
             { "mod_no_jam", "Anti-Jam" },
             { "set_fire_rate_mult", "Multiplier" },
+            { "set_interact_distance", "Reach Distance" },
             { "mod_no_recoil", "No Recoil" },
             { "mod_auto_reload", "Auto Reload" },
             { "mod_auto_bolt", "Auto Bolt-Action" },
@@ -150,21 +179,28 @@ namespace FullBrightMod.Utils
             { "set_ka_range", "Attack Range" },
             { "set_ka_render_target", "Render Target" },
             { "set_ka_color", "Target Color" },
+            { "set_ka_tp_attack", "Teleport Attack" },
+            { "set_ka_tp_range", "Teleport Max Range" },
 
             // Player modules
             { "mod_autobandage", "Auto Bandage" },
             { "mod_freecam", "Free Camera" },
+            { "mod_camerateleport", "Camera Teleport" },
             { "mod_longhands", "Extended Reach" },
             { "mod_throughwall", "Through Wall" },
             { "mod_shrapnel_maker", "Shrapnel Maker" },
             { "mod_instant_amputation", "Instant Amputation" },
             { "mod_instant_shrapnel", "Instant Shrapnel Removal" },
+            { "mod_auto_dislocation", "Auto Bone Setter" },
 
             // Render modules
             { "mod_fullbright", "Full Luminance" },
             { "mod_itemesp", "Item ESP" },
             { "mod_creatureesp", "Creature ESP" },
             { "mod_trapesp", "Trap ESP" },
+            { "mod_playeresp", "Player ESP" },
+            { "set_esp_wireframe", "Wireframe" },
+            { "set_esp_line_width", "Line Width" },
             { "mod_visionexpand", "Vision Expand" },
             { "mod_camerazoom", "Camera Zoom" },
 
@@ -183,6 +219,16 @@ namespace FullBrightMod.Utils
             { "mod_airjump", "Air Jump" },
             { "mod_jetpack", "Jetpack" },
 
+            // Player modules - CPR
+            { "mod_instant_revive", "Instant Revive" },
+            { "mod_rib_crusher", "Rib Crusher" },
+
+            // Player modules - Auto Push / Auto Carry
+            { "mod_autopush", "Auto Push" },
+            { "mod_autocarry", "Auto Carry" },
+            { "set_autopush_distance", "Push Distance" },
+            { "set_longhands_tp", "Blink Mode (Bypass Server Distance)" },
+
             // World modules
             { "mod_autounlock", "Auto Unlock" },
 
@@ -195,10 +241,19 @@ namespace FullBrightMod.Utils
             { "mod_clickgui", "GUI Config" },
             { "mod_language", "Language" },
             { "mod_antiragdoll", "AntiRagdoll" },
+            { "mod_inventory_sort", "Inventory Sort" },
+            { "inv_mode_space", "Mode: Space Priority" },
+            { "inv_mode_weight", "Mode: Weight Priority" },
+            { "inv_execute", "▶ Execute Sort" },
             { "mod_fetch_macro", "Fetch Macro" },
             { "set_fetch_distance", "Fetch Distance" },
             { "mod_explosives_macro", "Ignite Explosives Macro" },
             { "mod_human_boombox", "Human Boombox" },
+            { "mod_stt", "Voice to Text" },
+
+            // Inventory sort modules
+            { "mod_autosort_space", "Auto Sort (Space)" },
+            { "mod_autosort_weight", "Auto Sort (Weight)" },
             { "set_boombox_track", "Current Track" },
 
             // Settings labels
@@ -209,6 +264,7 @@ namespace FullBrightMod.Utils
             { "set_item_color", "Item Color" },
             { "set_creature_color", "Creature Color" },
             { "set_trap_color", "Trap Color" },
+            { "set_player_color", "Player Color" },
             { "set_trajectory_color", "Trajectory Color" },
             { "set_trajectory_length", "Max Length" },
 

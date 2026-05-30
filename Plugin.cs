@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using System.Collections;
+using System.Linq;
 using BepInEx;
 using HarmonyLib;
 using KrokoshaCasualtiesMP;
@@ -8,6 +9,7 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.Networking;
 using FullBrightMod.Core;
 using FullBrightMod.Modules;
+using FullBrightMod.Modules.Player;
 using FullBrightMod.UI;
 using FullBrightMod.Utils;
 
@@ -18,7 +20,7 @@ namespace FullBrightMod
     {
         private const string PluginGuid   = "com.mod.casualties.cheatermod";
         private const string PluginName   = "CheaterMod";
-        private const string PluginVersion = "1.0.3";
+        private const string PluginVersion = "1.0.4";
 
         public static FullBrightPlugin Instance { get; private set; }
 
@@ -54,17 +56,25 @@ namespace FullBrightMod
                     new ItemESP(),        // 物品透视
                     new CreatureESP(),    // 生物透视
                     new TrapESP(),        // 陷阱警告
+                    new PlayerESP(),      // 玩家透视
                     new FullBright(),     // 全亮模式
                     new VisionExpand(),   // 局部光照扩大
                     new CameraZoom(),     // 视距拉远
                     new ThrowTrajectory(),// 投掷抛物线
                     // --- Player 分类 ---
                     new Freecam(),        // 灵魂出窍
+                    new CameraTeleport(),  // 相机传送
                     new LongHands(),      // 长手模式
                     new ThroughWall(),    // 隔墙取物
                     new AutoBandage(),    // 包扎大师
                     new ShrapnelMaker(),  // 破片制造者
                     new InstantAmputation(),// 秒截肢
+                    // new InstantRevive(),   // 秒救人
+                    new RibCrusher(),      // 肋骨粉碎者
+                    new AutoDislocation(), // 正骨大师
+                    new AutoPush(),        // 自动推人
+                    new AutoCarry(),       // 强制背人
+                    new InventorySort(),   // 背包整理
                     // --- Movement 分类 ---
                     new Flight(),         // 超级飞侠
                     new JumpBoost(),      // 跳跃增强
@@ -183,6 +193,7 @@ namespace FullBrightMod
                 if (Settings.IsItemEspEnabled)     ESPRenderer.DrawItems(_mainCam);
                 if (Settings.IsCreatureEspEnabled) ESPRenderer.DrawCreatures(_mainCam);
                 if (Settings.IsTrapEspEnabled)     ESPRenderer.DrawTraps(_mainCam);
+                if (Settings.IsPlayerEspEnabled)   ESPRenderer.DrawPlayers(_mainCam);
             }
 
             // 3. 最后绘制 ClickGUI 菜单，确保它永远在最顶层，不被任何东西遮挡
@@ -200,12 +211,31 @@ namespace FullBrightMod
                 return;
             }
 
+            // 1. 每帧仅快速同步亮度，不再执行耗时的层级遍历
+            if (_cachedSun != null)
+            {
+                var sunLight = _cachedSun.GetComponent<Light2D>();
+                if (sunLight != null && Mathf.Abs(sunLight.intensity - Settings.BrightenIntensity) > 0.01f)
+                {
+                    sunLight.intensity = Settings.BrightenIntensity;
+                }
+            }
+
+            // 2. 性能杀手拦截：引入降频器，每 1 秒才扫描一次全图的光源
+            Settings.SunCheckTimer += Time.deltaTime;
+            if (Settings.SunCheckTimer < 1.0f) return;
+            Settings.SunCheckTimer = 0f;
+
+            // --- 以下是扫描耗性能的代码，一秒钟只执行一次 ---
             bool hasGlobalLight = false;
             Light2D[] allLights = FindObjectsOfType<Light2D>();
             foreach (Light2D l in allLights)
             {
                 if (l != null && l.lightType == Light2D.LightType.Global && l.gameObject.name != SunName)
-                { hasGlobalLight = true; break; }
+                { 
+                    hasGlobalLight = true; 
+                    break; 
+                }
             }
 
             if (_cachedSun == null) _cachedSun = GameObject.Find(SunName);
@@ -220,11 +250,9 @@ namespace FullBrightMod
                 _cachedSun = sunObj;
             }
             else if (_cachedSun != null && hasGlobalLight)
-            { Destroy(_cachedSun); _cachedSun = null; }
-            else if (_cachedSun != null)
-            {
-                var sunLight = _cachedSun.GetComponent<Light2D>();
-                if (sunLight != null) sunLight.intensity = Settings.BrightenIntensity;
+            { 
+                Destroy(_cachedSun); 
+                _cachedSun = null; 
             }
         }
 
@@ -233,7 +261,25 @@ namespace FullBrightMod
         // =========================================================
         public void StartTranslate(string plrname, string originalMsg, bool richtext)
         {
-            StartCoroutine(TranslateAndLogCoro(plrname, originalMsg, richtext));
+            RecordChatHistory(plrname, originalMsg);
+            if (Settings.CurrentTranslationEngine == FullBrightMod.Core.TranslationEngine.OpenAI)
+                StartCoroutine(TranslateWithOpenAICoro(plrname, originalMsg, richtext, incoming: true));
+            else
+                StartCoroutine(TranslateAndLogCoro(plrname, originalMsg, richtext));
+        }
+
+        /// <summary>将聊天记录存入历史队列（最多5条），供 OpenAI 上下文翻译使用</summary>
+        private void RecordChatHistory(string playerName, string message)
+        {
+            if (string.IsNullOrEmpty(message)) return;
+            string clean = System.Text.RegularExpressions.Regex.Replace(message, "<.*?>", string.Empty).Trim();
+            if (string.IsNullOrEmpty(clean)) return;
+            if (clean.Contains("[译]")) return;
+
+            string entry = $"[{playerName ?? "Unknown"}]: {clean}";
+            Settings.ChatHistory.Enqueue(entry);
+            while (Settings.ChatHistory.Count > 5)
+                Settings.ChatHistory.Dequeue();
         }
 
         private IEnumerator TranslateAndLogCoro(string plrname, string originalMsg, bool richtext)
@@ -286,11 +332,16 @@ namespace FullBrightMod
 
         /// <summary>
         /// 向外翻译：将玩家输入内容翻译为目标语言，通过回调返回结果。
-        /// AutoTranslatePatch 在调用此方法后，会通过 onCompleted 回调拿到翻译结果。
         /// </summary>
         public void StartOutgoingTranslation(string originalMsg, System.Action<string> onCompleted)
         {
-            StartCoroutine(TranslateOutgoingCoro(originalMsg, onCompleted));
+            RecordChatHistory(
+                NetPlayer.LOCAL_PLAYER?.playername ?? "You", originalMsg);
+            if (Settings.CurrentTranslationEngine == FullBrightMod.Core.TranslationEngine.OpenAI)
+                StartCoroutine(TranslateWithOpenAICoro("", originalMsg, false, incoming: false,
+                    onCompleted: onCompleted));
+            else
+                StartCoroutine(TranslateOutgoingCoro(originalMsg, onCompleted));
         }
 
         private IEnumerator TranslateOutgoingCoro(string originalMsg, System.Action<string> onCompleted)
@@ -332,22 +383,102 @@ namespace FullBrightMod
             }
         }
 
-        private static string ExtractGoogleTranslate(string json)
+        // =========================================================
+        // OpenAI 翻译
+        // =========================================================
+        private IEnumerator TranslateWithOpenAICoro(string plrname, string originalMsg, bool richtext,
+            bool incoming, System.Action<string> onCompleted = null)
         {
-            try
+            string cleanMsg = System.Text.RegularExpressions.Regex.Replace(originalMsg, "<.*?>", string.Empty);
+            if (string.IsNullOrWhiteSpace(cleanMsg)) { onCompleted?.Invoke(null); yield break; }
+
+            if (!incoming)
             {
-                // 4. 利用 Newtonsoft.Json 进行稳定的数组反序列化，彻底替代脆弱的正则表达式
-                var arr = Newtonsoft.Json.Linq.JArray.Parse(json);
-                string result = "";
-                foreach (var chunk in arr[0])
-                {
-                    result += chunk[0].ToString();
-                }
-                return result;
+                // 外发翻译：源自动识别，目标 = 设置的源语言
+                int targetIdx = Settings.TranslateSourceIndex;
+                if (targetIdx == 0) targetIdx = 2;
+                string tlCode = Settings.TranslateLangCodes[Mathf.Clamp(targetIdx, 1, Settings.TranslateLangCodes.Length - 1)];
+
+                yield return TranslateWithOpenAI(cleanMsg, tlCode, onCompleted);
             }
-            catch
+            else
             {
-                return "";
+                string tl = Settings.TranslateLangCodes[Mathf.Clamp(Settings.TranslateTargetIndex, 1, Settings.TranslateLangCodes.Length - 1)];
+
+                yield return TranslateWithOpenAI(cleanMsg, tl, translated =>
+                {
+                    if (!string.IsNullOrEmpty(translated) && translated.Trim() != cleanMsg.Trim())
+                        Chat.LogMessage(plrname, "<color=#00FFFF>[译]</color> " + translated, true);
+                });
+            }
+        }
+
+        /// <summary>核心 OpenAI API 调用</summary>
+        private IEnumerator TranslateWithOpenAI(string text, string targetLang, System.Action<string> onCompleted)
+        {
+            string url = Settings.OpenAIBaseUrl.TrimEnd('/') + "/chat/completions";
+
+            // 构建上下文
+            string contextString = "";
+            if (Settings.IsTranslationContextEnabled)
+            {
+                var historyArr = Settings.ChatHistory.ToArray();
+                if (historyArr.Length > 0)
+                    contextString = "\n\nRecent Chat Context:\n" + string.Join("\n",
+                        System.Linq.Enumerable.Select(historyArr, s => s));
+            }
+
+            string systemPrompt = "You are a translator. Translate the user's text to language code: "
+                + targetLang + ". Only return the translated text without any explanation, markdown, or quotes."
+                + contextString;
+
+            var payload = new Newtonsoft.Json.Linq.JObject
+            {
+                ["model"] = Settings.OpenAIModel,
+                ["messages"] = new Newtonsoft.Json.Linq.JArray
+                {
+                    new Newtonsoft.Json.Linq.JObject
+                    {
+                        ["role"] = "system",
+                        ["content"] = systemPrompt
+                    },
+                    new Newtonsoft.Json.Linq.JObject
+                    {
+                        ["role"] = "user",
+                        ["content"] = text
+                    }
+                }
+            };
+
+            string jsonPayload = payload.ToString(Newtonsoft.Json.Formatting.None);
+
+            using (var req = UnityEngine.Networking.UnityWebRequest.Post(url, jsonPayload, "application/json"))
+            {
+                req.SetRequestHeader("Authorization", "Bearer " + Settings.OpenAIApiKey);
+                req.SetRequestHeader("Content-Type", "application/json");
+                req.timeout = 15;
+
+                yield return req.SendWebRequest();
+
+                if (req.result == UnityEngine.Networking.UnityWebRequest.Result.Success)
+                {
+                    try
+                    {
+                        var obj = Newtonsoft.Json.Linq.JObject.Parse(req.downloadHandler.text);
+                        var content = obj["choices"]?[0]?["message"]?["content"]?.ToString();
+                        onCompleted?.Invoke(content);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        UnityEngine.Debug.LogError($"[OpenAI解析失败]: {ex.Message}\n响应: {req.downloadHandler.text}");
+                        onCompleted?.Invoke(null);
+                    }
+                }
+                else
+                {
+                    UnityEngine.Debug.LogError($"[OpenAI] 请求失败: {req.responseCode} {req.error}");
+                    onCompleted?.Invoke(null);
+                }
             }
         }
 
