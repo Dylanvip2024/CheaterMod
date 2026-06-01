@@ -1,5 +1,6 @@
 using FullBrightMod.Core;
 using FullBrightMod.Utils;
+using KrokoshaCasualtiesMP;
 using UnityEngine;
 
 namespace FullBrightMod.Utils
@@ -315,13 +316,26 @@ namespace FullBrightMod.Utils
                 int distMeters = (int)(distance * 0.3f);
 
                 string playerName = string.IsNullOrEmpty(body.name) ? "未知玩家" : body.name;
-                string info = "[ " + playerName + " ]\n[ " + distMeters + "m ]";
+
+                string prefix = "";
+                if (GlobalSettings.EnableModRadar)
+                {
+                    try
+                    {
+                        ulong steamId = NetPlayer.GetNetPlayerFromBody(body)?.steam_id ?? 0;
+                        if (steamId != 0 && ModRadarHelper.IsModUser(steamId))
+                            prefix = "<color=#FF00FF>[CM用户]</color> ";
+                    }
+                    catch { }
+                }
+
+                string info = prefix + "[ " + playerName + " ]\n[ " + distMeters + "m ]";
 
                 if (Settings.IsPlayerEspWireframeEnabled)
                 {
                     Vector2 dynSize = GetDynamicEntitySize(body.gameObject, DefaultPlayerSize);
                     DrawWireframeFor(cam, worldPos, Settings.SelectedPlayerColor,
-                        "[ " + playerName + " ]", dynSize);
+                        prefix + "[ " + playerName + " ]", dynSize);
                 }
                 else
                 {

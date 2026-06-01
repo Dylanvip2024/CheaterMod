@@ -32,7 +32,7 @@ namespace FullBrightMod.UI
         public List<ClickGUIPanel> Panels => _panels;
 
         // ---- Tab 系统 ----
-        private enum ActiveTab { Modules, GlobalSettings }
+        private enum ActiveTab { Modules, GlobalSettings, Credits }
         private ActiveTab _activeTab = ActiveTab.Modules;
 
         // ---- 渲染材质 ----
@@ -142,9 +142,13 @@ namespace FullBrightMod.UI
                 if (draggingIdx >= 0)
                     DrawPanel(draggingIdx, e);
             }
-            else
+            else if (_activeTab == ActiveTab.GlobalSettings)
             {
                 DrawGlobalSettingsPanel(e);
+            }
+            else
+            {
+                DrawCreditsPanel(e);
             }
 
             DrawAuthorCredit();
@@ -157,14 +161,10 @@ namespace FullBrightMod.UI
         // =========================================================
         private void DrawTabBar(Event e)
         {
-            float barWidth = TabWidth * 2 + 4f;
+            float gap = 4f;
+            float barWidth = TabWidth * 3 + gap * 2;
             float barX = Screen.width * 0.5f - barWidth * 0.5f;
 
-            Rect modulesTabRect = new Rect(barX, TabBarY, TabWidth, TabHeight);
-            bool modulesHover = modulesTabRect.Contains(e.mousePosition);
-            GUI.color = _activeTab == ActiveTab.Modules ? ColorTabActive : (modulesHover ? ColorTabHover : ColorTabInactive);
-            GUI.DrawTexture(modulesTabRect, WhiteTexture);
-            GUI.color = Color.white;
             GUIStyle tabStyle = new GUIStyle(GUI.skin.label)
             {
                 alignment = TextAnchor.MiddleCenter,
@@ -172,14 +172,27 @@ namespace FullBrightMod.UI
                 fontStyle = FontStyle.Bold,
                 normal = { textColor = Color.white }
             };
+
+            Rect modulesTabRect = new Rect(barX, TabBarY, TabWidth, TabHeight);
+            bool modulesHover = modulesTabRect.Contains(e.mousePosition);
+            GUI.color = _activeTab == ActiveTab.Modules ? ColorTabActive : (modulesHover ? ColorTabHover : ColorTabInactive);
+            GUI.DrawTexture(modulesTabRect, WhiteTexture);
+            GUI.color = Color.white;
             GUI.Label(modulesTabRect, Utils.I18n.Get("tab_modules"), tabStyle);
 
-            Rect settingsTabRect = new Rect(barX + TabWidth + 4f, TabBarY, TabWidth, TabHeight);
+            Rect settingsTabRect = new Rect(barX + TabWidth + gap, TabBarY, TabWidth, TabHeight);
             bool settingsHover = settingsTabRect.Contains(e.mousePosition);
             GUI.color = _activeTab == ActiveTab.GlobalSettings ? ColorTabActive : (settingsHover ? ColorTabHover : ColorTabInactive);
             GUI.DrawTexture(settingsTabRect, WhiteTexture);
             GUI.color = Color.white;
             GUI.Label(settingsTabRect, Utils.I18n.Get("tab_globalsettings"), tabStyle);
+
+            Rect creditsTabRect = new Rect(barX + (TabWidth + gap) * 2, TabBarY, TabWidth, TabHeight);
+            bool creditsHover = creditsTabRect.Contains(e.mousePosition);
+            GUI.color = _activeTab == ActiveTab.Credits ? ColorTabActive : (creditsHover ? ColorTabHover : ColorTabInactive);
+            GUI.DrawTexture(creditsTabRect, WhiteTexture);
+            GUI.color = Color.white;
+            GUI.Label(creditsTabRect, Utils.I18n.Get("tab_credits"), tabStyle);
 
             if (e.type == EventType.MouseDown && e.button == 0)
             {
@@ -191,6 +204,11 @@ namespace FullBrightMod.UI
                 else if (settingsTabRect.Contains(e.mousePosition))
                 {
                     _activeTab = ActiveTab.GlobalSettings;
+                    e.Use();
+                }
+                else if (creditsTabRect.Contains(e.mousePosition))
+                {
+                    _activeTab = ActiveTab.Credits;
                     e.Use();
                 }
             }
@@ -530,6 +548,12 @@ namespace FullBrightMod.UI
                 GlobalSettings.LogoOverlayHeight = h;
             }
 
+            currentY += 6f;
+
+            // ======== CM使用者识别 ========
+            DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                Utils.I18n.Get("gs_mod_radar"), ref GlobalSettings.EnableModRadar);
+
             // ★ Bug1 修复：同步 ModuleBase 生命周期 ★
             if (prevGrid != GlobalSettings.EnableGridSnap) { /* GridSnap 无对应 Module */ }
             if (prevMinimap != GlobalSettings.EnableMinimap)
@@ -560,7 +584,87 @@ namespace FullBrightMod.UI
             h += rowH + 2f;
             h += rowH;
             if (GlobalSettings.EnableLogoOverlay) h += rowH; // height slider
+            // CM使用者识别 section
+            h += rowH;
+            h += 6f;
             return h;
+        }
+
+        // =========================================================
+        // Credits Tab —— 关于/鸣谢
+        // =========================================================
+        private void DrawCreditsPanel(Event e)
+        {
+            float panelX = Screen.width * 0.5f - 200f;
+            float panelY = TabBarY + TabHeight + 10f;
+            float panelW = 400f;
+            float rowH = 26f;
+
+            GUIStyle sectionStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 14,
+                fontStyle = FontStyle.Bold,
+                normal = { textColor = new Color(0.2f, 0.6f, 1.0f, 1f) },
+                padding = new RectOffset(10, 0, 0, 0)
+            };
+
+            GUIStyle contentStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 12,
+                normal = { textColor = Color.white },
+                padding = new RectOffset(22, 0, 2, 0)
+            };
+
+            // 区块一：开发者（5行：标题 + 2人 × 2行）
+            // 区块二：特别鸣谢（3行：标题 + 2人 × 1行）
+            // 区块三：关于（3行：标题 + 2行内容）
+            int devLines = 1 + 2;
+            int creditLines = 1 + 2;
+            int aboutLines = 1 + 2;
+            float contentHeight = (devLines + creditLines + aboutLines) * (rowH + 2f) + 20f;
+
+            // ---- 背景 + 强调线 ----
+            Rect bgRect = new Rect(panelX, panelY, panelW, contentHeight);
+            GUI.color = new Color(0.16f, 0.16f, 0.18f, 0.95f);
+            GUI.DrawTexture(bgRect, WhiteTexture);
+
+            Rect accentRect = new Rect(panelX, panelY, panelW, 2f);
+            GUI.color = ColorAccent;
+            GUI.DrawTexture(accentRect, WhiteTexture);
+            GUI.color = Color.white;
+
+            // ---- 绘制内容 ----
+            float currentY = panelY + 10f;
+
+            // ======== 开发者 ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "--- " + Utils.I18n.Get("credits_developer") + " ---", sectionStyle);
+            currentY += rowH + 2f;
+
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "Dylanvip2024：" + Utils.I18n.Get("credits_author_desc"), contentStyle);
+            currentY += rowH + 2f;
+
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "Darnmik：" + Utils.I18n.Get("credits_darnmik_desc"), contentStyle);
+            currentY += rowH + 6f;
+
+            // ======== 特别鸣谢 ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "--- " + Utils.I18n.Get("credits_thanks") + " ---", sectionStyle);
+            currentY += rowH + 2f;
+
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_wanxi"), contentStyle);
+            currentY += rowH + 2f;
+
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_yumo"), contentStyle);
+            currentY += rowH + 6f;
+
+            // ======== 关于 ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "--- " + Utils.I18n.Get("credits_about") + " ---", sectionStyle);
+            currentY += rowH + 2f;
+
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_author_account"), contentStyle);
+            currentY += rowH + 2f;
+
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_source_url"), contentStyle);
+            currentY += rowH + 2f;
         }
 
         // =========================================================

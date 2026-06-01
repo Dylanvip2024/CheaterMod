@@ -5,7 +5,7 @@ using FullBrightMod.Core;
 namespace FullBrightMod.Patches
 {
     // ==========================================
-    // 状态记录器：新增了 IsFinished 标记
+    // 状态记录器
     // ==========================================
     internal static class AutoBandageState
     {
@@ -34,6 +34,9 @@ namespace FullBrightMod.Patches
             if (!Settings.IsAutoBandageEnabled) return;
             if (Minigame.game == null) return;
 
+            // ★ 修复核心：如果已经完成止血，彻底放权，允许用户用真实的鼠标接管后续操作（如涂抹瘀伤药）
+            if (AutoBandageState.IsFinished) return;
+
             // ==========================================
             // 核心刹车逻辑：底层网络流血数据判定
             // ==========================================
@@ -41,32 +44,15 @@ namespace FullBrightMod.Patches
             // 只要流血量小于或等于0.05，代表服务器已经判定你完全止血！
             if (__instance.limb != null && __instance.limb.bleedAmount <= 0.05f)
             {
-                // 1. 模拟玩家松开鼠标左键
+                // 标记为完成
+                AutoBandageState.IsFinished = true;
+
+                // 模拟玩家松开鼠标左键（仅执行一次），防止状态粘连
                 Minigame.game.handStartedClicking = false;
                 Minigame.game.handStoppedClicking = true;
 
-                // 2. 触发一次自动关闭小游戏的操作
-                if (!AutoBandageState.IsFinished)
-                {
-                    AutoBandageState.IsFinished = true;
-
-                    // 利用反射尝试调用基类 Minigame 的关闭方法 (覆盖常见的命名约定)
-                    try 
-                    {
-                        var type = typeof(Minigame);
-                        var closeMethod = type.GetMethod("Close") ?? 
-                                          type.GetMethod("Cancel") ?? 
-                                          type.GetMethod("CloseScreen");
-                        
-                        if (closeMethod != null) 
-                        {
-                            closeMethod.Invoke(Minigame.game, null);
-                        }
-                    } 
-                    catch { }
-                }
-                
-                return; // 直接返回，把控制权交还给游戏，停止强行抓取
+                // ★ 去除了强制关闭界面的代码，直接 Return 将控制权还给玩家
+                return; 
             }
 
             // 如果没止血，继续强行接管输入

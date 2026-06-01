@@ -27,6 +27,8 @@ namespace FullBrightMod.Utils
             { "set_aimbot_radius", "吸附范围" },
             { "mod_killaura", "杀戮光环" },
             { "set_ka_players", "攻击玩家" },
+            { "set_ka_creatures", "攻击生物" },
+            { "set_ka_glass", "攻击玻璃碴" },
             { "set_ka_aps", "攻击速度" },
             { "set_ka_range", "攻击范围" },
             { "set_ka_render_target", "目标渲染" },
@@ -69,7 +71,7 @@ namespace FullBrightMod.Utils
             { "mod_jetpack", "喷气背包" },
 
             // Player modules - CPR
-            { "mod_instant_revive", "秒救人" },
+            { "mod_instant_revive", "完美复苏" },
             { "mod_rib_crusher", "肋骨粉碎者" },
 
             // Player modules - 自动推人 / 强制背人
@@ -91,14 +93,31 @@ namespace FullBrightMod.Utils
             { "mod_language", "Language" },
             { "mod_antiragdoll", "反布娃娃" },
             { "mod_inventory_sort", "背包整理" },
-            { "inv_mode_space", "模式: 空间优先" },
-            { "inv_mode_weight", "模式: 负重优先" },
-            { "inv_execute", "▶ 执行整理" },
             { "mod_fetch_macro", "捡取宏" },
             { "set_fetch_distance", "拾取距离" },
             { "mod_explosives_macro", "一键引爆" },
             { "mod_human_boombox", "人形音响" },
             { "mod_stt", "语音转文字" },
+            { "mod_anti_screen_fx", "反屏幕特效" },
+            { "mod_melee_speed", "攻速调整" },
+            { "set_melee_speed", "攻速倍率" },
+            { "mod_remote_pickup", "远程拾取" },
+            { "set_pickup_range", "拾取范围" },
+            { "mod_container_esp", "箱子指示器" },
+            { "set_container_range", "探测范围" },
+            { "set_container_color", "箱子颜色" },
+            { "container_esp_mode", "渲染模式" },
+            { "mode_lines", "线条" },
+            { "mode_arrows", "箭头" },
+
+            // Anti-Screen FX toggles
+            { "fx_blood", "流血/疼痛红屏" },
+            { "fx_temperature", "温度异常特效" },
+            { "fx_mental", "精神异常特效" },
+            { "fx_blur", "模糊/饥饿特效" },
+            { "fx_radiation", "辐射噪点特效" },
+            { "fx_damage", "损伤视觉遮罩" },
+            { "fx_ui_overlays", "UI 覆盖层" },
 
             // Inventory sort modules
             { "mod_autosort_space", "整理背包 (空间优先)" },
@@ -123,6 +142,7 @@ namespace FullBrightMod.Utils
             // Tab labels
             { "tab_modules", "功能模块" },
             { "tab_globalsettings", "全局设置" },
+            { "tab_credits", "关于/鸣谢" },
 
             // Global Settings - Grid Snapping section
             { "gs_section_grid", "--- 网格吸附 ---" },
@@ -146,6 +166,18 @@ namespace FullBrightMod.Utils
             { "gs_section_logo", "--- Logo 水印 ---" },
             { "gs_enable_logo", "显示 Logo" },
             { "gs_logo_height", "Logo 大小" },
+            { "gs_mod_radar", "开启CM使用者识别" },
+
+            // Credits tab labels (ZH)
+            { "credits_developer", "开发者" },
+            { "credits_author_desc", "CheaterMod源作者" },
+            { "credits_darnmik_desc", "为CheaterMod添加了一些实用的功能" },
+            { "credits_thanks", "特别鸣谢" },
+            { "credits_wanxi", "晚夕睡不醒：为模组的开发出谋划策并进行漏洞反馈" },
+            { "credits_yumo", "是是是钰墨：多次帮助测试模组在多人游戏中的表现" },
+            { "credits_about", "关于" },
+            { "credits_author_account", "作者账号: B站Dylanvip2024" },
+            { "credits_source_url", "开源地址: https://github.com/Dylanvip2024/CheaterMod/" },
 
             // Unit suffixes (appended to slider values)
             { "unit_px", "px" },
@@ -175,6 +207,8 @@ namespace FullBrightMod.Utils
             { "set_aimbot_radius", "Magnet Radius" },
             { "mod_killaura", "Kill Aura" },
             { "set_ka_players", "Attack Players" },
+            { "set_ka_creatures", "Attack Creatures" },
+            { "set_ka_glass", "Attack Glass" },
             { "set_ka_aps", "Attack Speed" },
             { "set_ka_range", "Attack Range" },
             { "set_ka_render_target", "Render Target" },
@@ -220,7 +254,7 @@ namespace FullBrightMod.Utils
             { "mod_jetpack", "Jetpack" },
 
             // Player modules - CPR
-            { "mod_instant_revive", "Instant Revive" },
+            { "mod_instant_revive", "Perfect CPR" },
             { "mod_rib_crusher", "Rib Crusher" },
 
             // Player modules - Auto Push / Auto Carry
@@ -242,14 +276,31 @@ namespace FullBrightMod.Utils
             { "mod_language", "Language" },
             { "mod_antiragdoll", "AntiRagdoll" },
             { "mod_inventory_sort", "Inventory Sort" },
-            { "inv_mode_space", "Mode: Space Priority" },
-            { "inv_mode_weight", "Mode: Weight Priority" },
-            { "inv_execute", "▶ Execute Sort" },
             { "mod_fetch_macro", "Fetch Macro" },
             { "set_fetch_distance", "Fetch Distance" },
             { "mod_explosives_macro", "Ignite Explosives Macro" },
             { "mod_human_boombox", "Human Boombox" },
             { "mod_stt", "Voice to Text" },
+            { "mod_anti_screen_fx", "Anti Screen FX" },
+            { "mod_melee_speed", "Melee Speed" },
+            { "set_melee_speed", "Speed Multiplier" },
+            { "mod_remote_pickup", "Remote Pickup" },
+            { "set_pickup_range", "Pickup Range" },
+            { "mod_container_esp", "Container ESP" },
+            { "set_container_range", "Scan Range" },
+            { "set_container_color", "Container Color" },
+            { "container_esp_mode", "Render Mode" },
+            { "mode_lines", "Lines" },
+            { "mode_arrows", "Arrows" },
+
+            // Anti-Screen FX toggles
+            { "fx_blood", "Blood & Pain" },
+            { "fx_temperature", "Temperature FX" },
+            { "fx_mental", "Mental FX" },
+            { "fx_blur", "Blur & Sickness" },
+            { "fx_radiation", "Radiation Noise" },
+            { "fx_damage", "Damage Overlay" },
+            { "fx_ui_overlays", "UI Overlays" },
 
             // Inventory sort modules
             { "mod_autosort_space", "Auto Sort (Space)" },
@@ -271,6 +322,7 @@ namespace FullBrightMod.Utils
             // Tab labels
             { "tab_modules", "Modules" },
             { "tab_globalsettings", "Global Settings" },
+            { "tab_credits", "About / Credits" },
 
             // Global Settings - Grid Snapping section
             { "gs_section_grid", "--- Grid Snapping ---" },
@@ -294,6 +346,18 @@ namespace FullBrightMod.Utils
             { "gs_section_logo", "--- Logo ---" },
             { "gs_enable_logo", "Show Logo" },
             { "gs_logo_height", "Logo Size" },
+            { "gs_mod_radar", "CM User Detection" },
+
+            // Credits tab labels (EN)
+            { "credits_developer", "Developers" },
+            { "credits_author_desc", "Original author of CheaterMod" },
+            { "credits_darnmik_desc", "Added useful features to CheaterMod" },
+            { "credits_thanks", "Special Thanks" },
+            { "credits_wanxi", "晚夕睡不醒：Provided ideas and bug reports for the mod" },
+            { "credits_yumo", "是是是钰墨：Helped test the mod in multiplayer" },
+            { "credits_about", "About" },
+            { "credits_author_account", "Author: Bilibili @Dylanvip2024" },
+            { "credits_source_url", "Source: https://github.com/Dylanvip2024/CheaterMod/" },
 
             // Unit suffixes
             { "unit_px", "px" },

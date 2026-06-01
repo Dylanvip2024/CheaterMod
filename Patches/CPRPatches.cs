@@ -7,17 +7,6 @@ using UnityEngine;
 
 namespace FullBrightMod.Patches
 {
-    /// <summary>
-    /// CPR 自动化补丁 — 打开 CPR 小游戏时自动执行按压发包。
-    ///
-    /// InstantRevive: 40次完美按压 (bpm=100, down=0.3, up=0.3, 频率在范围)
-    /// RibCrusher:   200次恶劣按压 (bpm≈171, down=0.1, up=0.25, 频率在范围, 不同步)
-    ///
-    /// 服务端分析结论: 30050 包处理没有 consciousness/alive 前置拦截，
-    /// 只检查频率范围(AcceptableRate 65~220 BPM)、力量(STR)和时间有效性。
-    /// 对清醒玩家同样生效 (增加血氧和血压)。
-    /// </summary>
-
     // ---- 绕过健康检查 —— 强制允许 CPR 按钮对任何目标可用 ----
     [HarmonyPatch(typeof(CPRHandler), "CheckIfBodyIsNotOkAndNeedCPR")]
     internal static class BypassHealthCheckPatch
@@ -34,7 +23,7 @@ namespace FullBrightMod.Patches
         }
     }
 
-    // ---- InstantRevive ----
+    // ---- 完美复苏 (稳定 100 BPM) ----
     [HarmonyPatch(typeof(CPRMinigame), "Start")]
     internal static class InstantRevivePatch
     {
@@ -42,12 +31,26 @@ namespace FullBrightMod.Patches
         private static void Postfix(CPRMinigame __instance)
         {
             if (!Settings.IsInstantReviveEnabled) return;
-            CPRPacketSender.Send(__instance, count: 150, down: 0.3f, up: 0.3f, bpm: 100f, tag: "[神医]",
-                msg: "已向目标发送 150 次完美心肺复苏！");
+
+            // 优化参数：
+            //   BPM = 100 (安全中间值，远低于 220 上限，容差大)
+            //   down=0.3, up=0.3 → cycle=0.6s，容差=0.54s
+            //   网络抖动 ±100ms 也不会触发 BPM 重算导致超限
+            //   30 次刚好够心脏起跳 (REQUIRED=30)，节省体力
+            //   每次按压血量恢复效率：down=0.3 → Clamp(0.3×1.5,0.1,0.6)=0.45
+            //   num7 = 150×0.45×0.5 = 33.75/次，效率远高于 214 BPM 的 15.75/次
+            CPRPacketSender.Send(
+                __instance,
+                count: 30,
+                down: 0.30f,
+                up: 0.30f,
+                bpm: 100f,
+                stopWhenConscious: true
+            );
         }
     }
 
-    // ---- RibCrusher ----
+    // ---- 肋骨粉碎者 ----
     [HarmonyPatch(typeof(CPRMinigame), "Start")]
     internal static class RibCrusherPatch
     {
@@ -55,16 +58,23 @@ namespace FullBrightMod.Patches
         private static void Postfix(CPRMinigame __instance)
         {
             if (!Settings.IsRibCrusherEnabled) return;
-            CPRPacketSender.Send(__instance, count: 100, down: 0.1f, up: 0.25f, bpm: 171f, tag: "[庸医]",
-                msg: "已向目标发送 100 次粉碎性按压！");
+            
+            // 限制为100次，防止施救者过度疲劳
+            CPRPacketSender.Send(
+                __instance, 
+                count: 100, 
+                down: 0.20f, 
+                up: 0.08f, 
+                bpm: 214.2f, 
+                stopWhenConscious: false
+            );
         }
     }
 
-    // ---- 共享发包逻辑 ----
+    // ---- 共享发包逻辑 (极限协程版) ----
     internal static class CPRPacketSender
     {
-        public static void Send(CPRMinigame minigame, int count, float down, float up, float bpm,
-            string tag, string msg)
+        public static void Send(CPRMinigame minigame, int count, float down, float up, float bpm, bool stopWhenConscious)
         {
             var pacient = minigame.pacient;
             if (pacient == null || !pacient.alive) return;
@@ -72,18 +82,32 @@ namespace FullBrightMod.Patches
             NetBody nb = pacient.GetComponent<NetBody>();
             if (nb == null) return;
 
+            FullBrightPlugin.Instance.StartCoroutine(SendRoutine(nb, count, down, up, bpm, stopWhenConscious));
+        }
+
+        private static System.Collections.IEnumerator SendRoutine(NetBody nb, int count, float down, float up, float bpm, bool stopWhenConscious)
+        {
+            float cycleTime = down + up; 
+
             for (int i = 0; i < count; i++)
             {
+                if (nb == null || nb.body == null || !nb.body.alive) break; 
+                
+                if (stopWhenConscious && nb.body.conscious)
+                {
+                    break;
+                }
+
                 NetDataWriter writer = Net.CreateWriter((ushort)30050);
                 writer.Put(nb.netId);
                 writer.Put(down);
                 writer.Put(up);
                 writer.Put(bpm);
-                Net.Client_Send(DeliveryMethod.ReliableUnordered, in writer);
-            }
+                
+                Net.Client_Send(DeliveryMethod.ReliableOrdered, in writer);
 
-            try { Chat.LogMessage(tag, msg, true); }
-            catch { }
+                yield return new WaitForSeconds(cycleTime);
+            }
         }
     }
 }

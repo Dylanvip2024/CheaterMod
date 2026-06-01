@@ -26,27 +26,37 @@ namespace FullBrightMod.Patches
     [HarmonyPatch(typeof(Body), "FixedUpdate")]
     internal static class SpeedModifierPatch
     {
-        private static readonly Traverse _moveDirT =
-            Traverse.Create(typeof(Body)).Property("moveDir");
-
         [HarmonyPostfix]
         private static void Postfix(Body __instance)
         {
             if (!Settings.IsSpeedModifierEnabled) return;
+            
+            // ★ 修复冲突：如果开启了飞行，彻底交出速度控制权，防止相互覆盖
+            if (Settings.IsFlightEnabled) return;
+
             if (PlayerCamera.main == null || PlayerCamera.main.body != __instance) return;
             if (!__instance.standing || !__instance.conscious || __instance.rb == null) return;
 
-            // 获取原始速度上限（legSpeedMult 未受 Hook 污染）
             float originalMaxSpeed = __instance.actualMaxSpeed;
 
-            Vector2 moveDir = _moveDirT.GetValue<Vector2>(__instance);
+            // ★ 修复失效：正确通过 Traverse 获取当前 __instance 实例的 moveDir 字段
+            Vector2 moveDir = Traverse.Create(__instance).Field("moveDir").GetValue<Vector2>();
+            
+            float inputX = moveDir.x;
+            
+            // 兜底方案：如果原版反射获取失败，直接读取游戏按键
+            if (inputX == 0f)
+            {
+                if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyBinds.GetBind("left"))) inputX = -1f;
+                if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyBinds.GetBind("right"))) inputX = 1f;
+            }
 
-            if (moveDir.x != 0f)
+            if (inputX != 0f)
             {
                 float targetSpeed = originalMaxSpeed * Settings.CustomSpeedMultiplier;
                 __instance.rb.velocity = new Vector2(
-                    targetSpeed * Mathf.Sign(moveDir.x),
-                    __instance.rb.velocity.y);  // ★ 严格保留 Y 轴重力/跳跃
+                    targetSpeed * Mathf.Sign(inputX),
+                    __instance.rb.velocity.y);  // 严格保留 Y 轴重力/跳跃，防止干扰
             }
         }
     }

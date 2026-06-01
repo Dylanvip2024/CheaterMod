@@ -78,6 +78,8 @@ namespace FullBrightMod.Core
         public static bool IsMouseAimbotEnabled = false;
         public static bool IsKillAuraEnabled       = false;
         public static bool KillAuraAttackPlayers   = false;
+        public static bool KillAuraAttackCreatures = true;
+        public static bool KillAuraAttackGlass     = false;
         public static float KillAuraAPS            = 10f;
         public static float KillAuraRange          = 4f;
         public static bool KillAuraRenderTarget    = true;
@@ -152,5 +154,30 @@ namespace FullBrightMod.Core
         public static bool IsTrajectoryEnabled   = false;
         public static float TrajectoryMaxLength  = 40f;
         public static Color TrajectoryColor      = Color.red;
+
+        // ======== 近战攻速修改 ========
+        public static bool IsMeleeSpeedEnabled   = false;
+        public static float MeleeSpeedMultiplier = 2f;
+
+        // ======== 反屏幕特效（7 项独立开关，模块启用后生效） ========
+        public static bool DisableBloodFx      = false;  // 流血/疼痛红屏
+        public static bool DisableTemperatureFx = false;  // 寒冷冰冻 / 过热灼烧
+        public static bool DisableMentalFx      = false;  // 疯狂扭曲 / 抑郁模糊 / 药物幻视
+        public static bool DisableBlurFx        = false;  // 模糊 / 饥饿模糊 / 疾病扭曲 / 水滴
+        public static bool DisableRadiationFx   = false;  // 辐射噪点
+        public static bool DisableDamageFx      = false;  // 眼部/脑部损伤遮罩 / 污垢
+        public static bool DisableUIOverlays    = false;  // 昏迷黑屏 / 死亡画面 / 脑损闪光 / 盲眼光 / 背景雪花 / 后处理色调
+        public static bool IsAntiScreenEffectsActive = false;  // 模块运行时总开关
+
+        // ======== 远程拾取 ========
+        public static bool IsRemotePickupEnabled = false;
+        public static float RemotePickupRange    = 50f;
+        public static bool IsRemotePickupBlinking = false;
+
+        // ======== 箱子指示器 ========
+        public static bool IsContainerEspEnabled = false;
+        public static float ContainerEspRange    = 50f;
+        public static Color ContainerEspColor    = Color.yellow;
+        public static bool ContainerEspUseArrows = false;  // false=线条模式, true=箭头模式
     }
 }

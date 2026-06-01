@@ -11,6 +11,7 @@
   * **自动拉栓**：自动拉栓（适用于霰弹枪）
   * **鼠标吸附**：生物会对你的鼠标产生吸引力
   * **杀戮光环**：自动近战攻击范围内的敌人（可自定义攻速与范围，支持传送攻击）
+  * **攻速调整**：加速你的攻击速度（挖掘与攻击）
   
 * **🙎‍♂️ 玩家模块 (Player)**
   * **灵魂出窍**：让你可以自由移动视角
@@ -34,6 +35,9 @@
   * **局部光照扩大**：允许你扩大/缩小光照范围大小
   * **视距拉远**：扩大/缩小你的视野 (FOV)
   * **投掷抛物线**：显示投掷物品的预测弹道与落点
+  * **玩家透视**：在玩家身上渲染名称
+  * **反屏幕特效**：阻止一些视觉效果的渲染
+  * **箱子指示器**：指示箱子位置
 
 * **🏃 移动模块 (Movement)**
   * **超级飞侠**：允许你拥有飞行能力
@@ -46,6 +50,8 @@
 
 * **🌍 世界模块 (World)**
   * **秒开锁**：自动开锁（支持密码锁与撬锁）
+  * **捡取宏**：开启后自动捡取鼠标所指的物品
+  * **远程捡取**：允许玩家通过点击物品捡取远距离物品
 
 * **🔧 杂项模块 (Misc)**
   * **聊天机翻**：自动将聊天栏中的外语文本翻译为中文
@@ -53,7 +59,6 @@
   * **语言设置 (Language)**：一键切换 ClickGUI 的显示语言 (中/英)
   * **菜单设置**：允许你自定义呼出菜单的快捷键
   * **一键引爆**：开启后自动点燃背包内所有炸药
-  * **捡取宏**：开启后自动捡取鼠标所指的物品
   * **人形音响**：允许你播放放置在/游戏文件夹/music/文件夹内的mp3文件
 
 ## 📥 安装指南
@@ -85,6 +90,7 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **Auto Bolt**: Automatically cycles the bolt (useful for shotguns).
   * **Mouse Aimbot**: Creatures become magnetically attracted to your crosshair, making aiming effortless.
   * **Kill Aura**: Automatically melee attacks nearby enemies (customizable attack speed and range, supports teleport attacks).
+  * **Attack Speed Adjustment**: Accelerates your attack speed (mining and attacking)
 
 * **🙎‍♂️ Player Module**
   * **Freecam**: Allows you to detach and move the camera freely.
@@ -108,6 +114,8 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **Light Modifier**: Allows you to expand or shrink the local illumination radius.
   * **FOV Changer**: Customizes your Field of View.
   * **Throw Trajectory**: Displays the predicted trajectory and landing point of thrown items.
+  * **Anti-Screen**: Effects: Prevents the rendering of certain visual effects
+  * **Chest Indicator**: Indicates chest locations
 
 * **🏃 Movement Module**
   * **Fly Hack**: Grants you the ability to fly.
@@ -120,6 +128,8 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
 
 * **🌍 World Module**
   * **Instant Unlock**: Automatically opens locks (supports both combination locks and lockpicking).
+  * **Fetch Macro**: Automatically picks up the item your mouse cursor is pointing at when enabled.
+  * **Remote Pickup**: Allows players to pick up distant items by clicking on them
 
 * **🔧 Misc Module**
   * **Chat Auto-Translate**: Automatically translates foreign text in the chat box.
@@ -127,7 +137,6 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **Language**: One-click switch for ClickGUI display language (EN/ZH).
   * **Menu Keybind**: Allows you to customize the hotkey to toggle the mod menu.
   * **Ignite Explosives Macro**: Automatically ignites all explosives in your inventory when enabled.
-  * **Fetch Macro**: Automatically picks up the item your mouse cursor is pointing at when enabled.
   * **Human Boombox**: Allows you to play MP3 files placed in the `/GameDirectory/music/` folder.
 
 ## 📥 Installation

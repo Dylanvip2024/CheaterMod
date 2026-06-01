@@ -26,6 +26,8 @@ namespace FullBrightMod.Modules
         public override float GetSettingsHeight()
         {
             float h = 30f;   // 攻击玩家
+            h += 28f;       // 攻击生物
+            h += 28f;       // 攻击玻璃碴
             h += 28f;        // 攻速
             h += 28f;        // 范围
             h += 28f;        // 目标渲染
@@ -40,6 +42,8 @@ namespace FullBrightMod.Modules
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
             DrawCustomToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_players") ?? "攻击玩家", ref Settings.KillAuraAttackPlayers);
+            DrawCustomToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_creatures") ?? "攻击生物", ref Settings.KillAuraAttackCreatures);
+            DrawCustomToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_glass") ?? "攻击玻璃碴", ref Settings.KillAuraAttackGlass);
 
             float aps = Settings.KillAuraAPS;
             DrawCustomSlider(x, ref y, width, e, (Utils.I18n.Get("set_ka_aps") ?? "攻击速度") + $": {aps:F0}/s", ref aps, 1f, 20f);
@@ -87,6 +91,17 @@ namespace FullBrightMod.Modules
             }
             else
             {
+                DoBlinkStrike(body);
+            }
+
+            if (Settings.KillAuraTeleportAttack)
+            {
+                // 传送攻击：走协程防 Rubber-banding
+                if (!_isBlinking)
+                    FullBrightPlugin.Instance.StartCoroutine(TeleportAttackCoroutine(body, _currentTarget));
+            }
+            else
+            {
                 // 原版瞬移打击
                 DoBlinkStrike(body);
             }
@@ -107,8 +122,15 @@ namespace FullBrightMod.Modules
                 Vector3 dir = (backupPos - _currentTarget.position).normalized;
                 if (dir == Vector3.zero) dir = Vector3.up;
 
-                body.transform.position = _currentTarget.position + dir * 1.0f;
-                body.targetLookPos = _currentTarget.position;
+                bool isGlass = _currentTarget.TryGetComponent<GroundGlass>(out var _);
+
+                // 玻璃碴贴地放置，需要更近距离 + 瞄准精确位置避免射线穿过
+                float offset = isGlass ? 0.8f : 1.5f;
+                body.transform.position = _currentTarget.position + dir * offset;
+                // 玻璃碴瞄准中心点（不加 0.5f 偏移），其他目标瞄准胸部
+                body.targetLookPos = isGlass
+                    ? _currentTarget.position
+                    : _currentTarget.position + Vector3.up * 0.5f;
 
                 if (_cooldownField != null) _cooldownField.SetValue(body, 0f);
                 if (_useItemMethod != null) _useItemMethod.Invoke(body, null);
@@ -134,9 +156,14 @@ namespace FullBrightMod.Modules
                     yield break;
                 }
 
-                Vector3 safePos = TPHelper.GetSafeTeleportPosition(originalPos, target.position, 1.5f);
+                // 将传送距离设为 1.2f 保持安全间距
+                Vector3 safePos = TPHelper.GetSafeTeleportPosition(originalPos, target.position, 1.2f);
                 body.transform.position = safePos;
-                body.targetLookPos = target.position;
+
+                bool isGlass = target.TryGetComponent<GroundGlass>(out var _);
+                body.targetLookPos = isGlass
+                    ? target.position
+                    : target.position + Vector3.up * 0.5f;
                 ClientMain.Client_SendCharacterSyncPacket();
             }
             catch { error = true; }
@@ -152,6 +179,16 @@ namespace FullBrightMod.Modules
                     _cooldownField = typeof(Body).GetField("attackCooldown", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
                 if (_useItemMethod == null)
                     _useItemMethod = typeof(Body).GetMethod("UseItemInHand", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+                // ★ 核心修复：在攻击前一瞬间，再次强行覆盖准星！
+                // 因为等待的 0.12 秒内，玩家鼠标滑动会改变 targetLookPos 导致空挥
+                if (target != null)
+                {
+                    bool isGlass2 = target.TryGetComponent<GroundGlass>(out var _);
+                    body.targetLookPos = isGlass2
+                        ? target.position
+                        : target.position + Vector3.up * 0.5f;
+                }
 
                 if (_cooldownField != null) _cooldownField.SetValue(body, 0f);
                 if (_useItemMethod != null) _useItemMethod.Invoke(body, null);
@@ -195,7 +232,7 @@ namespace FullBrightMod.Modules
             Transform best = null;
             Vector2 myPos = myBody.transform.position;
 
-            if (ESPCache.CachedEntities != null)
+            if (ESPCache.CachedEntities != null && Settings.KillAuraAttackCreatures)
             {
                 foreach (var entity in ESPCache.CachedEntities)
                 {
@@ -222,11 +259,34 @@ namespace FullBrightMod.Modules
                     if (targetBody == myBody) continue;
                     if (!targetBody.alive) continue;
 
+                    // ★ 过滤友好 NPC：Body 的父级 GameObject 上才有 BuildingEntity
+                    var targetBuild = targetBody.GetComponentInParent<BuildingEntity>();
+                    if (targetBuild != null && !targetBuild.cantHit) continue;
+
                     float dist = Vector2.Distance(myPos, targetBody.transform.position);
                     if (dist < minDist)
                     {
                         minDist = dist;
                         best = targetBody.transform;
+                    }
+                }
+            }
+
+            // ★ 玻璃碴：GroundGlass 预制体自带 BuildingEntity 组件，可直接攻击
+            if (Settings.KillAuraAttackGlass && ESPCache.CachedGlassShards != null)
+            {
+                foreach (var glass in ESPCache.CachedGlassShards)
+                {
+                    if (glass == null || !glass || !glass.gameObject.activeInHierarchy) continue;
+                    var build = glass.GetComponent<BuildingEntity>();
+                    if (build == null) continue;
+                    if (build.health <= 0f) continue;
+
+                    float dist = Vector2.Distance(myPos, glass.transform.position);
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        best = glass.transform;
                     }
                 }
             }

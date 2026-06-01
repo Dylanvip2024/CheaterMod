@@ -38,5 +38,9 @@ namespace FullBrightMod.Core
         public static bool EnableLogoOverlay = false;
         /// <summary>Logo 渲染高度（像素，宽度自适应）</summary>
         public static float LogoOverlayHeight = 300f;
+
+        // ======== CM使用者识别 ========
+        /// <summary>是否启用CM使用者识别（通过 Steam Lobby MemberData 检测）</summary>
+        public static bool EnableModRadar = false;
     }
 }

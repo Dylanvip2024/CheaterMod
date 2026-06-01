@@ -7,7 +7,7 @@ namespace FullBrightMod.Modules
     public class FetchMacro : ModuleBase
     {
         public override string Name => Utils.I18n.Get("mod_fetch_macro") ?? "隔空取物 (宏)";
-        public override ModuleCategory Category => ModuleCategory.Misc;
+        public override ModuleCategory Category => ModuleCategory.World;
 
         public override void OnEnable() => Settings.IsFetchMacroEnabled = true;
         public override void OnDisable() => Settings.IsFetchMacroEnabled = false;

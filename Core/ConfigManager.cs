@@ -140,6 +140,8 @@ namespace FullBrightMod.Core
             // ---- KillAura ----
             public bool IsKillAuraEnabled;
             public bool KillAuraAttackPlayers;
+            public bool KillAuraAttackCreatures;
+            public bool KillAuraAttackGlass;
             public float KillAuraAPS;
             public float KillAuraRange;
             public bool KillAuraRenderTarget;
@@ -166,6 +168,28 @@ namespace FullBrightMod.Core
             // Logo Overlay
             public bool EnableLogoOverlay;
             public float LogoOverlayHeight;
+
+            // CM使用者识别
+            public bool EnableModRadar;
+
+            public bool IsMeleeSpeedEnabled;
+            public float MeleeSpeedMultiplier;
+
+            public bool DisableBloodFx;
+            public bool DisableTemperatureFx;
+            public bool DisableMentalFx;
+            public bool DisableBlurFx;
+            public bool DisableRadiationFx;
+            public bool DisableDamageFx;
+            public bool DisableUIOverlays;
+
+            public bool IsRemotePickupEnabled;
+            public float RemotePickupRange;
+
+            public bool IsContainerEspEnabled;
+            public float ContainerEspRange;
+            public SColor ContainerEspColor;
+            public bool ContainerEspUseArrows;
         }
 
         [Serializable]
@@ -267,6 +291,8 @@ namespace FullBrightMod.Core
 
                 data.IsKillAuraEnabled          = Settings.IsKillAuraEnabled;
                 data.KillAuraAttackPlayers      = Settings.KillAuraAttackPlayers;
+                data.KillAuraAttackCreatures  = Settings.KillAuraAttackCreatures;
+                data.KillAuraAttackGlass      = Settings.KillAuraAttackGlass;
                 data.KillAuraAPS                = Settings.KillAuraAPS;
                 data.KillAuraRange              = Settings.KillAuraRange;
                 data.KillAuraRenderTarget       = Settings.KillAuraRenderTarget;
@@ -351,6 +377,27 @@ namespace FullBrightMod.Core
 
                 data.EnableLogoOverlay    = GlobalSettings.EnableLogoOverlay;
                 data.LogoOverlayHeight    = GlobalSettings.LogoOverlayHeight;
+
+                data.EnableModRadar     = GlobalSettings.EnableModRadar;
+
+                data.IsMeleeSpeedEnabled      = Settings.IsMeleeSpeedEnabled;
+                data.MeleeSpeedMultiplier      = Settings.MeleeSpeedMultiplier;
+
+                data.DisableBloodFx       = Settings.DisableBloodFx;
+                data.DisableTemperatureFx = Settings.DisableTemperatureFx;
+                data.DisableMentalFx      = Settings.DisableMentalFx;
+                data.DisableBlurFx        = Settings.DisableBlurFx;
+                data.DisableRadiationFx   = Settings.DisableRadiationFx;
+                data.DisableDamageFx      = Settings.DisableDamageFx;
+                data.DisableUIOverlays    = Settings.DisableUIOverlays;
+
+                data.IsRemotePickupEnabled = Settings.IsRemotePickupEnabled;
+                data.RemotePickupRange     = Settings.RemotePickupRange;
+
+                data.IsContainerEspEnabled = Settings.IsContainerEspEnabled;
+                data.ContainerEspRange     = Settings.ContainerEspRange;
+                data.ContainerEspColor     = ToSColor(Settings.ContainerEspColor);
+                data.ContainerEspUseArrows = Settings.ContainerEspUseArrows;
 
                 string json = JsonConvert.SerializeObject(data, Formatting.Indented);
                 File.WriteAllText(ConfigPath, json);
@@ -446,6 +493,8 @@ namespace FullBrightMod.Core
 
                 Settings.IsKillAuraEnabled          = data.IsKillAuraEnabled;
                 Settings.KillAuraAttackPlayers      = data.KillAuraAttackPlayers;
+                Settings.KillAuraAttackCreatures  = data.KillAuraAttackCreatures;
+                Settings.KillAuraAttackGlass      = data.KillAuraAttackGlass;
                 Settings.KillAuraAPS                = data.KillAuraAPS > 0f ? data.KillAuraAPS : 10f;
                 Settings.KillAuraRange              = data.KillAuraRange > 0f ? data.KillAuraRange : 4f;
                 Settings.KillAuraRenderTarget       = data.KillAuraRenderTarget;
@@ -559,6 +608,28 @@ namespace FullBrightMod.Core
 
                 GlobalSettings.EnableLogoOverlay = data.EnableLogoOverlay;
                 GlobalSettings.LogoOverlayHeight = data.LogoOverlayHeight > 0f ? data.LogoOverlayHeight : 300f;
+
+                GlobalSettings.EnableModRadar = data.EnableModRadar;
+
+                Settings.IsMeleeSpeedEnabled      = data.IsMeleeSpeedEnabled;
+                Settings.MeleeSpeedMultiplier      = data.MeleeSpeedMultiplier > 0f ? data.MeleeSpeedMultiplier : 2f;
+
+                Settings.DisableBloodFx       = data.DisableBloodFx;
+                Settings.DisableTemperatureFx = data.DisableTemperatureFx;
+                Settings.DisableMentalFx      = data.DisableMentalFx;
+                Settings.DisableBlurFx        = data.DisableBlurFx;
+                Settings.DisableRadiationFx   = data.DisableRadiationFx;
+                Settings.DisableDamageFx      = data.DisableDamageFx;
+                Settings.DisableUIOverlays    = data.DisableUIOverlays;
+
+                Settings.IsRemotePickupEnabled = data.IsRemotePickupEnabled;
+                Settings.RemotePickupRange     = data.RemotePickupRange > 0f ? data.RemotePickupRange : 50f;
+
+                Settings.IsContainerEspEnabled = data.IsContainerEspEnabled;
+                Settings.ContainerEspRange     = data.ContainerEspRange > 0f ? data.ContainerEspRange : 50f;
+                if (data.ContainerEspColor != null)
+                    Settings.ContainerEspColor = ToColor(data.ContainerEspColor);
+                Settings.ContainerEspUseArrows = data.ContainerEspUseArrows;
 
                 Debug.Log("[CheaterMod] 配置加载成功！");
             }

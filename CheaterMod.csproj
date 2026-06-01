@@ -72,6 +72,10 @@
     <Reference Include="KrokoshaCasualtiesMP">
       <HintPath>$(GameFolder)\BepInEx\plugins\KrokMP\KrokoshaCasualtiesMP.dll</HintPath>
     </Reference>
+    <Reference Include="Steamworks.NET">
+      <HintPath>$(GameFolder)\BepInEx\plugins\KrokMP\Steamworks.NET.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="UnityEngine.UnityWebRequestModule">
       <HintPath>$(GameFolder)\CasualtiesUnknown_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
     </Reference>

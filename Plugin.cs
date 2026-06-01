@@ -20,7 +20,7 @@ namespace FullBrightMod
     {
         private const string PluginGuid   = "com.mod.casualties.cheatermod";
         private const string PluginName   = "CheaterMod";
-        private const string PluginVersion = "1.0.4";
+        private const string PluginVersion = "1.0.5";
 
         public static FullBrightPlugin Instance { get; private set; }
 
@@ -52,6 +52,7 @@ namespace FullBrightMod
                     new AutoBolt(),       // 自动拉栓
                     new MouseAimbot(),    // 鼠标吸附
                     new KillAura(),       // 杀戮光环
+                    new MeleeSpeed(),      // 攻速调整
                     // --- Render 分类 ---
                     new ItemESP(),        // 物品透视
                     new CreatureESP(),    // 生物透视
@@ -61,6 +62,8 @@ namespace FullBrightMod
                     new VisionExpand(),   // 局部光照扩大
                     new CameraZoom(),     // 视距拉远
                     new ThrowTrajectory(),// 投掷抛物线
+                    new AntiScreenEffects(), // 反屏幕特效
+                    new ContainerESP(),    // 箱子指示器
                     // --- Player 分类 ---
                     new Freecam(),        // 灵魂出窍
                     new CameraTeleport(),  // 相机传送
@@ -69,7 +72,7 @@ namespace FullBrightMod
                     new AutoBandage(),    // 包扎大师
                     new ShrapnelMaker(),  // 破片制造者
                     new InstantAmputation(),// 秒截肢
-                    // new InstantRevive(),   // 秒救人
+                    //new InstantRevive(),   // 秒救人
                     new RibCrusher(),      // 肋骨粉碎者
                     new AutoDislocation(), // 正骨大师
                     new AutoPush(),        // 自动推人
@@ -94,6 +97,7 @@ namespace FullBrightMod
                     new ExplosivesMacro(),// 一键引爆
                     new FetchMacro(),     // 捡取宏
                     new InstantShrapnelRemoval(),// 秒拔破片
+                    new RemotePickup(),    // 远程拾取
                     new HumanBoombox(),    // 人形音响
                     new MinimapModule(),   // 小地图
                     new LimbStatusModule() // 肢体状态 HUD
