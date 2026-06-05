@@ -30,7 +30,7 @@ namespace FullBrightMod.Modules
             // 绘制“中文”按钮背景
             // ==========================================
             // 选中的语言使用主题高亮蓝色，未选中时检测是否悬停
-            GUI.color = Settings.CurrentLanguage == AppLanguage.Chinese 
+            GUI.color = ModSettings.CurrentLanguage == AppLanguage.Chinese 
                 ? new Color(0.2f, 0.6f, 1.0f, 0.85f) 
                 : (zhHover ? new Color(0.22f, 0.22f, 0.25f, 0.90f) : new Color(0.16f, 0.16f, 0.18f, 0.90f));
             GUI.DrawTexture(zhBtnRect, ClickGUIManager.WhiteTexture);
@@ -38,7 +38,7 @@ namespace FullBrightMod.Modules
             // ==========================================
             // 绘制“English”按钮背景
             // ==========================================
-            GUI.color = Settings.CurrentLanguage == AppLanguage.English 
+            GUI.color = ModSettings.CurrentLanguage == AppLanguage.English 
                 ? new Color(0.2f, 0.6f, 1.0f, 0.85f) 
                 : (enHover ? new Color(0.22f, 0.22f, 0.25f, 0.90f) : new Color(0.16f, 0.16f, 0.18f, 0.90f));
             GUI.DrawTexture(enBtnRect, ClickGUIManager.WhiteTexture);
@@ -65,12 +65,12 @@ namespace FullBrightMod.Modules
             {
                 if (zhHover)
                 {
-                    Settings.CurrentLanguage = AppLanguage.Chinese;
+                    ModSettings.CurrentLanguage = AppLanguage.Chinese;
                     e.Use(); // 吞掉事件，防止点穿 GUI 触发游戏内的开枪等操作
                 }
                 else if (enHover)
                 {
-                    Settings.CurrentLanguage = AppLanguage.English;
+                    ModSettings.CurrentLanguage = AppLanguage.English;
                     e.Use(); 
                 }
             }

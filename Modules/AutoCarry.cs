@@ -11,8 +11,8 @@ namespace FullBrightMod.Modules.Player
     {
         public override string Name => Utils.I18n.Get("mod_autocarry");
         public override ModuleCategory Category => ModuleCategory.Player;
-        public override void OnEnable()  => Settings.IsAutoCarryEnabled = true;
-        public override void OnDisable() => Settings.IsAutoCarryEnabled = false;
+        public override void OnEnable()  => ModSettings.IsAutoCarryEnabled = true;
+        public override void OnDisable() => ModSettings.IsAutoCarryEnabled = false;
 
         private bool _coroutineRunning;
         private const float MouseWorldRadius = 2.5f; // 鼠标世界坐标周围容错半径
@@ -45,7 +45,7 @@ namespace FullBrightMod.Modules.Player
             bool didBlink = false;
             bool hasError = false;
 
-            if (dist > Settings.CustomPickupRange)
+            if (dist > ModSettings.CustomPickupRange)
             {
                 Vector3 safePos = TPHelper.GetSafeTeleportPosition(
                     myBody.transform.position, targetPos, 1.5f);

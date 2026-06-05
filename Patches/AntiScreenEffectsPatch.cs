@@ -1,5 +1,6 @@
 using HarmonyLib;
 using FullBrightMod.Core;
+using KrokoshaCasualtiesMP;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,15 +26,15 @@ namespace FullBrightMod.Patches
         private static void Postfix(PlayerCamera __instance)
         {
             // 快速路径：模块未启用 或 所有开关都关时不执行任何操作
-            if (!Settings.IsAntiScreenEffectsActive) return;
-            if (!Settings.DisableBloodFx && !Settings.DisableTemperatureFx &&
-                !Settings.DisableMentalFx && !Settings.DisableBlurFx &&
-                !Settings.DisableRadiationFx && !Settings.DisableDamageFx &&
-                !Settings.DisableUIOverlays)
+            if (!ModSettings.IsAntiScreenEffectsActive) return;
+            if (!ModSettings.DisableBloodFx && !ModSettings.DisableTemperatureFx &&
+                !ModSettings.DisableMentalFx && !ModSettings.DisableBlurFx &&
+                !ModSettings.DisableRadiationFx && !ModSettings.DisableDamageFx &&
+                !ModSettings.DisableUIOverlays)
                 return;
 
             // ==== 1. 流血/疼痛红屏 ====
-            if (Settings.DisableBloodFx)
+            if (ModSettings.DisableBloodFx)
             {
                 if (__instance.mainScreenPass != null)
                 {
@@ -45,14 +46,14 @@ namespace FullBrightMod.Patches
             }
 
             // ==== 2. 温度异常 ====
-            if (Settings.DisableTemperatureFx && __instance.mainScreenPass != null)
+            if (ModSettings.DisableTemperatureFx && __instance.mainScreenPass != null)
             {
                 __instance.mainScreenPass.SetFloat("_FrostAmount", 0f);
                 __instance.mainScreenPass.SetFloat("_OverheatAmount", 0f);
             }
 
             // ==== 3. 精神异常 (疯狂/抑郁/药物幻视/屏幕翻转) ====
-            if (Settings.DisableMentalFx)
+            if (ModSettings.DisableMentalFx)
             {
                 if (__instance.mainScreenPass != null)
                 {
@@ -70,7 +71,7 @@ namespace FullBrightMod.Patches
             }
 
             // ==== 4. 模糊/饥饿/疾病/水滴 ====
-            if (Settings.DisableBlurFx && __instance.blurPass != null)
+            if (ModSettings.DisableBlurFx && __instance.blurPass != null)
             {
                 __instance.blurPass.SetFloat("_BlurIntensity", 0f);
                 __instance.blurPass.SetFloat("_HungerIntensity", 0f);
@@ -79,11 +80,11 @@ namespace FullBrightMod.Patches
             }
 
             // ==== 5. 辐射噪点 ====
-            if (Settings.DisableRadiationFx && __instance.damagePass != null)
+            if (ModSettings.DisableRadiationFx && __instance.damagePass != null)
                 __instance.damagePass.SetFloat("_RadAmount", 0f);
 
             // ==== 6. 损伤视觉遮罩 (眼伤/脑伤/污垢) ====
-            if (Settings.DisableDamageFx)
+            if (ModSettings.DisableDamageFx)
             {
                 if (__instance.damagePass != null)
                 {
@@ -95,23 +96,63 @@ namespace FullBrightMod.Patches
             }
 
             // ==== 7. UI 覆盖层 ====
-            if (Settings.DisableUIOverlays)
+            if (ModSettings.DisableUIOverlays)
             {
                 if (__instance.consciousnessFade != null)
                     __instance.consciousnessFade.gameObject.SetActive(false);
                 if (__instance.consciousnessVignette != null)
                     __instance.consciousnessVignette.gameObject.SetActive(false);
-                if (__instance.deathScreen != null)
-                    __instance.deathScreen.gameObject.SetActive(false);
+
+                // ★ 7.0.1 兼容：deathScreen 已更名为 endScreen (Image)
+                //     使用 Traverse 安全反射获取，新旧字段名均兼容
+                var deathScreen = Traverse.Create(__instance).Field("endScreen").GetValue<Image>()
+                               ?? Traverse.Create(__instance).Field("deathScreen").GetValue<Image>();
+                if (deathScreen != null)
+                    deathScreen.gameObject.SetActive(false);
+
                 if (__instance.brainFlash != null)
                     __instance.brainFlash.enabled = false;
-                if (__instance.blindLight != null)
-                    __instance.blindLight.SetActive(false);
+
+                // ★ 7.0.1 兼容：blindLight 字段已被完全移除
+                //     使用 Traverse 安全反射获取，不存在时静默跳过
+                var blindLight = Traverse.Create(__instance).Field("blindLight").GetValue<GameObject>();
+                if (blindLight != null)
+                    blindLight.SetActive(false);
+
                 if (__instance.backgroundSnow != null)
                     __instance.backgroundSnow.SetActive(false);
                 if (__instance.volume != null)
                     __instance.volume.weight = 0f;
             }
+        }
+    }
+
+    // =========================================================
+    //  AntiConfusionControlPatch — 物理硬件级输入覆写
+    //  7.0.1: reversedControls 仍然在 Body.Update() 中反转 moveDir
+    //  此 Patch 在 Body.Update 执行完毕后，直接读取物理键盘输入覆写
+    // =========================================================
+    [HarmonyPatch(typeof(Body), "Update")]
+    internal static class AntiConfusionControlPatch
+    {
+        [HarmonyPostfix]
+        private static void OnBodyUpdate_Postfix(Body __instance)
+        {
+            if (!ModSettings.IsAntiScreenEffectsActive || !ModSettings.DisableMentalFx) return;
+            if (PlayerCamera.main == null || PlayerCamera.main.body != __instance) return;
+            if (!__instance.conscious) return;
+
+            float rawX = 0f, rawY = 0f;
+
+            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyBinds.GetBind("left")))  rawX -= 1f;
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyBinds.GetBind("right"))) rawX += 1f;
+            if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyBinds.GetBind("down")))  rawY -= 1f;
+            if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyBinds.GetBind("up")))    rawY += 1f;
+
+            Vector2 correctMove = new Vector2(rawX, rawY);
+            if (correctMove.sqrMagnitude > 1f) correctMove.Normalize();
+
+            Traverse.Create(__instance).Field("moveDir").SetValue(correctMove);
         }
     }
 }

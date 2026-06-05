@@ -33,22 +33,22 @@ namespace FullBrightMod.Modules
         private GUIStyle _arrowLabelStyle;
         private bool _styleReady;
 
-        public override void OnEnable()  => Settings.IsContainerEspEnabled = true;
-        public override void OnDisable() => Settings.IsContainerEspEnabled = false;
+        public override void OnEnable()  => ModSettings.IsContainerEspEnabled = true;
+        public override void OnDisable() => ModSettings.IsContainerEspEnabled = false;
 
         public override float GetSettingsHeight()
         {
             float h = 0f;
             h += 28f; // 范围滑块
-            h += 26f; // 颜色
-            h += 28f; // 模式切换按钮
+            h += 28f; // 颜色
+            h += 30f; // 模式切换按钮 (DrawActionButton = 30f)
             return h;
         }
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
             // ── 范围滑块 ──
-            float range = Settings.ContainerEspRange;
+            float range = ModSettings.ContainerEspRange;
             GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 10,
@@ -60,47 +60,29 @@ namespace FullBrightMod.Modules
 
             Rect barRect = new Rect(x + 14, y + 18, width - 28, 8);
             float newRange = ClickGUIManager.DrawSlider(barRect, range, 5f, 200f, e);
-            if (Mathf.Abs(newRange - range) > 0.001f) Settings.ContainerEspRange = newRange;
+            if (Mathf.Abs(newRange - range) > 0.001f) ModSettings.ContainerEspRange = newRange;
             y += 28f;
 
             // ── 颜色选择器 ──
-            ItemESP.DrawColorPicker(x, ref y, width, e,
-                (Utils.I18n.Get("set_container_color") ?? "箱子颜色") + ":",
-                ref Settings.ContainerEspColor);
+            CustomGUI.DrawColorPicker(x, ref y, width, e,
+                Utils.I18n.Get("set_container_color") + ":",
+                ref ModSettings.ContainerEspColor);
 
             // ── 模式切换按钮 ──
             string modeLabel = (Utils.I18n.Get("container_esp_mode") ?? "渲染模式") + ": "
-                + (Settings.ContainerEspUseArrows
+                + (ModSettings.ContainerEspUseArrows
                     ? (Utils.I18n.Get("mode_arrows") ?? "箭头")
                     : (Utils.I18n.Get("mode_lines") ?? "线条"));
-            Rect btnRect = new Rect(x + 8, y, width - 16, 24);
-
-            bool hover = btnRect.Contains(e.mousePosition);
-            GUI.color = Settings.ContainerEspUseArrows
-                ? new Color(0.8f, 0.5f, 0.2f, 0.85f)
-                : (hover ? new Color(0.35f, 0.35f, 0.4f, 0.9f) : new Color(0.25f, 0.25f, 0.3f, 0.9f));
-            GUI.DrawTexture(btnRect, ClickGUIManager.WhiteTexture);
-            GUI.color = Color.white;
-
-            GUIStyle btnStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 10, fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = Color.white }
-            };
-            GUI.Label(btnRect, modeLabel, btnStyle);
-
-            if (e.type == EventType.MouseDown && e.button == 0 && btnRect.Contains(e.mousePosition))
-            {
-                Settings.ContainerEspUseArrows = !Settings.ContainerEspUseArrows;
-                e.Use();
-            }
-            y += 28f;
+            CustomGUI.DrawActionButton(x, ref y, width, e, modeLabel,
+                ModSettings.ContainerEspUseArrows
+                    ? new Color(0.8f, 0.5f, 0.2f, 0.85f)
+                    : new Color(0.25f, 0.25f, 0.3f, 0.9f),
+                () => { ModSettings.ContainerEspUseArrows = !ModSettings.ContainerEspUseArrows; });
         }
 
         public override void OnUpdate()
         {
-            if (!Settings.IsContainerEspEnabled) return;
+            if (!ModSettings.IsContainerEspEnabled) return;
 
             _scanCooldown -= Time.deltaTime;
             if (_scanCooldown > 0f) return;
@@ -111,7 +93,7 @@ namespace FullBrightMod.Modules
 
         public override void OnGUI()
         {
-            if (!Enabled || !Settings.IsContainerEspEnabled) return;
+            if (!Enabled || !ModSettings.IsContainerEspEnabled) return;
 
             var cam = Camera.main;
             var body = PlayerCamera.main?.body;
@@ -120,9 +102,9 @@ namespace FullBrightMod.Modules
             EnsureStyle();
 
             Vector2 myPos = body.transform.position;
-            float maxRange = Settings.ContainerEspRange;
-            Color col = Settings.ContainerEspColor;
-            bool useArrows = Settings.ContainerEspUseArrows;
+            float maxRange = ModSettings.ContainerEspRange;
+            Color col = ModSettings.ContainerEspColor;
+            bool useArrows = ModSettings.ContainerEspUseArrows;
 
             for (int i = _entries.Count - 1; i >= 0; i--)
             {
@@ -238,7 +220,7 @@ namespace FullBrightMod.Modules
                 fontSize = 11,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = Settings.ContainerEspColor },
+                normal = { textColor = ModSettings.ContainerEspColor },
             };
 
             _arrowStyle = new GUIStyle(GUI.skin.label)

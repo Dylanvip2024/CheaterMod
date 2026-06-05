@@ -20,13 +20,16 @@ namespace FullBrightMod
     {
         private const string PluginGuid   = "com.mod.casualties.cheatermod";
         private const string PluginName   = "CheaterMod";
-        private const string PluginVersion = "1.0.5";
+        private const string PluginVersion = "1.0.6";
 
         public static FullBrightPlugin Instance { get; private set; }
 
         private Harmony _harmony;
         private ModuleManager _moduleManager;
         private ClickGUIManager _clickGUI;
+
+        /// <summary>暴露 ModuleManager，供 FeatureListModule 等获取已开启的模块列表</summary>
+        public ModuleManager ModManager => _moduleManager;
 
         // ==== 运行时状态（从旧 VisualModule/PlayerModule 迁移至此） ====
         private const string SunName = "ModGlobalSunObject";
@@ -40,6 +43,9 @@ namespace FullBrightMod
             {
                 _harmony = new Harmony(PluginGuid);
                 _harmony.PatchAll();
+
+                // 初始化 UI 音效系统
+                Utils.UISoundHelper.Init();
 
                 _moduleManager = new ModuleManager();
                 // ★ 13 个原子功能模块，每个模块独立控制一个开关
@@ -64,6 +70,7 @@ namespace FullBrightMod
                     new ThrowTrajectory(),// 投掷抛物线
                     new AntiScreenEffects(), // 反屏幕特效
                     new ContainerESP(),    // 箱子指示器
+                    new Chameleon(),       // 变色龙
                     // --- Player 分类 ---
                     new Freecam(),        // 灵魂出窍
                     new CameraTeleport(),  // 相机传送
@@ -99,8 +106,11 @@ namespace FullBrightMod
                     new InstantShrapnelRemoval(),// 秒拔破片
                     new RemotePickup(),    // 远程拾取
                     new HumanBoombox(),    // 人形音响
+                    new KeyMapper(),       // 按键映射
                     new MinimapModule(),   // 小地图
-                    new LimbStatusModule() // 肢体状态 HUD
+                    new LimbStatusModule(), // 肢体状态 HUD
+                    new TroublemakerAura(), // 闯祸光环
+                    new FeatureListModule() // 功能列表
                 );
 
                 _clickGUI = new ClickGUIManager(_moduleManager);
@@ -161,14 +171,14 @@ namespace FullBrightMod
             ManageArtificialSun();
 
             // 灵魂出窍移动
-            if (Settings.IsFreecamEnabled && _mainCam != null)
+            if (ModSettings.IsFreecamEnabled && _mainCam != null)
             {
                 float moveSpeed = 30f * Time.deltaTime;
                 if (Input.GetKey(KeyCode.LeftShift)) moveSpeed *= 3f;
-                if (Input.GetKey(KeyCode.UpArrow))    Settings.FreecamPosition += Vector3.up    * moveSpeed;
-                if (Input.GetKey(KeyCode.DownArrow))  Settings.FreecamPosition += Vector3.down  * moveSpeed;
-                if (Input.GetKey(KeyCode.LeftArrow))  Settings.FreecamPosition += Vector3.left  * moveSpeed;
-                if (Input.GetKey(KeyCode.RightArrow)) Settings.FreecamPosition += Vector3.right * moveSpeed;
+                if (Input.GetKey(KeyCode.UpArrow))    ModSettings.FreecamPosition += Vector3.up    * moveSpeed;
+                if (Input.GetKey(KeyCode.DownArrow))  ModSettings.FreecamPosition += Vector3.down  * moveSpeed;
+                if (Input.GetKey(KeyCode.LeftArrow))  ModSettings.FreecamPosition += Vector3.left  * moveSpeed;
+                if (Input.GetKey(KeyCode.RightArrow)) ModSettings.FreecamPosition += Vector3.right * moveSpeed;
             }
         }
 
@@ -178,11 +188,11 @@ namespace FullBrightMod
             _moduleManager?.LateUpdateModules();
 
             // 视距拉远（从旧 VisualModule 迁移至此）
-            if (_mainCam != null && Settings.IsCameraZoomEnabled)
+            if (_mainCam != null && ModSettings.IsCameraZoomEnabled)
             {
                 MonoBehaviour ppc = _mainCam.GetComponent("PixelPerfectCamera") as MonoBehaviour;
                 if (ppc != null && ppc.enabled) ppc.enabled = false;
-                _mainCam.orthographicSize = Settings.CustomCameraSize;
+                _mainCam.orthographicSize = ModSettings.CustomCameraSize;
             }
         }
 
@@ -194,10 +204,10 @@ namespace FullBrightMod
             // 2. 绘制 ESP 渲染层
             if (_mainCam != null)
             {
-                if (Settings.IsItemEspEnabled)     ESPRenderer.DrawItems(_mainCam);
-                if (Settings.IsCreatureEspEnabled) ESPRenderer.DrawCreatures(_mainCam);
-                if (Settings.IsTrapEspEnabled)     ESPRenderer.DrawTraps(_mainCam);
-                if (Settings.IsPlayerEspEnabled)   ESPRenderer.DrawPlayers(_mainCam);
+                if (ModSettings.IsItemEspEnabled)     ESPRenderer.DrawItems(_mainCam);
+                if (ModSettings.IsCreatureEspEnabled) ESPRenderer.DrawCreatures(_mainCam);
+                if (ModSettings.IsTrapEspEnabled)     ESPRenderer.DrawTraps(_mainCam);
+                if (ModSettings.IsPlayerEspEnabled)   ESPRenderer.DrawPlayers(_mainCam);
             }
 
             // 3. 最后绘制 ClickGUI 菜单，确保它永远在最顶层，不被任何东西遮挡
@@ -209,7 +219,7 @@ namespace FullBrightMod
         // =========================================================
         private void ManageArtificialSun()
         {
-            if (!Settings.IsFullBrightEnabled)
+            if (!ModSettings.IsFullBrightEnabled)
             {
                 if (_cachedSun != null) { Destroy(_cachedSun); _cachedSun = null; }
                 return;
@@ -219,16 +229,16 @@ namespace FullBrightMod
             if (_cachedSun != null)
             {
                 var sunLight = _cachedSun.GetComponent<Light2D>();
-                if (sunLight != null && Mathf.Abs(sunLight.intensity - Settings.BrightenIntensity) > 0.01f)
+                if (sunLight != null && Mathf.Abs(sunLight.intensity - ModSettings.BrightenIntensity) > 0.01f)
                 {
-                    sunLight.intensity = Settings.BrightenIntensity;
+                    sunLight.intensity = ModSettings.BrightenIntensity;
                 }
             }
 
             // 2. 性能杀手拦截：引入降频器，每 1 秒才扫描一次全图的光源
-            Settings.SunCheckTimer += Time.deltaTime;
-            if (Settings.SunCheckTimer < 1.0f) return;
-            Settings.SunCheckTimer = 0f;
+            ModSettings.SunCheckTimer += Time.deltaTime;
+            if (ModSettings.SunCheckTimer < 1.0f) return;
+            ModSettings.SunCheckTimer = 0f;
 
             // --- 以下是扫描耗性能的代码，一秒钟只执行一次 ---
             bool hasGlobalLight = false;
@@ -249,7 +259,7 @@ namespace FullBrightMod
                 var sunObj = new GameObject(SunName);
                 var sunLight = sunObj.AddComponent<Light2D>();
                 sunLight.lightType = Light2D.LightType.Global;
-                sunLight.intensity = Settings.BrightenIntensity;
+                sunLight.intensity = ModSettings.BrightenIntensity;
                 sunLight.color = Color.white;
                 _cachedSun = sunObj;
             }
@@ -266,13 +276,13 @@ namespace FullBrightMod
         public void StartTranslate(string plrname, string originalMsg, bool richtext)
         {
             RecordChatHistory(plrname, originalMsg);
-            if (Settings.CurrentTranslationEngine == FullBrightMod.Core.TranslationEngine.OpenAI)
+            if (ModSettings.CurrentTranslationEngine == FullBrightMod.Core.TranslationEngine.OpenAI)
                 StartCoroutine(TranslateWithOpenAICoro(plrname, originalMsg, richtext, incoming: true));
             else
                 StartCoroutine(TranslateAndLogCoro(plrname, originalMsg, richtext));
         }
 
-        /// <summary>将聊天记录存入历史队列（最多5条），供 OpenAI 上下文翻译使用</summary>
+        /// <summary>将聊天记录存入历史队列（最多10条），供 OpenAI 上下文翻译使用</summary>
         private void RecordChatHistory(string playerName, string message)
         {
             if (string.IsNullOrEmpty(message)) return;
@@ -281,26 +291,33 @@ namespace FullBrightMod
             if (clean.Contains("[译]")) return;
 
             string entry = $"[{playerName ?? "Unknown"}]: {clean}";
-            Settings.ChatHistory.Enqueue(entry);
-            while (Settings.ChatHistory.Count > 5)
-                Settings.ChatHistory.Dequeue();
+            ModSettings.ChatHistory.Enqueue(entry);
+            while (ModSettings.ChatHistory.Count > 10)
+                ModSettings.ChatHistory.Dequeue();
         }
 
         private IEnumerator TranslateAndLogCoro(string plrname, string originalMsg, bool richtext)
         {
-            // 1. 去除原消息中的富文本颜色标签，防止干扰谷歌翻译
+            // 1. 去除原消息中的富文本颜色标签
             string cleanMsg = System.Text.RegularExpressions.Regex.Replace(originalMsg, "<.*?>", string.Empty);
             if (string.IsNullOrWhiteSpace(cleanMsg)) yield break;
 
-            int sIdx = Mathf.Clamp(Settings.TranslateSourceIndex, 0, Settings.TranslateLangCodes.Length - 1);
-            int tIdx = Mathf.Clamp(Settings.TranslateTargetIndex, 1, Settings.TranslateLangCodes.Length - 1);
+            // ★ 剥离 [语音] 标签，记录是否有，翻译后再重新拼接
+            bool hasVoiceTag = cleanMsg.Contains("[语音]");
+            string textToTranslate = cleanMsg;
+            if (hasVoiceTag)
+                textToTranslate = cleanMsg.Replace("[语音]", "").Trim();
+            if (string.IsNullOrWhiteSpace(textToTranslate)) yield break;
 
-            string sl = Settings.TranslateLangCodes[sIdx];
-            string tl = Settings.TranslateLangCodes[tIdx];
+            int sIdx = Mathf.Clamp(ModSettings.TranslateSourceIndex, 0, ModSettings.TranslateLangCodes.Length - 1);
+            int tIdx = Mathf.Clamp(ModSettings.TranslateTargetIndex, 1, ModSettings.TranslateLangCodes.Length - 1);
+
+            string sl = ModSettings.TranslateLangCodes[sIdx];
+            string tl = ModSettings.TranslateLangCodes[tIdx];
 
             // 2. 使用更兼容的 Uri.EscapeDataString 替代原版的 EscapeURL
             string url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sl}&tl={tl}&dt=t&q="
-                       + System.Uri.EscapeDataString(cleanMsg);
+                       + System.Uri.EscapeDataString(textToTranslate);
 
             using (var req = UnityEngine.Networking.UnityWebRequest.Get(url))
             {
@@ -321,9 +338,13 @@ namespace FullBrightMod
                         }
 
                         // 如果翻译出来的结果和原文不同，才发送到聊天框
-                        if (!string.IsNullOrEmpty(translatedText) && translatedText.Trim() != cleanMsg.Trim())
+                        if (!string.IsNullOrEmpty(translatedText) && translatedText.Trim() != textToTranslate.Trim())
                         {
-                            Chat.LogMessage(plrname, "<color=#00FFFF>[译]</color> " + translatedText, true);
+                            // ★ 重组：[语音] 标签放在 [译] 后面
+                            string output = "<color=#00FFFF>[译]</color>";
+                            if (hasVoiceTag) output += " <color=#00FF00>[语音]</color>";
+                            output += " " + translatedText;
+                            Chat.LogMessage(plrname, output, true);
                         }
                     }
                     catch (System.Exception ex)
@@ -341,7 +362,7 @@ namespace FullBrightMod
         {
             RecordChatHistory(
                 NetPlayer.LOCAL_PLAYER?.playername ?? "You", originalMsg);
-            if (Settings.CurrentTranslationEngine == FullBrightMod.Core.TranslationEngine.OpenAI)
+            if (ModSettings.CurrentTranslationEngine == FullBrightMod.Core.TranslationEngine.OpenAI)
                 StartCoroutine(TranslateWithOpenAICoro("", originalMsg, false, incoming: false,
                     onCompleted: onCompleted));
             else
@@ -354,10 +375,10 @@ namespace FullBrightMod
 
             // 【修复翻译方向】：外发翻译的目标语言，应该是设置里的“源语言”。
             // 如果源语言是“自动”，那么我们无法翻译为自动，默认指定翻译为英语(2)
-            int targetIdx = Settings.TranslateSourceIndex;
+            int targetIdx = ModSettings.TranslateSourceIndex;
             if (targetIdx == 0) targetIdx = 2; // 默认英文
 
-            string tl = Settings.TranslateLangCodes[Mathf.Clamp(targetIdx, 1, Settings.TranslateLangCodes.Length - 1)];
+            string tl = ModSettings.TranslateLangCodes[Mathf.Clamp(targetIdx, 1, ModSettings.TranslateLangCodes.Length - 1)];
 
             string url = $"https://translate.googleapis.com/translate_a/single?client=gtx&sl={sl}&tl={tl}&dt=t&q="
                        + System.Uri.EscapeDataString(originalMsg);
@@ -396,23 +417,35 @@ namespace FullBrightMod
             string cleanMsg = System.Text.RegularExpressions.Regex.Replace(originalMsg, "<.*?>", string.Empty);
             if (string.IsNullOrWhiteSpace(cleanMsg)) { onCompleted?.Invoke(null); yield break; }
 
+            // ★ 剥离 [语音] 标签，翻译后再拼接
+            bool hasVoiceTag = cleanMsg.Contains("[语音]");
+            string textToTranslate = cleanMsg;
+            if (hasVoiceTag)
+                textToTranslate = cleanMsg.Replace("[语音]", "").Trim();
+            if (string.IsNullOrWhiteSpace(textToTranslate)) { onCompleted?.Invoke(null); yield break; }
+
             if (!incoming)
             {
                 // 外发翻译：源自动识别，目标 = 设置的源语言
-                int targetIdx = Settings.TranslateSourceIndex;
+                int targetIdx = ModSettings.TranslateSourceIndex;
                 if (targetIdx == 0) targetIdx = 2;
-                string tlCode = Settings.TranslateLangCodes[Mathf.Clamp(targetIdx, 1, Settings.TranslateLangCodes.Length - 1)];
+                string tlCode = ModSettings.TranslateLangCodes[Mathf.Clamp(targetIdx, 1, ModSettings.TranslateLangCodes.Length - 1)];
 
-                yield return TranslateWithOpenAI(cleanMsg, tlCode, onCompleted);
+                yield return TranslateWithOpenAI(textToTranslate, tlCode, onCompleted);
             }
             else
             {
-                string tl = Settings.TranslateLangCodes[Mathf.Clamp(Settings.TranslateTargetIndex, 1, Settings.TranslateLangCodes.Length - 1)];
+                string tl = ModSettings.TranslateLangCodes[Mathf.Clamp(ModSettings.TranslateTargetIndex, 1, ModSettings.TranslateLangCodes.Length - 1)];
 
-                yield return TranslateWithOpenAI(cleanMsg, tl, translated =>
+                yield return TranslateWithOpenAI(textToTranslate, tl, translated =>
                 {
-                    if (!string.IsNullOrEmpty(translated) && translated.Trim() != cleanMsg.Trim())
-                        Chat.LogMessage(plrname, "<color=#00FFFF>[译]</color> " + translated, true);
+                    if (!string.IsNullOrEmpty(translated) && translated.Trim() != textToTranslate.Trim())
+                    {
+                        string output = "<color=#00FFFF>[译]</color>";
+                        if (hasVoiceTag) output += " <color=#00FF00>[语音]</color>";
+                        output += " " + translated;
+                        Chat.LogMessage(plrname, output, true);
+                    }
                 });
             }
         }
@@ -420,13 +453,13 @@ namespace FullBrightMod
         /// <summary>核心 OpenAI API 调用</summary>
         private IEnumerator TranslateWithOpenAI(string text, string targetLang, System.Action<string> onCompleted)
         {
-            string url = Settings.OpenAIBaseUrl.TrimEnd('/') + "/chat/completions";
+            string url = ModSettings.OpenAIBaseUrl.TrimEnd('/') + "/chat/completions";
 
             // 构建上下文
             string contextString = "";
-            if (Settings.IsTranslationContextEnabled)
+            if (ModSettings.IsTranslationContextEnabled)
             {
-                var historyArr = Settings.ChatHistory.ToArray();
+                var historyArr = ModSettings.ChatHistory.ToArray();
                 if (historyArr.Length > 0)
                     contextString = "\n\nRecent Chat Context:\n" + string.Join("\n",
                         System.Linq.Enumerable.Select(historyArr, s => s));
@@ -438,7 +471,7 @@ namespace FullBrightMod
 
             var payload = new Newtonsoft.Json.Linq.JObject
             {
-                ["model"] = Settings.OpenAIModel,
+                ["model"] = ModSettings.OpenAIModel,
                 ["messages"] = new Newtonsoft.Json.Linq.JArray
                 {
                     new Newtonsoft.Json.Linq.JObject
@@ -458,7 +491,7 @@ namespace FullBrightMod
 
             using (var req = UnityEngine.Networking.UnityWebRequest.Post(url, jsonPayload, "application/json"))
             {
-                req.SetRequestHeader("Authorization", "Bearer " + Settings.OpenAIApiKey);
+                req.SetRequestHeader("Authorization", "Bearer " + ModSettings.OpenAIApiKey);
                 req.SetRequestHeader("Content-Type", "application/json");
                 req.timeout = 15;
 

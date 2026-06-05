@@ -20,40 +20,21 @@ namespace FullBrightMod.Modules
         public override ModuleCategory Category => ModuleCategory.Player;
 
         // ======== 自定义设置 ========
-        public override float GetSettingsHeight() => 32f;
+        public override float GetSettingsHeight() => 30f;
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
-            Rect btnRect = new Rect(x + 8, y + 4, width - 16, 22);
-            string modeLabel = Settings.InventorySortMode == InventorySortMode.Space
-                ? Utils.I18n.Get("inv_mode_space")
-                : Utils.I18n.Get("inv_mode_weight");
+            bool isSpace = ModSettings.InventorySortMode == InventorySortMode.Space;
+            string label = isSpace
+                ? (Utils.I18n.Get("mod_autosort_space") ?? "整理背包 (空间优先)")
+                : (Utils.I18n.Get("mod_autosort_weight") ?? "整理背包 (负重优先)");
 
-            Color btnColor = Settings.InventorySortMode == InventorySortMode.Space
-                ? new Color(0.2f, 0.6f, 1f, 0.85f)
-                : new Color(0.6f, 0.4f, 0.2f, 0.85f);
-
-            GUI.color = btnColor;
-            GUI.DrawTexture(btnRect, ClickGUIManager.WhiteTexture);
-            GUI.color = Color.white;
-
-            GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 12,
-                fontStyle = FontStyle.Bold,
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = Color.white }
-            };
-            GUI.Label(btnRect, modeLabel, labelStyle);
-
-            if (e.type == EventType.MouseDown && e.button == 0 && btnRect.Contains(e.mousePosition))
-            {
-                Settings.InventorySortMode = Settings.InventorySortMode == InventorySortMode.Space
-                    ? InventorySortMode.Weight : InventorySortMode.Space;
-                e.Use();
-            }
-
-            y += 32f;
+            CustomGUI.DrawActionButton(x, ref y, width, e, label,
+                isSpace ? new Color(0.2f, 0.6f, 1f, 0.85f) : new Color(0.6f, 0.4f, 0.2f, 0.85f),
+                () =>
+                {
+                    ModSettings.InventorySortMode = isSpace ? InventorySortMode.Weight : InventorySortMode.Space;
+                });
         }
 
         // ============================================================
@@ -67,7 +48,7 @@ namespace FullBrightMod.Modules
             Body body = PlayerCamera.main?.body;
             if (body == null) { Enabled = false; return; }
 
-            SortWorker.PlanAndExecute(body, Settings.InventorySortMode);
+            SortWorker.PlanAndExecute(body, ModSettings.InventorySortMode);
 
             // 自动弹回关闭
             Enabled = false;

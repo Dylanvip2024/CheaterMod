@@ -10,8 +10,8 @@ namespace FullBrightMod.Modules.Player
     {
         public override string Name => Utils.I18n.Get("mod_autopush");
         public override ModuleCategory Category => ModuleCategory.Player;
-        public override void OnEnable()  => Settings.IsAutoPushEnabled = true;
-        public override void OnDisable() => Settings.IsAutoPushEnabled = false;
+        public override void OnEnable()  => ModSettings.IsAutoPushEnabled = true;
+        public override void OnDisable() => ModSettings.IsAutoPushEnabled = false;
 
         private float _pushTimer;
 
@@ -19,7 +19,7 @@ namespace FullBrightMod.Modules.Player
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
-            float val = Settings.AutoPushDistance;
+            float val = ModSettings.AutoPushDistance;
             GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
             {
                 alignment = TextAnchor.MiddleLeft,
@@ -28,10 +28,10 @@ namespace FullBrightMod.Modules.Player
                 padding = new RectOffset(0, 0, 0, 0)
             };
             GUI.Label(new Rect(x + 8, y, 70, 20),
-                $"  {Utils.I18n.Get("set_autopush_distance")}: {Settings.AutoPushDistance:F1}m", labelStyle);
+                $"  {Utils.I18n.Get("set_autopush_distance")}: {ModSettings.AutoPushDistance:F1}m", labelStyle);
 
             Rect barRect = new Rect(x + 78, y + 5, width - 90, 14);
-            Settings.AutoPushDistance = ClickGUIManager.DrawSlider(barRect, Settings.AutoPushDistance, 1f, 5f, e);
+            ModSettings.AutoPushDistance = ClickGUIManager.DrawSlider(barRect, ModSettings.AutoPushDistance, 1f, 5f, e);
 
             y += 30f;
         }
@@ -48,7 +48,7 @@ namespace FullBrightMod.Modules.Player
             NetBody localNetBody = NetPlayer.LOCAL_PLAYER?.playerbody;
             if (localNetBody == null) return;
 
-            float pushDistSqr = Settings.AutoPushDistance * Settings.AutoPushDistance;
+            float pushDistSqr = ModSettings.AutoPushDistance * ModSettings.AutoPushDistance;
             Vector2 myPos = localNetBody.rb.position;
 
             foreach (Body targetBody in players)

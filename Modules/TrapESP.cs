@@ -8,20 +8,20 @@ namespace FullBrightMod.Modules
     {
         public override string Name => Utils.I18n.Get("mod_trapesp");
         public override ModuleCategory Category => ModuleCategory.Render;
-        public override void OnEnable()  => Settings.IsTrapEspEnabled = true;
-        public override void OnDisable() => Settings.IsTrapEspEnabled = false;
+        public override void OnEnable()  => ModSettings.IsTrapEspEnabled = true;
+        public override void OnDisable() => ModSettings.IsTrapEspEnabled = false;
 
         public override float GetSettingsHeight() => 60f;
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
-            ItemESP.DrawToggle(x, ref y, width, e,
+            CustomGUI.DrawToggle(x, ref y, width, e,
                 Utils.I18n.Get("set_esp_wireframe"),
-                ref Settings.IsTrapEspWireframeEnabled);
+                ref ModSettings.IsTrapEspWireframeEnabled);
 
-            ItemESP.DrawColorPicker(x, ref y, width, e,
+            CustomGUI.DrawColorPicker(x, ref y, width, e,
                 Utils.I18n.Get("set_trap_color") + ":",
-                ref Settings.SelectedTrapColor);
+                ref ModSettings.SelectedTrapColor);
         }
     }
 }

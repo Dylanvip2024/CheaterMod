@@ -7,7 +7,7 @@ namespace FullBrightMod.Modules
         public override string Name => Utils.I18n.Get("mod_shrapnel_maker");
         public override ModuleCategory Category => ModuleCategory.Player;
 
-        public override void OnEnable() => Settings.IsShrapnelMakerEnabled = true;
-        public override void OnDisable() => Settings.IsShrapnelMakerEnabled = false;
+        public override void OnEnable() => ModSettings.IsShrapnelMakerEnabled = true;
+        public override void OnDisable() => ModSettings.IsShrapnelMakerEnabled = false;
     }
 }

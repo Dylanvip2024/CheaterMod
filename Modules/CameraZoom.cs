@@ -8,8 +8,8 @@ namespace FullBrightMod.Modules
     {
         public override string Name => Utils.I18n.Get("mod_camerazoom");
         public override ModuleCategory Category => ModuleCategory.Render;
-        public override void OnEnable()  => Settings.IsCameraZoomEnabled = true;
-        public override void OnDisable() => Settings.IsCameraZoomEnabled = false;
+        public override void OnEnable()  => ModSettings.IsCameraZoomEnabled = true;
+        public override void OnDisable() => ModSettings.IsCameraZoomEnabled = false;
 
         public override float GetSettingsHeight() => 30f;
 
@@ -24,11 +24,11 @@ namespace FullBrightMod.Modules
                 padding = new RectOffset(0, 0, 0, 0)
             };
             Rect labelRect = new Rect(x + 8, y, 65, 22);
-            GUI.Label(labelRect, $"  {Utils.I18n.Get("set_camera_size")}: {Settings.CustomCameraSize:F1}", labelStyle);
+            GUI.Label(labelRect, $"  {Utils.I18n.Get("set_camera_size")}: {ModSettings.CustomCameraSize:F1}", labelStyle);
 
             // 滑块
             Rect barRect = new Rect(x + 75, y + 6, width - 90, 14);
-            Settings.CustomCameraSize = ClickGUIManager.DrawSlider(barRect, Settings.CustomCameraSize, 5f, 50f, e);
+            ModSettings.CustomCameraSize = ClickGUIManager.DrawSlider(barRect, ModSettings.CustomCameraSize, 5f, 50f, e);
 
             y += 30f;
         }

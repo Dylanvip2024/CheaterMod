@@ -49,71 +49,71 @@ namespace FullBrightMod.UI
         {
             GUILayout.Space(5);
             GUILayout.Label("====== 视觉&辅助功能区 ======");
-            Settings.IsCameraZoomEnabled    = GUILayout.Toggle(Settings.IsCameraZoomEnabled,    " 开启摄像机视距拉远 (扩大你的视野)");
-            Settings.IsVisionExpandEnabled  = GUILayout.Toggle(Settings.IsVisionExpandEnabled,  " 开启局部光照范围扩大");
-            Settings.IsFullBrightEnabled    = GUILayout.Toggle(Settings.IsFullBrightEnabled,    " 开启全亮模式");
-            Settings.IsItemEspEnabled       = GUILayout.Toggle(Settings.IsItemEspEnabled,       " 开启地面物品透视");
-            Settings.IsCreatureEspEnabled   = GUILayout.Toggle(Settings.IsCreatureEspEnabled,   " 开启生物/怪物透视");
-            Settings.IsTrapEspEnabled       = GUILayout.Toggle(Settings.IsTrapEspEnabled,       " 开启陷阱警告雷达 (显示出陷阱与危险范围)");
-            Settings.IsThroughWallEnabled   = GUILayout.Toggle(Settings.IsThroughWallEnabled,   " 开启隔墙取物 (无视墙壁遮挡)");
-            Settings.IsLongHandsEnabled     = GUILayout.Toggle(Settings.IsLongHandsEnabled,     " 开启长手模式 (超远交互/隔墙互动)");
-            Settings.IsAutoTranslateEnabled = GUILayout.Toggle(Settings.IsAutoTranslateEnabled, " 开启聊天机翻 (自动谷歌翻译聊天外语)");
-            Settings.IsIQ250Enabled         = GUILayout.Toggle(Settings.IsIQ250Enabled,         " 开启万事通模式 (无智商限制看物品介绍)");
+            ModSettings.IsCameraZoomEnabled    = GUILayout.Toggle(ModSettings.IsCameraZoomEnabled,    " 开启摄像机视距拉远 (扩大你的视野)");
+            ModSettings.IsVisionExpandEnabled  = GUILayout.Toggle(ModSettings.IsVisionExpandEnabled,  " 开启局部光照范围扩大");
+            ModSettings.IsFullBrightEnabled    = GUILayout.Toggle(ModSettings.IsFullBrightEnabled,    " 开启全亮模式");
+            ModSettings.IsItemEspEnabled       = GUILayout.Toggle(ModSettings.IsItemEspEnabled,       " 开启地面物品透视");
+            ModSettings.IsCreatureEspEnabled   = GUILayout.Toggle(ModSettings.IsCreatureEspEnabled,   " 开启生物/怪物透视");
+            ModSettings.IsTrapEspEnabled       = GUILayout.Toggle(ModSettings.IsTrapEspEnabled,       " 开启陷阱警告雷达 (显示出陷阱与危险范围)");
+            ModSettings.IsThroughWallEnabled   = GUILayout.Toggle(ModSettings.IsThroughWallEnabled,   " 开启隔墙取物 (无视墙壁遮挡)");
+            ModSettings.IsLongHandsEnabled     = GUILayout.Toggle(ModSettings.IsLongHandsEnabled,     " 开启长手模式 (超远交互/隔墙互动)");
+            ModSettings.IsAutoTranslateEnabled = GUILayout.Toggle(ModSettings.IsAutoTranslateEnabled, " 开启聊天机翻 (自动谷歌翻译聊天外语)");
+            ModSettings.IsIQ250Enabled         = GUILayout.Toggle(ModSettings.IsIQ250Enabled,         " 开启万事通模式 (无智商限制看物品介绍)");
 
-            _prevFreecam = Settings.IsFreecamEnabled;
-            Settings.IsFreecamEnabled = GUILayout.Toggle(Settings.IsFreecamEnabled, " 开启灵魂出窍 (方向键控制视角, Shift加速)");
-            if (Settings.IsFreecamEnabled && !_prevFreecam && Camera.main != null)
+            _prevFreecam = ModSettings.IsFreecamEnabled;
+            ModSettings.IsFreecamEnabled = GUILayout.Toggle(ModSettings.IsFreecamEnabled, " 开启灵魂出窍 (方向键控制视角, Shift加速)");
+            if (ModSettings.IsFreecamEnabled && !_prevFreecam && Camera.main != null)
             {
-                Settings.FreecamPosition = Camera.main.transform.position;
+                ModSettings.FreecamPosition = Camera.main.transform.position;
             }
 
             GUILayout.Space(15);
             GUILayout.Label("====== 降维打击专区 ======");
-            Settings.IsFlightEnabled    = GUILayout.Toggle(Settings.IsFlightEnabled,    " 开启超级飞侠 (WASD控制, Shift加速)");
-            Settings.IsAutoUnlockEnabled= GUILayout.Toggle(Settings.IsAutoUnlockEnabled," 开启秒开锁 (自动解锁)");
+            ModSettings.IsFlightEnabled    = GUILayout.Toggle(ModSettings.IsFlightEnabled,    " 开启超级飞侠 (WASD控制, Shift加速)");
+            ModSettings.IsAutoUnlockEnabled= GUILayout.Toggle(ModSettings.IsAutoUnlockEnabled," 开启秒开锁 (自动解锁)");
 
             GUILayout.Space(10);
-            if (Settings.IsCameraZoomEnabled)
+            if (ModSettings.IsCameraZoomEnabled)
             {
-                GUILayout.Label("大地图视距尺寸 (Camera Size): " + Settings.CustomCameraSize.ToString("F1"));
-                Settings.CustomCameraSize = GUILayout.HorizontalSlider(Settings.CustomCameraSize, 5.0f, 30.0f);
+                GUILayout.Label("大地图视距尺寸 (Camera Size): " + ModSettings.CustomCameraSize.ToString("F1"));
+                ModSettings.CustomCameraSize = GUILayout.HorizontalSlider(ModSettings.CustomCameraSize, 5.0f, 30.0f);
             }
-            if (Settings.IsVisionExpandEnabled && !Settings.IsFullBrightEnabled)
+            if (ModSettings.IsVisionExpandEnabled && !ModSettings.IsFullBrightEnabled)
             {
-                GUILayout.Label("局部光晕半径 (Radius): " + Settings.CustomVisionRadius.ToString("F1"));
-                Settings.CustomVisionRadius = GUILayout.HorizontalSlider(Settings.CustomVisionRadius, 5.0f, 50.0f);
+                GUILayout.Label("局部光晕半径 (Radius): " + ModSettings.CustomVisionRadius.ToString("F1"));
+                ModSettings.CustomVisionRadius = GUILayout.HorizontalSlider(ModSettings.CustomVisionRadius, 5.0f, 50.0f);
             }
-            if (Settings.IsFullBrightEnabled)
+            if (ModSettings.IsFullBrightEnabled)
             {
-                GUILayout.Label("全局光照强度 (Intensity): " + Settings.BrightenIntensity.ToString("F1"));
-                Settings.BrightenIntensity = GUILayout.HorizontalSlider(Settings.BrightenIntensity, 0.0f, 5.0f);
+                GUILayout.Label("全局光照强度 (Intensity): " + ModSettings.BrightenIntensity.ToString("F1"));
+                ModSettings.BrightenIntensity = GUILayout.HorizontalSlider(ModSettings.BrightenIntensity, 0.0f, 5.0f);
             }
-            if (Settings.IsLongHandsEnabled)
+            if (ModSettings.IsLongHandsEnabled)
             {
-                GUILayout.Label("长手物理交互半径: " + Settings.CustomPickupRange.ToString("F1") + "m");
-                Settings.CustomPickupRange = GUILayout.HorizontalSlider(Settings.CustomPickupRange, 9.0f, 150f);
+                GUILayout.Label("长手物理交互半径: " + ModSettings.CustomPickupRange.ToString("F1") + "m");
+                ModSettings.CustomPickupRange = GUILayout.HorizontalSlider(ModSettings.CustomPickupRange, 9.0f, 150f);
             }
 
             GUILayout.Space(5);
-            GUILayout.Label("ESP 字体大小: " + Settings.EspFontSize.ToString());
-            Settings.EspFontSize = Mathf.RoundToInt(GUILayout.HorizontalSlider((float)Settings.EspFontSize, 10f, 24f));
+            GUILayout.Label("ESP 字体大小: " + ModSettings.EspFontSize.ToString());
+            ModSettings.EspFontSize = Mathf.RoundToInt(GUILayout.HorizontalSlider((float)ModSettings.EspFontSize, 10f, 24f));
 
             GUILayout.Space(5);
             GUILayout.Label("物品 ESP 字体颜色样式:");
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("绿色")) Settings.SelectedEspColor = Color.green;
-            if (GUILayout.Button("红色")) Settings.SelectedEspColor = Color.red;
-            if (GUILayout.Button("黄色")) Settings.SelectedEspColor = Color.yellow;
-            if (GUILayout.Button("青色")) Settings.SelectedEspColor = Color.cyan;
+            if (GUILayout.Button("绿色")) ModSettings.SelectedEspColor = Color.green;
+            if (GUILayout.Button("红色")) ModSettings.SelectedEspColor = Color.red;
+            if (GUILayout.Button("黄色")) ModSettings.SelectedEspColor = Color.yellow;
+            if (GUILayout.Button("青色")) ModSettings.SelectedEspColor = Color.cyan;
             GUILayout.EndHorizontal();
 
             GUILayout.Space(5);
             GUILayout.Label("生物 ESP 字体颜色样式:");
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("青色")) Settings.SelectedCreatureColor = Color.cyan;
-            if (GUILayout.Button("绿色")) Settings.SelectedCreatureColor = Color.green;
-            if (GUILayout.Button("红色")) Settings.SelectedCreatureColor = Color.red;
-            if (GUILayout.Button("黄色")) Settings.SelectedCreatureColor = Color.yellow;
+            if (GUILayout.Button("青色")) ModSettings.SelectedCreatureColor = Color.cyan;
+            if (GUILayout.Button("绿色")) ModSettings.SelectedCreatureColor = Color.green;
+            if (GUILayout.Button("红色")) ModSettings.SelectedCreatureColor = Color.red;
+            if (GUILayout.Button("黄色")) ModSettings.SelectedCreatureColor = Color.yellow;
             GUILayout.EndHorizontal();
 
             GUILayout.Space(15);

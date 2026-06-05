@@ -153,6 +153,9 @@ namespace FullBrightMod.UI
 
             DrawAuthorCredit();
 
+            // 悬浮颜色调色板（必须在 GUI 渲染链中）
+            CustomGUI.DrawFloatingColorPicker(e);
+
             GUI.color = Color.white;
         }
 
@@ -399,6 +402,7 @@ namespace FullBrightMod.UI
                                 if (e.button == 0)
                                 {
                                     module.Enabled = !module.Enabled;
+                                    Utils.UISoundHelper.PlayToggleSound(module.Enabled);
                                     if (module.Enabled) module.OnEnable();
                                     else module.OnDisable();
                                     e.Use(); return;
@@ -465,6 +469,7 @@ namespace FullBrightMod.UI
             bool prevGrid   = GlobalSettings.EnableGridSnap;
             bool prevMinimap = GlobalSettings.EnableMinimap;
             bool prevLimb   = GlobalSettings.EnableLimbHUD;
+            bool prevFeature   = GlobalSettings.EnableFeatureList;
 
             // ======== Grid Snapping ========
             GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("gs_section_grid"), sectionStyle);
@@ -554,12 +559,58 @@ namespace FullBrightMod.UI
             DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
                 Utils.I18n.Get("gs_mod_radar"), ref GlobalSettings.EnableModRadar);
 
+            currentY += 6f;
+
+            // ======== Feature List ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("gs_section_featurelist"), sectionStyle);
+            currentY += rowH + 2f;
+
+            DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                Utils.I18n.Get("gs_enable_featurelist"), ref GlobalSettings.EnableFeatureList);
+
+            if (GlobalSettings.EnableFeatureList)
+            {
+                DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_fl_align"), ref GlobalSettings.FeatureListAlignLeft);
+
+                float fontSize = GlobalSettings.FeatureListFontSize;
+                DrawSliderRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_fl_fontsize") + $": {fontSize:F0}" + Utils.I18n.Get("unit_px"), ref fontSize, 8, 24);
+                GlobalSettings.FeatureListFontSize = Mathf.RoundToInt(fontSize);
+
+                Color flColor = GlobalSettings.FeatureListColor;
+                CustomGUI.DrawColorPicker(panelX, ref currentY, panelW, e,
+                    Utils.I18n.Get("gs_fl_color") + ":", ref flColor);
+                GlobalSettings.FeatureListColor = flColor;
+
+                DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_fl_rainbow"), ref GlobalSettings.FeatureListRainbow);
+
+                DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_fl_bg"), ref GlobalSettings.FeatureListBackground);
+
+                DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_fl_accent"), ref GlobalSettings.FeatureListAccentLine);
+            }
+
+            currentY += 6f;
+
+            // ======== UI 音效 ========
+            bool prevSound = GlobalSettings.EnableToggleSound;
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("gs_section_sound"), sectionStyle);
+            currentY += rowH + 2f;
+
+            DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                Utils.I18n.Get("gs_enable_toggle_sound"), ref GlobalSettings.EnableToggleSound);
+
             // ★ Bug1 修复：同步 ModuleBase 生命周期 ★
             if (prevGrid != GlobalSettings.EnableGridSnap) { /* GridSnap 无对应 Module */ }
             if (prevMinimap != GlobalSettings.EnableMinimap)
                 SyncModuleLifecycle<MinimapModule>(GlobalSettings.EnableMinimap);
             if (prevLimb != GlobalSettings.EnableLimbHUD)
                 SyncModuleLifecycle<LimbStatusModule>(GlobalSettings.EnableLimbHUD);
+            if (prevFeature != GlobalSettings.EnableFeatureList)
+                SyncModuleLifecycle<FeatureListModule>(GlobalSettings.EnableFeatureList);
         }
 
         /// <summary>预先估算 Global Settings 面板的内容高度（不含背景 padding）</summary>
@@ -587,84 +638,16 @@ namespace FullBrightMod.UI
             // CM使用者识别 section
             h += rowH;
             h += 6f;
+            // Feature List section
+            h += rowH + 2f; // section title
+            h += rowH;      // toggle
+            if (GlobalSettings.EnableFeatureList)
+                h += rowH * 6; // align toggle + font slider + color picker + 3 toggles
+            // UI Sound section
+            h += rowH + 2f; // section title
+            h += rowH;      // toggle
+            h += 6f;
             return h;
-        }
-
-        // =========================================================
-        // Credits Tab —— 关于/鸣谢
-        // =========================================================
-        private void DrawCreditsPanel(Event e)
-        {
-            float panelX = Screen.width * 0.5f - 200f;
-            float panelY = TabBarY + TabHeight + 10f;
-            float panelW = 400f;
-            float rowH = 26f;
-
-            GUIStyle sectionStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 14,
-                fontStyle = FontStyle.Bold,
-                normal = { textColor = new Color(0.2f, 0.6f, 1.0f, 1f) },
-                padding = new RectOffset(10, 0, 0, 0)
-            };
-
-            GUIStyle contentStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 12,
-                normal = { textColor = Color.white },
-                padding = new RectOffset(22, 0, 2, 0)
-            };
-
-            // 区块一：开发者（5行：标题 + 2人 × 2行）
-            // 区块二：特别鸣谢（3行：标题 + 2人 × 1行）
-            // 区块三：关于（3行：标题 + 2行内容）
-            int devLines = 1 + 2;
-            int creditLines = 1 + 2;
-            int aboutLines = 1 + 2;
-            float contentHeight = (devLines + creditLines + aboutLines) * (rowH + 2f) + 20f;
-
-            // ---- 背景 + 强调线 ----
-            Rect bgRect = new Rect(panelX, panelY, panelW, contentHeight);
-            GUI.color = new Color(0.16f, 0.16f, 0.18f, 0.95f);
-            GUI.DrawTexture(bgRect, WhiteTexture);
-
-            Rect accentRect = new Rect(panelX, panelY, panelW, 2f);
-            GUI.color = ColorAccent;
-            GUI.DrawTexture(accentRect, WhiteTexture);
-            GUI.color = Color.white;
-
-            // ---- 绘制内容 ----
-            float currentY = panelY + 10f;
-
-            // ======== 开发者 ========
-            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "--- " + Utils.I18n.Get("credits_developer") + " ---", sectionStyle);
-            currentY += rowH + 2f;
-
-            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "Dylanvip2024：" + Utils.I18n.Get("credits_author_desc"), contentStyle);
-            currentY += rowH + 2f;
-
-            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "Darnmik：" + Utils.I18n.Get("credits_darnmik_desc"), contentStyle);
-            currentY += rowH + 6f;
-
-            // ======== 特别鸣谢 ========
-            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "--- " + Utils.I18n.Get("credits_thanks") + " ---", sectionStyle);
-            currentY += rowH + 2f;
-
-            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_wanxi"), contentStyle);
-            currentY += rowH + 2f;
-
-            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_yumo"), contentStyle);
-            currentY += rowH + 6f;
-
-            // ======== 关于 ========
-            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "--- " + Utils.I18n.Get("credits_about") + " ---", sectionStyle);
-            currentY += rowH + 2f;
-
-            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_author_account"), contentStyle);
-            currentY += rowH + 2f;
-
-            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_source_url"), contentStyle);
-            currentY += rowH + 2f;
         }
 
         // =========================================================
@@ -714,6 +697,58 @@ namespace FullBrightMod.UI
 
             float newVal = DrawSlider(sliderRect, value, min, max, e, ColorSliderFill, 8f);
             if (Mathf.Abs(newVal - value) > 0.001f) value = newVal;
+
+            y += rowHeight;
+        }
+
+        private void DrawSelectorRow(float panelX, ref float y, float width, float rowHeight, Event e,
+            string label, string[] options, ref int currentIndex)
+        {
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 11,
+                normal = { textColor = Color.white },
+                padding = new RectOffset(14, 0, 4, 0)
+            };
+            GUI.Label(new Rect(panelX, y, width * 0.45f, rowHeight), label, labelStyle);
+
+            float selY = y + 2f;
+            Rect leftBtn = new Rect(panelX + width * 0.45f, selY, 24f, rowHeight - 4f);
+            Rect rightBtn = new Rect(panelX + width - 28f, selY, 24f, rowHeight - 4f);
+            Rect labelRect = new Rect(panelX + width * 0.45f + 24f, y, width * 0.55f - 52f, rowHeight);
+
+            bool leftHover = leftBtn.Contains(e.mousePosition);
+            bool rightHover = rightBtn.Contains(e.mousePosition);
+            GUI.color = leftHover ? ColorAccent : ColorModuleBg;
+            GUI.DrawTexture(leftBtn, WhiteTexture);
+            GUI.color = rightHover ? ColorAccent : ColorModuleBg;
+            GUI.DrawTexture(rightBtn, WhiteTexture);
+
+            GUIStyle arrowStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 14,
+                normal = { textColor = Color.white }
+            };
+            GUI.Label(leftBtn, "◀", arrowStyle);
+            GUI.Label(rightBtn, "▶", arrowStyle);
+
+            GUIStyle optStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter,
+                fontSize = 11,
+                normal = { textColor = Color.white }
+            };
+            if (currentIndex >= 0 && currentIndex < options.Length)
+                GUI.Label(labelRect, options[currentIndex], optStyle);
+
+            if (e.type == EventType.MouseDown && e.button == 0)
+            {
+                if (leftBtn.Contains(e.mousePosition)) { currentIndex--; e.Use(); }
+                if (rightBtn.Contains(e.mousePosition)) { currentIndex++; e.Use(); }
+            }
+            if (currentIndex < 0) currentIndex = options.Length - 1;
+            if (currentIndex >= options.Length) currentIndex = 0;
 
             y += rowHeight;
         }
@@ -780,8 +815,70 @@ namespace FullBrightMod.UI
         }
 
         // =========================================================
-        // 作者署名 — 屏幕右下角，低调半透明，始终可见
+        // 鸣谢面板 (Credits Tab)
         // =========================================================
+        private void DrawCreditsPanel(Event e)
+        {
+            float panelW = 460f;
+            float panelX = Screen.width * 0.5f - panelW * 0.5f;
+            float panelY = Screen.height * 0.1f;
+            float rowH = 22f;
+
+            GUIStyle sectionStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 14, fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleCenter,
+                normal = { textColor = new Color(0.2f, 0.6f, 1.0f) },
+                padding = new RectOffset(0, 0, 4, 0)
+            };
+
+            GUIStyle contentStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 12,
+                normal = { textColor = Color.white },
+                padding = new RectOffset(22, 0, 2, 0)
+            };
+
+            int creditLines = 1 + 3; // title + 3 people
+            int devLines = 1 + 2;
+            int aboutLines = 1 + 2;
+            float contentHeight = (devLines + creditLines + aboutLines) * (rowH + 2f) + 20f;
+
+            Rect bgRect = new Rect(panelX, panelY, panelW, contentHeight);
+            GUI.color = new Color(0.16f, 0.16f, 0.18f, 0.95f);
+            GUI.DrawTexture(bgRect, WhiteTexture);
+            GUI.color = ColorAccent;
+            GUI.DrawTexture(new Rect(panelX, panelY, panelW, 2f), WhiteTexture);
+            GUI.color = Color.white;
+
+            float currentY = panelY + 10f;
+
+            // ======== 开发者 ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "--- " + Utils.I18n.Get("credits_developer") + " ---", sectionStyle);
+            currentY += rowH + 2f;
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "Dylanvip2024：" + Utils.I18n.Get("credits_author_desc"), contentStyle);
+            currentY += rowH + 2f;
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "Darnmik：" + Utils.I18n.Get("credits_darnmik_desc"), contentStyle);
+            currentY += rowH + 6f;
+
+            // ======== 特别鸣谢 ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "--- " + Utils.I18n.Get("credits_thanks") + " ---", sectionStyle);
+            currentY += rowH + 2f;
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_wanxi"), contentStyle);
+            currentY += rowH + 2f;
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_yumo"), contentStyle);
+            currentY += rowH + 2f;
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_andian"), contentStyle);
+            currentY += rowH + 6f;
+
+            // ======== 关于 ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), "--- " + Utils.I18n.Get("credits_about") + " ---", sectionStyle);
+            currentY += rowH + 2f;
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_author_account"), contentStyle);
+            currentY += rowH + 2f;
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("credits_source_url"), contentStyle);
+        }
+
         private static void DrawAuthorCredit()
         {
             float authorW = 190f, authorH = 22f;

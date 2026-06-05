@@ -14,8 +14,8 @@ namespace FullBrightMod.Patches
         [HarmonyPostfix]
         private static void Postfix(Body __instance)
         {
-            if (!Settings.IsMeleeSpeedEnabled) return;
-            if (Settings.MeleeSpeedMultiplier <= 0f) return;
+            if (!ModSettings.IsMeleeSpeedEnabled) return;
+            if (ModSettings.MeleeSpeedMultiplier <= 0f) return;
 
             // 判断是否是本地玩家（只加速自己）
             var pc = PlayerCamera.main;
@@ -25,7 +25,7 @@ namespace FullBrightMod.Patches
             if (__instance.attackCooldown > 0f)
             {
                 // 倍率越高冷却越短：cooldown / multiplier
-                __instance.attackCooldown /= Settings.MeleeSpeedMultiplier;
+                __instance.attackCooldown /= ModSettings.MeleeSpeedMultiplier;
             }
         }
     }

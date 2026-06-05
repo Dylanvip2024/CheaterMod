@@ -10,14 +10,14 @@ namespace FullBrightMod.Modules
 
         public override void OnEnable()
         {
-            Settings.IsNoClipEnabled = true;
+            ModSettings.IsNoClipEnabled = true;
             // 立即对本地玩家应用穿墙
             ApplyNoClip(true);
         }
 
         public override void OnDisable()
         {
-            Settings.IsNoClipEnabled = false;
+            ModSettings.IsNoClipEnabled = false;
             // 恢复碰撞
             ApplyNoClip(false);
         }

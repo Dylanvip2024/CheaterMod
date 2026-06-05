@@ -14,7 +14,7 @@ namespace FullBrightMod.Patches
         private static bool Prefix(Body __instance)
         {
             // 如果反布娃娃功能关闭，一律放行
-            if (!Settings.IsAntiRagdollEnabled) return true;
+            if (!ModSettings.IsAntiRagdollEnabled) return true;
 
             // ✨【核心身份判定过滤】✨
             // 检查当前触发布娃娃的肉体 (Body)，是不是本地玩家的真实主肉体

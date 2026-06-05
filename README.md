@@ -27,6 +27,7 @@
   * **强制背人**：对着目标右键后会将他推倒并背起，和长手有联动
   * **肋骨粉碎者**：打开CPR小游戏后自动粉碎目标的肋骨（会导致自己疲劳）
   * **相机传送**：开启并关闭后传送到屏幕中央位置，可与灵魂出窍搭配使用
+  * **闯祸光环**：自动使用选定的功能对指定玩家进行整蛊
 
 * **👁️ 视觉模块 (Render)**
   * **物品透视**：在掉落的物品上显示物品名称
@@ -38,6 +39,7 @@
   * **玩家透视**：在玩家身上渲染名称
   * **反屏幕特效**：阻止一些视觉效果的渲染
   * **箱子指示器**：指示箱子位置
+  * **变色龙**：允许用户自定义自己身体部位的颜色
 
 * **🏃 移动模块 (Movement)**
   * **超级飞侠**：允许你拥有飞行能力
@@ -106,6 +108,7 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **Force Carry**: Right-click on a target to knock them down and carry them on your back; synergizes with Long Arm Mode.
   * **Rib Crusher**: Automatically crushes the target's ribs upon opening the CPR minigame (causes fatigue to yourself).
   * **Camera Teleport**: Teleports you to the center of the screen after toggling it on and off; can be used in combination with Freecam (Out-of-Body mode).
+  * **Troublemaker Aura**: Automatically uses selected features to prank a designated player.
 
 * **👁️ Render Module**
   * **Item ESP**: Displays the names of dropped items through walls.
@@ -116,6 +119,7 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **Throw Trajectory**: Displays the predicted trajectory and landing point of thrown items.
   * **Anti-Screen**: Effects: Prevents the rendering of certain visual effects
   * **Chest Indicator**: Indicates chest locations
+  * **Chameleon**: Allows users to customize the colors of their own body parts.
 
 * **🏃 Movement Module**
   * **Fly Hack**: Grants you the ability to fly.

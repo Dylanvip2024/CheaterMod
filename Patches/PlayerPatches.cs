@@ -48,7 +48,7 @@ namespace FullBrightMod.Patches
         private static bool Prefix(Body __instance, Item item, bool noAlerts, ref bool __result)
         {
             if (item == null) return true;
-            if (!Settings.IsLongHandsEnabled && !Settings.IsThroughWallEnabled) return true;
+            if (!ModSettings.IsLongHandsEnabled && !ModSettings.IsThroughWallEnabled) return true;
 
             bool holding = __instance.HoldingItem(item)
                 || (item.ParentContainer() && __instance.HoldingItem(item.ParentContainer().GetComponent<Item>()));
@@ -59,18 +59,18 @@ namespace FullBrightMod.Patches
                 : item.GetComponent<Collider2D>().bounds.center;
 
             bool flag_blocked = Physics2D.Linecast(__instance.transform.position, vector, LayerMask.GetMask("Ground"));
-            float maxRange = Settings.IsLongHandsEnabled ? Settings.CustomPickupRange : 9.0f;
-            if (Settings.IsLongHandsTPModeEnabled) maxRange = 9999f;
+            float maxRange = ModSettings.IsLongHandsEnabled ? ModSettings.CustomPickupRange : 9.0f;
+            if (ModSettings.IsLongHandsTPModeEnabled) maxRange = 9999f;
             bool flag_inRange = Vector2.Distance(item.transform.position, __instance.transform.position) < maxRange;
 
-            if (Settings.IsThroughWallEnabled) flag_blocked = false;
+            if (ModSettings.IsThroughWallEnabled) flag_blocked = false;
             else if (flag_blocked && Physics2D.OverlapPoint(vector, LayerMask.GetMask("Ground"))) flag_blocked = false;
 
             if (!noAlerts)
             {
-                if (flag_blocked && !Settings.IsThroughWallEnabled)
+                if (flag_blocked && !ModSettings.IsThroughWallEnabled)
                     PlayerCamera.main.DoAlert("前方有障碍物遮挡", false);
-                else if (!flag_inRange && !Settings.IsLongHandsEnabled)
+                else if (!flag_inRange && !ModSettings.IsLongHandsEnabled)
                     PlayerCamera.main.DoAlert("物品离得太远了", false);
             }
 
@@ -88,10 +88,10 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static void Prefix(ref bool check_obstruction, ref float distance)
         {
-            if (Settings.IsLongHandsEnabled)
+            if (ModSettings.IsLongHandsEnabled)
             {
                 check_obstruction = false;
-                distance = Settings.IsLongHandsTPModeEnabled ? 9999f : Settings.CustomPickupRange;
+                distance = ModSettings.IsLongHandsTPModeEnabled ? 9999f : ModSettings.CustomPickupRange;
             }
             else { distance = 9f; }
         }
@@ -107,7 +107,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static bool Prefix(ref bool __result)
         {
-            if (!Settings.IsLongHandsTPModeEnabled || !Settings.IsLongHandsEnabled)
+            if (!ModSettings.IsLongHandsTPModeEnabled || !ModSettings.IsLongHandsEnabled)
                 return true;
             __result = true;
             return false;
@@ -128,7 +128,7 @@ namespace FullBrightMod.Patches
         private static void Prefix()
         {
             _patched = false;
-            if (!Settings.IsLongHandsTPModeEnabled || !Settings.IsLongHandsEnabled) return;
+            if (!ModSettings.IsLongHandsTPModeEnabled || !ModSettings.IsLongHandsEnabled) return;
             _savedDist = SharedMain.max_player_interaction_distance;
             SharedMain.max_player_interaction_distance = 9999f;
             _patched = true;
@@ -153,7 +153,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static bool Prefix()
         {
-            if (!Settings.IsLongHandsTPModeEnabled || !Settings.IsLongHandsEnabled)
+            if (!ModSettings.IsLongHandsTPModeEnabled || !ModSettings.IsLongHandsEnabled)
                 return true;
 
             // ESC 按下 → 玩家手动关闭 → 允许
@@ -175,7 +175,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static bool Prefix(ref bool __result)
         {
-            if (!Settings.IsLongHandsTPModeEnabled || !Settings.IsLongHandsEnabled)
+            if (!ModSettings.IsLongHandsTPModeEnabled || !ModSettings.IsLongHandsEnabled)
                 return true;
             __result = true;   // true = 无遮挡，交互允许
             return false;
@@ -193,7 +193,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static bool Prefix(ref bool __result)
         {
-            if (!Settings.IsLongHandsTPModeEnabled || !Settings.IsLongHandsEnabled)
+            if (!ModSettings.IsLongHandsTPModeEnabled || !ModSettings.IsLongHandsEnabled)
                 return true;
             __result = true;  // true = 无障碍，交互允许
             return false;
@@ -212,7 +212,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static bool Prefix(PlayerCamera __instance)
         {
-            if (!Settings.IsLongHandsTPModeEnabled || !Settings.IsLongHandsEnabled)
+            if (!ModSettings.IsLongHandsTPModeEnabled || !ModSettings.IsLongHandsEnabled)
                 return true;
             if (__instance.woundView == null) return true;
 
@@ -245,14 +245,14 @@ namespace FullBrightMod.Patches
         private static bool Prefix(Body __instance, Item item, int slot, bool force)
         {
             if (item == null) return true;
-            if (!Settings.IsLongHandsTPModeEnabled || !Settings.IsLongHandsEnabled) return true;
+            if (!ModSettings.IsLongHandsTPModeEnabled || !ModSettings.IsLongHandsEnabled) return true;
             if (PlayerCamera.main == null || PlayerCamera.main.body != __instance) return true;
 
             // 协程内部的重入调用 → 放行
             if (IsBlinking) return true;
 
             float dist = Vector2.Distance(item.transform.position, __instance.transform.position);
-            if (dist <= Settings.CustomPickupRange) return true;
+            if (dist <= ModSettings.CustomPickupRange) return true;
 
             // 拦截，转入协程
             FullBrightPlugin.Instance.StartCoroutine(PickupBlinkCoroutine(__instance, item, slot, force));
@@ -299,16 +299,16 @@ namespace FullBrightMod.Patches
         {
             if (Camera.main == null) return;
 
-            if (Settings.IsCameraZoomEnabled)
+            if (ModSettings.IsCameraZoomEnabled)
             {
                 MonoBehaviour ppc = Camera.main.GetComponent("PixelPerfectCamera") as MonoBehaviour;
                 if (ppc != null && ppc.enabled) ppc.enabled = false;
-                Camera.main.orthographicSize = Settings.CustomCameraSize;
+                Camera.main.orthographicSize = ModSettings.CustomCameraSize;
             }
 
-            if (Settings.IsFreecamEnabled)
+            if (ModSettings.IsFreecamEnabled)
             {
-                Vector3 newPos = Settings.FreecamPosition;
+                Vector3 newPos = ModSettings.FreecamPosition;
                 newPos.z = Camera.main.transform.position.z;
                 Camera.main.transform.position = newPos;
             }
@@ -324,7 +324,7 @@ namespace FullBrightMod.Patches
         [HarmonyPostfix]
         private static void Postfix(Body __instance)
         {
-            if (!Settings.IsFlightEnabled) return;
+            if (!ModSettings.IsFlightEnabled) return;
             if (PlayerCamera.main == null || PlayerCamera.main.body != __instance) return;
 
             __instance.rb.gravityScale = 0f;

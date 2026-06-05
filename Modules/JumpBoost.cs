@@ -8,8 +8,8 @@ namespace FullBrightMod.Modules
     {
         public override string Name => Utils.I18n.Get("mod_jumpboost");
         public override ModuleCategory Category => ModuleCategory.Movement;
-        public override void OnEnable()  => Settings.IsJumpBoostEnabled = true;
-        public override void OnDisable() => Settings.IsJumpBoostEnabled = false;
+        public override void OnEnable()  => ModSettings.IsJumpBoostEnabled = true;
+        public override void OnDisable() => ModSettings.IsJumpBoostEnabled = false;
 
         public override float GetSettingsHeight() => 30f;
 
@@ -24,11 +24,11 @@ namespace FullBrightMod.Modules
                 padding = new RectOffset(0, 0, 0, 0)
             };
             Rect labelRect = new Rect(x + 8, y, 70, 22);
-            GUI.Label(labelRect, $"  {Utils.I18n.Get("set_jump_force")}: {Settings.CustomJumpForce:F1}", labelStyle);
+            GUI.Label(labelRect, $"  {Utils.I18n.Get("set_jump_force")}: {ModSettings.CustomJumpForce:F1}", labelStyle);
 
             // 滑块（范围 5f ~ 80f）
             Rect barRect = new Rect(x + 78, y + 6, width - 93, 14);
-            Settings.CustomJumpForce = ClickGUIManager.DrawSlider(barRect, Settings.CustomJumpForce, 5f, 80f, e);
+            ModSettings.CustomJumpForce = ClickGUIManager.DrawSlider(barRect, ModSettings.CustomJumpForce, 5f, 80f, e);
 
             y += 30f;
         }

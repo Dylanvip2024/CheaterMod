@@ -17,13 +17,13 @@ namespace FullBrightMod.Patches
         {
             if (__instance == null) return;
 
-            if (Settings.IsFullBrightEnabled)
+            if (ModSettings.IsFullBrightEnabled)
             {
                 if (__instance.lightType == Light2D.LightType.Global)
                 {
                     // 【优化点】：只在数值真正不同时才赋值，防止 URP 光照图每帧重绘引发掉帧
-                    if (Mathf.Abs(__instance.intensity - Settings.BrightenIntensity) > 0.01f)
-                        __instance.intensity = Settings.BrightenIntensity;
+                    if (Mathf.Abs(__instance.intensity - ModSettings.BrightenIntensity) > 0.01f)
+                        __instance.intensity = ModSettings.BrightenIntensity;
                     
                     if (__instance.color != Color.white)
                         __instance.color = Color.white;
@@ -34,15 +34,15 @@ namespace FullBrightMod.Patches
                     __instance.shadowIntensity = 0f;
                 }
             }
-            else if (Settings.IsVisionExpandEnabled)
+            else if (ModSettings.IsVisionExpandEnabled)
             {
                 if (__instance.lightType == Light2D.LightType.Point || __instance.lightType == Light2D.LightType.Freeform)
                 {
                     // 同理，加入防抖判断
-                    if (Mathf.Abs(__instance.pointLightOuterRadius - Settings.CustomVisionRadius) > 0.01f)
-                        __instance.pointLightOuterRadius = Settings.CustomVisionRadius;
+                    if (Mathf.Abs(__instance.pointLightOuterRadius - ModSettings.CustomVisionRadius) > 0.01f)
+                        __instance.pointLightOuterRadius = ModSettings.CustomVisionRadius;
 
-                    float innerRad = Settings.CustomVisionRadius * 0.1f;
+                    float innerRad = ModSettings.CustomVisionRadius * 0.1f;
                     if (Mathf.Abs(__instance.pointLightInnerRadius - innerRad) > 0.01f)
                         __instance.pointLightInnerRadius = innerRad;
                 }
@@ -63,9 +63,9 @@ namespace FullBrightMod.Patches
     {
         private static void Prefix(Camera __instance, ref float value)
         {
-            if (Settings.IsCameraZoomEnabled && __instance.CompareTag("MainCamera"))
+            if (ModSettings.IsCameraZoomEnabled && __instance.CompareTag("MainCamera"))
             {
-                value = Settings.CustomCameraSize;
+                value = ModSettings.CustomCameraSize;
             }
         }
     }
@@ -80,7 +80,7 @@ namespace FullBrightMod.Patches
         private static void Postfix(UnityEngine.Rendering.Volume __instance)
         {
             if (__instance == null) return;
-            if (Settings.IsFullBrightEnabled && __instance.enabled)
+            if (ModSettings.IsFullBrightEnabled && __instance.enabled)
             {
                 __instance.enabled = false;
             }
@@ -98,13 +98,13 @@ namespace FullBrightMod.Patches
         {
             if (__instance == null) return;
 
-            if (Settings.IsFullBrightEnabled)
+            if (ModSettings.IsFullBrightEnabled)
             {
                 __instance.ClearMask();
             }
-            else if (Settings.IsVisionExpandEnabled)
+            else if (ModSettings.IsVisionExpandEnabled)
             {
-                float activeRadius = Mathf.Max(Settings.CustomVisionRadius, Settings.CustomCameraSize * 1.8f);
+                float activeRadius = Mathf.Max(ModSettings.CustomVisionRadius, ModSettings.CustomCameraSize * 1.8f);
                 __instance.farDistance = activeRadius * 2.5f;
             }
         }

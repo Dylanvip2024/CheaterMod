@@ -72,11 +72,11 @@ namespace FullBrightMod.Modules
 
         public override void OnEnable() 
         {
-            Settings.IsBoomboxEnabled = true;
+            ModSettings.IsBoomboxEnabled = true;
             RefreshMusicList();
         }
         
-        public override void OnDisable() => Settings.IsBoomboxEnabled = false;
+        public override void OnDisable() => ModSettings.IsBoomboxEnabled = false;
 
         public HumanBoombox()
         {
@@ -95,15 +95,15 @@ namespace FullBrightMod.Modules
                 string[] files = Directory.GetFiles(_musicFolderPath, "*.*")
                     .Where(s => s.EndsWith(".mp3") || s.EndsWith(".wav") || s.EndsWith(".ogg")).ToArray();
                 
-                Settings.AvailableMusicTracks.Clear();
+                ModSettings.AvailableMusicTracks.Clear();
                 foreach (string file in files)
                 {
-                    Settings.AvailableMusicTracks.Add(Path.GetFileName(file));
+                    ModSettings.AvailableMusicTracks.Add(Path.GetFileName(file));
                 }
             }
-            if (Settings.CurrentTrackIndex >= Settings.AvailableMusicTracks.Count)
+            if (ModSettings.CurrentTrackIndex >= ModSettings.AvailableMusicTracks.Count)
             {
-                Settings.CurrentTrackIndex = 0;
+                ModSettings.CurrentTrackIndex = 0;
             }
         }
 
@@ -118,15 +118,15 @@ namespace FullBrightMod.Modules
             Rect trackLabelRect = new Rect(x + 8, y, 70, 22);
             GUI.Label(trackLabelRect, $"  {Utils.I18n.Get("set_boombox_track") ?? "当前曲目"}", labelStyle);
 
-            if (Settings.AvailableMusicTracks.Count > 0)
+            if (ModSettings.AvailableMusicTracks.Count > 0)
             {
                 if (GUI.Button(new Rect(x + 78, y + 2, 22, 18), "‹", buttonStyle))
                 {
-                    Settings.CurrentTrackIndex--;
-                    if (Settings.CurrentTrackIndex < 0) Settings.CurrentTrackIndex = Settings.AvailableMusicTracks.Count - 1;
+                    ModSettings.CurrentTrackIndex--;
+                    if (ModSettings.CurrentTrackIndex < 0) ModSettings.CurrentTrackIndex = ModSettings.AvailableMusicTracks.Count - 1;
                 }
 
-                string trackName = Settings.AvailableMusicTracks[Settings.CurrentTrackIndex];
+                string trackName = ModSettings.AvailableMusicTracks[ModSettings.CurrentTrackIndex];
                 if (trackName.Length > 20) trackName = trackName.Substring(0, 17) + "...";
                 
                 GUIStyle centerStyle = new GUIStyle(labelStyle) { alignment = TextAnchor.MiddleCenter, normal = { textColor = Color.white } };
@@ -134,8 +134,8 @@ namespace FullBrightMod.Modules
 
                 if (GUI.Button(new Rect(x + width - 28, y + 2, 22, 18), "›", buttonStyle))
                 {
-                    Settings.CurrentTrackIndex++;
-                    if (Settings.CurrentTrackIndex >= Settings.AvailableMusicTracks.Count) Settings.CurrentTrackIndex = 0;
+                    ModSettings.CurrentTrackIndex++;
+                    if (ModSettings.CurrentTrackIndex >= ModSettings.AvailableMusicTracks.Count) ModSettings.CurrentTrackIndex = 0;
                 }
             }
             else

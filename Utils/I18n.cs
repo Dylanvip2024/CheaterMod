@@ -110,6 +110,41 @@ namespace FullBrightMod.Utils
             { "mode_lines", "线条" },
             { "mode_arrows", "箭头" },
 
+            // Chameleon module
+            { "mod_chameleon", "变色龙" },
+            { "set_chameleon_rainbow", "彩虹模式" },
+            { "set_rainbow_speed", "彩虹速度" },
+            { "set_chameleon_glow", "发光效果" },
+            { "set_chameleon_intensity", "发光强度" },
+            { "set_chameleon_color", "部位颜色" },
+            { "cham_part_head", "头部" },
+            { "cham_part_eyes", "眼睛" },
+            { "cham_part_torso", "躯干" },
+            { "cham_part_arms", "手臂" },
+            { "cham_part_legs", "腿部" },
+            { "cham_part_tail", "尾巴" },
+            { "cham_dye_head", "头部染色" },
+            { "cham_dye_eyes", "眼睛染色" },
+            { "cham_dye_torso", "躯干染色" },
+            { "cham_dye_arms", "手臂染色" },
+            { "cham_dye_legs", "腿部染色" },
+            { "cham_dye_tail", "尾巴染色" },
+
+            // KeyMapper module
+            { "mod_keymapper", "按键映射" },
+            { "km_source_key", "源按键" },
+            { "km_target_key", "目标按键" },
+            { "km_press_key", "[按下按键...]" },
+            { "km_bidirectional", "双向映射" },
+            { "km_delete", "删除" },
+            { "km_add_mapping", "+ 添加映射" },
+
+            // Color Picker UI
+            { "ui_color_palette", "调色板" },
+            { "ui_color_edit", "颜色编辑" },
+            { "ui_cancel", "取消" },
+            { "ui_confirm", "确定" },
+
             // Anti-Screen FX toggles
             { "fx_blood", "流血/疼痛红屏" },
             { "fx_temperature", "温度异常特效" },
@@ -144,6 +179,18 @@ namespace FullBrightMod.Utils
             { "tab_globalsettings", "全局设置" },
             { "tab_credits", "关于/鸣谢" },
 
+            // Credits tab labels (ZH)
+            { "credits_developer", "开发者" },
+            { "credits_author_desc", "CheaterMod源作者" },
+            { "credits_darnmik_desc", "为CheaterMod添加了一些实用的功能" },
+            { "credits_thanks", "特别鸣谢" },
+            { "credits_wanxi", "晚夕睡不醒：为模组的开发出谋划策并进行漏洞反馈" },
+            { "credits_yumo", "是是是钰墨：多次帮助测试模组在多人游戏中的表现" },
+            { "credits_andian", "四十毫克胺碘酮：多次报告该模组的BUG并提供建议" },
+            { "credits_about", "关于" },
+            { "credits_author_account", "作者账号: B站Dylanvip2024" },
+            { "credits_source_url", "开源地址: https://github.com/Dylanvip2024/CheaterMod/" },
+
             // Global Settings - Grid Snapping section
             { "gs_section_grid", "--- 网格吸附 ---" },
             { "gs_enable_grid", "启用网格吸附" },
@@ -168,21 +215,36 @@ namespace FullBrightMod.Utils
             { "gs_logo_height", "Logo 大小" },
             { "gs_mod_radar", "开启CM使用者识别" },
 
-            // Credits tab labels (ZH)
-            { "credits_developer", "开发者" },
-            { "credits_author_desc", "CheaterMod源作者" },
-            { "credits_darnmik_desc", "为CheaterMod添加了一些实用的功能" },
-            { "credits_thanks", "特别鸣谢" },
-            { "credits_wanxi", "晚夕睡不醒：为模组的开发出谋划策并进行漏洞反馈" },
-            { "credits_yumo", "是是是钰墨：多次帮助测试模组在多人游戏中的表现" },
-            { "credits_about", "关于" },
-            { "credits_author_account", "作者账号: B站Dylanvip2024" },
-            { "credits_source_url", "开源地址: https://github.com/Dylanvip2024/CheaterMod/" },
-
             // Unit suffixes (appended to slider values)
             { "unit_px", "px" },
             { "unit_m", "m" },
             { "unit_x", "x" },
+
+            // Global Settings - FeatureList
+            { "gs_section_featurelist", "--- 开启功能列表 ---" },
+            { "gs_enable_featurelist", "显示功能列表" },
+            { "gs_fl_align", "左对齐" },
+            { "gs_fl_fontsize", "字体大小" },
+            { "gs_fl_color", "文本颜色" },
+            { "gs_fl_rainbow", "彩虹模式" },
+            { "gs_fl_bg", "背景底框" },
+            { "gs_fl_accent", "边缘强调线" },
+
+            // Global Settings - UI Sound
+            { "gs_section_sound", "--- UI 音效 ---" },
+            { "gs_enable_toggle_sound", "模块开关提示音" },
+
+            // TroublemakerAura module
+            { "mod_troublemaker_aura", "闯祸光环" },
+            { "set_ta_range", "光环范围" },
+            { "set_ta_target_mode", "目标模式" },
+            { "ta_mode_nearest", "最近玩家" },
+            { "ta_mode_all", "所有范围内玩家" },
+            { "set_ta_shrapnel", "破片制造" },
+            { "set_ta_ribcrusher", "肋骨粉碎" },
+            { "set_ta_push", "推倒" },
+            { "set_ta_amputation", "截肢" },
+            { "set_ta_burn", "激光灼烧" },
         };
 
         private static readonly Dictionary<string, string> _en = new Dictionary<string, string>
@@ -293,6 +355,41 @@ namespace FullBrightMod.Utils
             { "mode_lines", "Lines" },
             { "mode_arrows", "Arrows" },
 
+            // Chameleon module
+            { "mod_chameleon", "Chameleon" },
+            { "set_chameleon_rainbow", "Rainbow Mode" },
+            { "set_rainbow_speed", "Rainbow Speed" },
+            { "set_chameleon_glow", "Glow Effect" },
+            { "set_chameleon_intensity", "Glow Intensity" },
+            { "set_chameleon_color", "Part Color" },
+            { "cham_part_head", "Head" },
+            { "cham_part_eyes", "Eyes" },
+            { "cham_part_torso", "Torso" },
+            { "cham_part_arms", "Arms" },
+            { "cham_part_legs", "Legs" },
+            { "cham_part_tail", "Tail" },
+            { "cham_dye_head", "Dye Head" },
+            { "cham_dye_eyes", "Dye Eyes" },
+            { "cham_dye_torso", "Dye Torso" },
+            { "cham_dye_arms", "Dye Arms" },
+            { "cham_dye_legs", "Dye Legs" },
+            { "cham_dye_tail", "Dye Tail" },
+
+            // KeyMapper module
+            { "mod_keymapper", "Key Mapper" },
+            { "km_source_key", "Source" },
+            { "km_target_key", "Target" },
+            { "km_press_key", "[Press Key...]" },
+            { "km_bidirectional", "Bidirectional" },
+            { "km_delete", "Delete" },
+            { "km_add_mapping", "+ Add Mapping" },
+
+            // Color Picker UI
+            { "ui_color_palette", "Palette" },
+            { "ui_color_edit", "Color Edit" },
+            { "ui_cancel", "Cancel" },
+            { "ui_confirm", "Confirm" },
+
             // Anti-Screen FX toggles
             { "fx_blood", "Blood & Pain" },
             { "fx_temperature", "Temperature FX" },
@@ -348,26 +445,41 @@ namespace FullBrightMod.Utils
             { "gs_logo_height", "Logo Size" },
             { "gs_mod_radar", "CM User Detection" },
 
-            // Credits tab labels (EN)
-            { "credits_developer", "Developers" },
-            { "credits_author_desc", "Original author of CheaterMod" },
-            { "credits_darnmik_desc", "Added useful features to CheaterMod" },
-            { "credits_thanks", "Special Thanks" },
-            { "credits_wanxi", "晚夕睡不醒：Provided ideas and bug reports for the mod" },
-            { "credits_yumo", "是是是钰墨：Helped test the mod in multiplayer" },
-            { "credits_about", "About" },
-            { "credits_author_account", "Author: Bilibili @Dylanvip2024" },
-            { "credits_source_url", "Source: https://github.com/Dylanvip2024/CheaterMod/" },
-
             // Unit suffixes
             { "unit_px", "px" },
             { "unit_m", "m" },
             { "unit_x", "x" },
+
+            // Global Settings - FeatureList
+            { "gs_section_featurelist", "--- Active Modules ---" },
+            { "gs_enable_featurelist", "Show Feature List" },
+            { "gs_fl_align", "Left Align" },
+            { "gs_fl_fontsize", "Font Size" },
+            { "gs_fl_color", "Text Color" },
+            { "gs_fl_rainbow", "Rainbow Mode" },
+            { "gs_fl_bg", "Background Box" },
+            { "gs_fl_accent", "Accent Line" },
+
+            // Global Settings - UI Sound
+            { "gs_section_sound", "--- UI Sounds ---" },
+            { "gs_enable_toggle_sound", "Toggle Sound Effect" },
+
+            // TroublemakerAura module
+            { "mod_troublemaker_aura", "Troublemaker Aura" },
+            { "set_ta_range", "Aura Range" },
+            { "set_ta_target_mode", "Target Mode" },
+            { "ta_mode_nearest", "Nearest Player" },
+            { "ta_mode_all", "All In Range" },
+            { "set_ta_shrapnel", "Shrapnel Maker" },
+            { "set_ta_ribcrusher", "Rib Crusher" },
+            { "set_ta_push", "Push" },
+            { "set_ta_amputation", "Amputation" },
+            { "set_ta_burn", "Laser Burn" },
         };
 
         public static string Get(string key)
         {
-            var currentDict = Settings.CurrentLanguage == AppLanguage.English ? _en : _zh;
+            var currentDict = ModSettings.CurrentLanguage == AppLanguage.English ? _en : _zh;
             if (currentDict.TryGetValue(key, out string value)) return value;
             return key;
         }

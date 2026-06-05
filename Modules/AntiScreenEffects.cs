@@ -11,8 +11,8 @@ namespace FullBrightMod.Modules
     {
         public override string Name => Utils.I18n.Get("mod_anti_screen_fx") ?? "反屏幕特效";
         public override ModuleCategory Category => ModuleCategory.Render;
-        public override void OnEnable()  { Settings.IsAntiScreenEffectsActive = true; }
-        public override void OnDisable() { Settings.IsAntiScreenEffectsActive = false; }
+        public override void OnEnable()  { ModSettings.IsAntiScreenEffectsActive = true; }
+        public override void OnDisable() { ModSettings.IsAntiScreenEffectsActive = false; }
 
         public override float GetSettingsHeight()
         {
@@ -22,13 +22,13 @@ namespace FullBrightMod.Modules
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
             // 子开关始终可见，独立于模块的启用状态
-            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_blood")         ?? "流血/疼痛红屏",    ref Settings.DisableBloodFx);
-            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_temperature")   ?? "温度异常特效",      ref Settings.DisableTemperatureFx);
-            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_mental")        ?? "精神异常特效",      ref Settings.DisableMentalFx);
-            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_blur")          ?? "模糊/饥饿特效",     ref Settings.DisableBlurFx);
-            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_radiation")     ?? "辐射噪点特效",      ref Settings.DisableRadiationFx);
-            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_damage")        ?? "损伤视觉遮罩",      ref Settings.DisableDamageFx);
-            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_ui_overlays")   ?? "UI 覆盖层",         ref Settings.DisableUIOverlays);
+            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_blood")         ?? "流血/疼痛红屏",    ref ModSettings.DisableBloodFx);
+            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_temperature")   ?? "温度异常特效",      ref ModSettings.DisableTemperatureFx);
+            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_mental")        ?? "精神异常特效",      ref ModSettings.DisableMentalFx);
+            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_blur")          ?? "模糊/饥饿特效",     ref ModSettings.DisableBlurFx);
+            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_radiation")     ?? "辐射噪点特效",      ref ModSettings.DisableRadiationFx);
+            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_damage")        ?? "损伤视觉遮罩",      ref ModSettings.DisableDamageFx);
+            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_ui_overlays")   ?? "UI 覆盖层",         ref ModSettings.DisableUIOverlays);
         }
 
         private static void DrawToggle(float x, ref float y, float width, Event e, string label, ref bool value)

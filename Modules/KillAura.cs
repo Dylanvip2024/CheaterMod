@@ -13,8 +13,8 @@ namespace FullBrightMod.Modules
     {
         public override string Name => Utils.I18n.Get("mod_killaura") ?? "杀戮光环";
         public override ModuleCategory Category => ModuleCategory.Combat;
-        public override void OnEnable()  => Settings.IsKillAuraEnabled = true;
-        public override void OnDisable() => Settings.IsKillAuraEnabled = false;
+        public override void OnEnable()  => ModSettings.IsKillAuraEnabled = true;
+        public override void OnDisable() => ModSettings.IsKillAuraEnabled = false;
 
         private float _attackTimer;
         private Transform _currentTarget;
@@ -31,70 +31,59 @@ namespace FullBrightMod.Modules
             h += 28f;        // 攻速
             h += 28f;        // 范围
             h += 28f;        // 目标渲染
-            if (Settings.KillAuraRenderTarget)
+            if (ModSettings.KillAuraRenderTarget)
                 h += 28f;    // 颜色选择器
             h += 28f;        // 传送攻击
-            if (Settings.KillAuraTeleportAttack)
+            if (ModSettings.KillAuraTeleportAttack)
                 h += 28f;    // 传送范围
             return h;
         }
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
-            DrawCustomToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_players") ?? "攻击玩家", ref Settings.KillAuraAttackPlayers);
-            DrawCustomToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_creatures") ?? "攻击生物", ref Settings.KillAuraAttackCreatures);
-            DrawCustomToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_glass") ?? "攻击玻璃碴", ref Settings.KillAuraAttackGlass);
+            CustomGUI.DrawToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_players"), ref ModSettings.KillAuraAttackPlayers);
+            CustomGUI.DrawToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_creatures"), ref ModSettings.KillAuraAttackCreatures);
+            CustomGUI.DrawToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_glass"), ref ModSettings.KillAuraAttackGlass);
 
-            float aps = Settings.KillAuraAPS;
-            DrawCustomSlider(x, ref y, width, e, (Utils.I18n.Get("set_ka_aps") ?? "攻击速度") + $": {aps:F0}/s", ref aps, 1f, 20f);
-            Settings.KillAuraAPS = aps;
+            float aps = ModSettings.KillAuraAPS;
+            CustomGUI.DrawSlider(x, ref y, width, e, Utils.I18n.Get("set_ka_aps") + $": {aps:F0}/s", ref aps, 1f, 20f);
+            ModSettings.KillAuraAPS = aps;
 
-            float range = Settings.KillAuraRange;
-            DrawCustomSlider(x, ref y, width, e, (Utils.I18n.Get("set_ka_range") ?? "攻击范围") + $": {range:F1}m", ref range, 1f, 10f);
-            Settings.KillAuraRange = range;
+            float range = ModSettings.KillAuraRange;
+            CustomGUI.DrawSlider(x, ref y, width, e, Utils.I18n.Get("set_ka_range") + $": {range:F1}m", ref range, 1f, 10f);
+            ModSettings.KillAuraRange = range;
 
-            DrawCustomToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_render_target") ?? "渲染目标", ref Settings.KillAuraRenderTarget);
+            CustomGUI.DrawToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_render_target"), ref ModSettings.KillAuraRenderTarget);
 
-            if (Settings.KillAuraRenderTarget)
-                ItemESP.DrawColorPicker(x, ref y, width, e, (Utils.I18n.Get("set_ka_color") ?? "目标颜色") + ":", ref Settings.KillAuraTargetColor);
+            if (ModSettings.KillAuraRenderTarget)
+                CustomGUI.DrawColorPicker(x, ref y, width, e, Utils.I18n.Get("set_ka_color") + ":", ref ModSettings.KillAuraTargetColor);
 
-            // 传送攻击
-            DrawCustomToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_tp_attack") ?? "传送攻击", ref Settings.KillAuraTeleportAttack);
+            CustomGUI.DrawToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_tp_attack"), ref ModSettings.KillAuraTeleportAttack);
 
-            if (Settings.KillAuraTeleportAttack)
+            if (ModSettings.KillAuraTeleportAttack)
             {
-                float tpRange = Settings.KillAuraTeleportRange;
-                DrawCustomSlider(x, ref y, width, e, (Utils.I18n.Get("set_ka_tp_range") ?? "传送最大范围") + $": {tpRange:F0}m", ref tpRange, 10f, 100f);
-                Settings.KillAuraTeleportRange = tpRange;
+                float tpRange = ModSettings.KillAuraTeleportRange;
+                CustomGUI.DrawSlider(x, ref y, width, e, Utils.I18n.Get("set_ka_tp_range") + $": {tpRange:F0}m", ref tpRange, 10f, 100f);
+                ModSettings.KillAuraTeleportRange = tpRange;
             }
         }
 
         public override void OnUpdate()
         {
-            if (!Settings.IsKillAuraEnabled) return;
+            if (!ModSettings.IsKillAuraEnabled) return;
             var body = PlayerCamera.main?.body;
             if (body == null || !body.conscious) return;
 
             _attackTimer += Time.deltaTime;
-            float interval = 1f / Settings.KillAuraAPS;
+            float interval = 1f / ModSettings.KillAuraAPS;
             if (_attackTimer < interval) return;
             _attackTimer = 0f;
 
             _currentTarget = FindClosestTarget(body);
             if (_currentTarget == null || !_currentTarget) return;
 
-            if (Settings.KillAuraTeleportAttack)
-            {
-                // 传送攻击：走协程防 Rubber-banding
-                if (!_isBlinking)
-                    FullBrightPlugin.Instance.StartCoroutine(TeleportAttackCoroutine(body, _currentTarget));
-            }
-            else
-            {
-                DoBlinkStrike(body);
-            }
-
-            if (Settings.KillAuraTeleportAttack)
+            // ★ 原版重复代码块已移除 —— 只保留一次攻击判定
+            if (ModSettings.KillAuraTeleportAttack)
             {
                 // 传送攻击：走协程防 Rubber-banding
                 if (!_isBlinking)
@@ -111,26 +100,55 @@ namespace FullBrightMod.Modules
         {
             try
             {
+                // ★ 7.0.1 安全反射：attackCooldown（原名已验证存在），带类型盲测回退
                 if (_cooldownField == null)
+                {
                     _cooldownField = typeof(Body).GetField("attackCooldown", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                    if (_cooldownField == null)
+                    {
+                        foreach (var f in typeof(Body).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                        {
+                            if (f.FieldType == typeof(float) && f.Name.ToLower().Contains("attack") && f.Name.ToLower().Contains("cooldown"))
+                            {
+                                _cooldownField = f;
+                                break;
+                            }
+                        }
+                    }
+                }
                 if (_useItemMethod == null)
+                {
                     _useItemMethod = typeof(Body).GetMethod("UseItemInHand", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                    if (_useItemMethod == null)
+                    {
+                        foreach (var m in typeof(Body).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                        {
+                            if (m.Name.ToLower().Contains("use") && m.Name.ToLower().Contains("item") && m.Name.ToLower().Contains("hand") && m.GetParameters().Length == 0)
+                            {
+                                _useItemMethod = m;
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 Vector3 backupPos = body.transform.position;
                 Vector3 backupLook = body.targetLookPos;
 
-                Vector3 dir = (backupPos - _currentTarget.position).normalized;
+                // ★ 使用碰撞箱边缘最近点作为目标基准
+                Vector3 targetEdge = GetClosestPointOnTarget(_currentTarget, backupPos);
+                Vector3 dir = (backupPos - targetEdge).normalized;
                 if (dir == Vector3.zero) dir = Vector3.up;
 
                 bool isGlass = _currentTarget.TryGetComponent<GroundGlass>(out var _);
 
                 // 玻璃碴贴地放置，需要更近距离 + 瞄准精确位置避免射线穿过
                 float offset = isGlass ? 0.8f : 1.5f;
-                body.transform.position = _currentTarget.position + dir * offset;
+                body.transform.position = targetEdge + dir * offset;
                 // 玻璃碴瞄准中心点（不加 0.5f 偏移），其他目标瞄准胸部
                 body.targetLookPos = isGlass
                     ? _currentTarget.position
-                    : _currentTarget.position + Vector3.up * 0.5f;
+                    : targetEdge + Vector3.up * 0.5f;
 
                 if (_cooldownField != null) _cooldownField.SetValue(body, 0f);
                 if (_useItemMethod != null) _useItemMethod.Invoke(body, null);
@@ -147,23 +165,26 @@ namespace FullBrightMod.Modules
             Vector3 originalPos = body.transform.position;
             bool error = false;
 
+            // ★ 预计算目标碰撞箱边缘最近点
+            Vector3 targetEdge = GetClosestPointOnTarget(target, originalPos);
+
             try
             {
-                float dist = Vector2.Distance(body.transform.position, target.position);
-                if (dist > Settings.KillAuraTeleportRange)
+                float dist = Vector2.Distance(body.transform.position, targetEdge);
+                if (dist > ModSettings.KillAuraTeleportRange)
                 {
                     _isBlinking = false;
                     yield break;
                 }
 
-                // 将传送距离设为 1.2f 保持安全间距
-                Vector3 safePos = TPHelper.GetSafeTeleportPosition(originalPos, target.position, 1.2f);
+                // ★ 使用边缘点作为传送目标，保持安全间距
+                Vector3 safePos = TPHelper.GetSafeTeleportPosition(originalPos, targetEdge, 1.2f);
                 body.transform.position = safePos;
 
                 bool isGlass = target.TryGetComponent<GroundGlass>(out var _);
                 body.targetLookPos = isGlass
                     ? target.position
-                    : target.position + Vector3.up * 0.5f;
+                    : targetEdge + Vector3.up * 0.5f;
                 ClientMain.Client_SendCharacterSyncPacket();
             }
             catch { error = true; }
@@ -175,10 +196,31 @@ namespace FullBrightMod.Modules
 
             try
             {
+                // ★ 复用 DoBlinkStrike 中已强化的反射查找
                 if (_cooldownField == null)
+                {
                     _cooldownField = typeof(Body).GetField("attackCooldown", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                    if (_cooldownField == null)
+                    {
+                        foreach (var f in typeof(Body).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                        {
+                            if (f.FieldType == typeof(float) && f.Name.ToLower().Contains("attack") && f.Name.ToLower().Contains("cooldown"))
+                            { _cooldownField = f; break; }
+                        }
+                    }
+                }
                 if (_useItemMethod == null)
+                {
                     _useItemMethod = typeof(Body).GetMethod("UseItemInHand", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                    if (_useItemMethod == null)
+                    {
+                        foreach (var m in typeof(Body).GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                        {
+                            if (m.Name.ToLower().Contains("use") && m.Name.ToLower().Contains("item") && m.Name.ToLower().Contains("hand") && m.GetParameters().Length == 0)
+                            { _useItemMethod = m; break; }
+                        }
+                    }
+                }
 
                 // ★ 核心修复：在攻击前一瞬间，再次强行覆盖准星！
                 // 因为等待的 0.12 秒内，玩家鼠标滑动会改变 targetLookPos 导致空挥
@@ -187,7 +229,7 @@ namespace FullBrightMod.Modules
                     bool isGlass2 = target.TryGetComponent<GroundGlass>(out var _);
                     body.targetLookPos = isGlass2
                         ? target.position
-                        : target.position + Vector3.up * 0.5f;
+                        : targetEdge + Vector3.up * 0.5f;
                 }
 
                 if (_cooldownField != null) _cooldownField.SetValue(body, 0f);
@@ -212,27 +254,39 @@ namespace FullBrightMod.Modules
 
         public override void OnGUI()
         {
-            if (!Settings.IsKillAuraEnabled || !Settings.KillAuraRenderTarget) return;
+            if (!ModSettings.IsKillAuraEnabled || !ModSettings.KillAuraRenderTarget) return;
             if (_currentTarget == null || !_currentTarget) return;
 
             try
             {
                 var cam = Camera.main;
                 if (cam == null) return;
-                RenderUtils.DrawWorldCircle(cam, _currentTarget.position, 0.8f, Settings.KillAuraTargetColor, 24);
+                RenderUtils.DrawWorldCircle(cam, _currentTarget.position, 0.8f, ModSettings.KillAuraTargetColor, 24);
             }
             catch { }
         }
 
         private Transform FindClosestTarget(Body myBody)
         {
-            float minDist = Settings.KillAuraTeleportAttack
-                ? Settings.KillAuraTeleportRange
-                : Settings.KillAuraRange;
+            float minDist = ModSettings.KillAuraTeleportAttack
+                ? ModSettings.KillAuraTeleportRange
+                : ModSettings.KillAuraRange;
             Transform best = null;
             Vector2 myPos = myBody.transform.position;
 
-            if (ESPCache.CachedEntities != null && Settings.KillAuraAttackCreatures)
+            // ★ 性能优化：使用 ESPCache.CachedTraders 替代高频 Object.FindObjectsOfType<TraderScript>()
+            var traderRoots = new System.Collections.Generic.HashSet<Transform>();
+            var traders = ESPCache.CachedTraders;
+            if (traders != null)
+            {
+                foreach (var t in traders)
+                {
+                    if (t != null && t)
+                        traderRoots.Add(t.transform);
+                }
+            }
+
+            if (ESPCache.CachedEntities != null && ModSettings.KillAuraAttackCreatures)
             {
                 foreach (var entity in ESPCache.CachedEntities)
                 {
@@ -241,7 +295,12 @@ namespace FullBrightMod.Modules
                     if (entity.health < 0.5f) continue;
                     if (entity.transform.position == myBody.transform.position) continue;
 
-                    float dist = Vector2.Distance(myPos, entity.transform.position);
+                    // ★ 跳过商人
+                    if (IsTraderTransform(entity.transform, traderRoots)) continue;
+
+                    // ★ 使用碰撞箱边缘最近点计算距离
+                    Vector3 closest = GetClosestPointOnTarget(entity.transform, myBody.transform.position);
+                    float dist = Vector2.Distance(myPos, (Vector2)closest);
                     if (dist < minDist)
                     {
                         minDist = dist;
@@ -250,30 +309,35 @@ namespace FullBrightMod.Modules
                 }
             }
 
-            if (Settings.KillAuraAttackPlayers)
+            if (ModSettings.KillAuraAttackPlayers)
             {
-                var allBodies = Object.FindObjectsOfType<Body>();
-                foreach (var targetBody in allBodies)
+                // ★ 性能优化：使用 ESPCache.CachedPlayers 替代高频 Object.FindObjectsOfType<Body>()
+                var allBodies = ESPCache.CachedPlayers;
+                if (allBodies != null)
                 {
-                    if (targetBody == null || !targetBody) continue;
-                    if (targetBody == myBody) continue;
-                    if (!targetBody.alive) continue;
-
-                    // ★ 过滤友好 NPC：Body 的父级 GameObject 上才有 BuildingEntity
-                    var targetBuild = targetBody.GetComponentInParent<BuildingEntity>();
-                    if (targetBuild != null && !targetBuild.cantHit) continue;
-
-                    float dist = Vector2.Distance(myPos, targetBody.transform.position);
-                    if (dist < minDist)
+                    foreach (var targetBody in allBodies)
                     {
-                        minDist = dist;
-                        best = targetBody.transform;
+                        if (targetBody == null || !targetBody) continue;
+                        if (targetBody == myBody) continue;
+                        if (!targetBody.alive) continue;
+
+                        // ★ 跳过商人
+                        if (IsTraderTransform(targetBody.transform, traderRoots)) continue;
+
+                        // ★ 使用碰撞箱边缘最近点计算距离
+                        Vector3 closest = GetClosestPointOnTarget(targetBody.transform, myBody.transform.position);
+                        float dist = Vector2.Distance(myPos, (Vector2)closest);
+                        if (dist < minDist)
+                        {
+                            minDist = dist;
+                            best = targetBody.transform;
+                        }
                     }
                 }
             }
 
-            // ★ 玻璃碴：GroundGlass 预制体自带 BuildingEntity 组件，可直接攻击
-            if (Settings.KillAuraAttackGlass && ESPCache.CachedGlassShards != null)
+            // ★ 玻璃碴
+            if (ModSettings.KillAuraAttackGlass && ESPCache.CachedGlassShards != null)
             {
                 foreach (var glass in ESPCache.CachedGlassShards)
                 {
@@ -282,7 +346,8 @@ namespace FullBrightMod.Modules
                     if (build == null) continue;
                     if (build.health <= 0f) continue;
 
-                    float dist = Vector2.Distance(myPos, glass.transform.position);
+                    Vector3 closest = GetClosestPointOnTarget(glass.transform, myBody.transform.position);
+                    float dist = Vector2.Distance(myPos, (Vector2)closest);
                     if (dist < minDist)
                     {
                         minDist = dist;
@@ -294,44 +359,30 @@ namespace FullBrightMod.Modules
             return best;
         }
 
-        private static void DrawCustomToggle(float x, ref float y, float width, Event e, string label, ref bool value)
+        /// <summary>判断 Transform 是否属于商人（匹配根 Transform 或父子级）</summary>
+        private static bool IsTraderTransform(Transform t, System.Collections.Generic.HashSet<Transform> traderRoots)
         {
-            Rect rowRect = new Rect(x, y, width, 24f);
-            bool hover = rowRect.Contains(e.mousePosition);
-            GUI.color = value ? new Color(0.2f, 0.6f, 1.0f, 0.85f)
-                : (hover ? new Color(0.22f, 0.22f, 0.25f, 0.90f) : new Color(0.16f, 0.16f, 0.18f, 0.90f));
-            GUI.DrawTexture(rowRect, ClickGUIManager.WhiteTexture);
-            GUI.color = Color.white;
-
-            GUIStyle s = new GUIStyle(GUI.skin.label)
+            if (traderRoots.Contains(t)) return true;
+            Transform parent = t.parent;
+            while (parent != null)
             {
-                fontSize = 11, fontStyle = FontStyle.Bold,
-                normal = { textColor = value ? Color.white : new Color(0.7f, 0.7f, 0.7f) },
-                padding = new RectOffset(14, 0, 4, 0)
-            };
-            GUI.Label(rowRect, (value ? "[ON]  " : "[OFF] ") + label, s);
-
-            if (e.type == EventType.MouseDown && e.button == 0 && rowRect.Contains(e.mousePosition))
-            {
-                value = !value;
-                e.Use();
+                if (traderRoots.Contains(parent)) return true;
+                parent = parent.parent;
             }
-            y += 28f;
+            return false;
         }
 
-        private static void DrawCustomSlider(float x, ref float y, float width, Event e, string label, ref float value, float min, float max)
+        /// <summary>获取目标碰撞箱边缘最近点，无 Collider 则降级为 transform.position</summary>
+        private static Vector3 GetClosestPointOnTarget(Transform target, Vector3 fromPos)
         {
-            GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
+            if (target == null) return Vector3.zero;
+            var col = target.GetComponentInChildren<Collider2D>();
+            if (col != null)
             {
-                fontSize = 10, normal = { textColor = new Color(0.7f, 0.7f, 0.7f) }, padding = new RectOffset(14, 0, 2, 0)
-            };
-            GUI.Label(new Rect(x, y, width, 18f), label, labelStyle);
-
-            Rect sliderRect = new Rect(x + 14f, y + 18f, width - 28f, 8f);
-            float newVal = ClickGUIManager.DrawSlider(sliderRect, value, min, max, e);
-            if (Mathf.Abs(newVal - value) > 0.001f) value = newVal;
-
-            y += 28f;
+                try { return col.ClosestPoint(fromPos); }
+                catch { }
+            }
+            return target.position;
         }
     }
 }

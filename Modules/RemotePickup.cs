@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using FullBrightMod.Core;
 using FullBrightMod.Patches;
 using FullBrightMod.UI;
+using FullBrightMod.Utils;
 using KrokoshaCasualtiesMP;
 using UnityEngine;
 
@@ -43,6 +44,16 @@ namespace FullBrightMod.Modules
         }
         private List<Entry> _entries = new List<Entry>();
 
+        /// <summary>
+        /// ★ 图标缓存字典 —— 避免每次扫描都执行 GetComponentInChildren 导致高频 GC 分配。
+        /// Key 为物品实例，Value 为 (贴图, UV坐标)。
+        /// 每次扫描前清理已销毁的条目防止内存泄漏。
+        /// </summary>
+        private Dictionary<Item, (Texture2D tex, Rect coords)> _iconCache = new Dictionary<Item, (Texture2D, Rect)>();
+
+        /// <summary>★ 复用清理列表，避免 CleanIconCache 每次分配新 List 造成 GC</summary>
+        private List<Item> _deadKeys = new List<Item>();
+
         private GUIStyle _onScreenStyle;
         private GUIStyle _offScreenArrowStyle;
         private GUIStyle _lblStyle;
@@ -50,18 +61,18 @@ namespace FullBrightMod.Modules
 
         public override void OnEnable()
         {
-            Settings.IsRemotePickupEnabled = true;
+            ModSettings.IsRemotePickupEnabled = true;
             _isBlinking = false;
-            Settings.IsRemotePickupBlinking = false;
+            ModSettings.IsRemotePickupBlinking = false;
             _scanCooldown = 0f;
             _entries.Clear();
         }
 
         public override void OnDisable()
         {
-            Settings.IsRemotePickupEnabled = false;
+            ModSettings.IsRemotePickupEnabled = false;
             _isBlinking = false;
-            Settings.IsRemotePickupBlinking = false;
+            ModSettings.IsRemotePickupBlinking = false;
             _entries.Clear();
         }
 
@@ -77,17 +88,17 @@ namespace FullBrightMod.Modules
                 padding = new RectOffset(0, 0, 0, 0)
             };
             Rect labelRect = new Rect(x + 8, y, 90, 22);
-            GUI.Label(labelRect, $"  {(Utils.I18n.Get("set_pickup_range") ?? "拾取范围")}: {Settings.RemotePickupRange:F0}m", labelStyle);
+            GUI.Label(labelRect, $"  {(Utils.I18n.Get("set_pickup_range") ?? "拾取范围")}: {ModSettings.RemotePickupRange:F0}m", labelStyle);
 
             Rect barRect = new Rect(x + 98, y + 6, width - 113, 14);
-            Settings.RemotePickupRange = ClickGUIManager.DrawSlider(barRect, Settings.RemotePickupRange, 5f, 200f, e);
+            ModSettings.RemotePickupRange = ClickGUIManager.DrawSlider(barRect, ModSettings.RemotePickupRange, 5f, 200f, e);
 
             y += 30f;
         }
 
         public override void OnUpdate()
         {
-            if (!Settings.IsRemotePickupEnabled) return;
+            if (!ModSettings.IsRemotePickupEnabled) return;
             if (_isBlinking) return;
 
             _scanCooldown -= Time.deltaTime;
@@ -102,7 +113,7 @@ namespace FullBrightMod.Modules
 
         public override void OnGUI()
         {
-            if (!Enabled || !Settings.IsRemotePickupEnabled) return;
+            if (!Enabled || !ModSettings.IsRemotePickupEnabled) return;
 
             Camera cam = Camera.main;
             Body body = PlayerCamera.main?.body;
@@ -141,14 +152,19 @@ namespace FullBrightMod.Modules
         private List<Entry> ScanItems(Body body)
         {
             List<Entry> results = new List<Entry>();
-            Item[] allItems = GameObject.FindObjectsOfType<Item>();
+
+            // ★ 性能优化：使用全局缓存池替代高频 FindObjectsOfType<Item>()
+            Item[] allItems = ESPCache.CachedItems;
             if (allItems == null) return results;
 
             Camera cam = Camera.main;
             if (cam == null) return results;
 
             Vector2 myPos = body.transform.position;
-            float rangeSqr = Settings.RemotePickupRange * Settings.RemotePickupRange;
+            float rangeSqr = ModSettings.RemotePickupRange * ModSettings.RemotePickupRange;
+
+            // ★ 清理图标缓存中已销毁的 Item 条目，防止内存泄漏
+            CleanIconCache();
 
             foreach (Item item in allItems)
             {
@@ -163,15 +179,27 @@ namespace FullBrightMod.Modules
                 Vector3 wp = item.transform.position;
                 Vector3 sp = cam.WorldToScreenPoint(wp);
 
-                // 获取物品的 Sprite 贴图与 UV 坐标
+                // ★ 图标缓存：优先从字典获取，避免每次扫描都执行 GetComponentInChildren 的 GC 开销
                 Texture2D tex = null;
                 Rect coords = new Rect(0, 0, 1, 1);
-                SpriteRenderer sr = item.GetComponentInChildren<SpriteRenderer>();
-                if (sr != null && sr.sprite != null)
+                if (_iconCache.TryGetValue(item, out var cached))
                 {
-                    tex = sr.sprite.texture;
-                    Rect tr = sr.sprite.textureRect;
-                    coords = new Rect(tr.x / tex.width, tr.y / tex.height, tr.width / tex.width, tr.height / tex.height);
+                    tex = cached.tex;
+                    coords = cached.coords;
+                }
+                else
+                {
+                    SpriteRenderer sr = item.GetComponentInChildren<SpriteRenderer>();
+                    if (sr != null && sr.sprite != null && sr.sprite.texture != null)
+                    {
+                        tex = sr.sprite.texture;
+                        Rect tr = sr.sprite.textureRect;
+                        float texW = tex.width > 0f ? tex.width : 1f;
+                        float texH = tex.height > 0f ? tex.height : 1f;
+                        coords = new Rect(tr.x / texW, tr.y / texH, tr.width / texW, tr.height / texH);
+                    }
+                    // 存入缓存（即使 tex 为 null 也存入，避免重复查询）
+                    _iconCache[item] = (tex, coords);
                 }
 
                 results.Add(new Entry
@@ -189,6 +217,22 @@ namespace FullBrightMod.Modules
             return results;
         }
 
+        /// <summary>
+        /// ★ 清理图标缓存中已销毁的 Item 键，防止内存泄漏。
+        /// 复用 _deadKeys 列表避免每次调用时分配新 List 造成 GC 开销。
+        /// </summary>
+        private void CleanIconCache()
+        {
+            _deadKeys.Clear();
+            foreach (var kvp in _iconCache)
+            {
+                if (kvp.Key == null || !kvp.Key)
+                    _deadKeys.Add(kvp.Key);
+            }
+            for (int i = 0; i < _deadKeys.Count; i++)
+                _iconCache.Remove(_deadKeys[i]);
+        }
+
         // ═══════════════════════════════════════════
         //  屏幕内：悬浮向下箭头 + 物品名称
         // ═══════════════════════════════════════════
@@ -198,7 +242,7 @@ namespace FullBrightMod.Modules
             // 矩形放置在物品的略上方
             Rect r = new Rect(e.scrPos.x - BW * 0.5f, e.scrPos.y - BH, BW, BH);
 
-            float t = Mathf.Clamp01(e.distance / Settings.RemotePickupRange);
+            float t = Mathf.Clamp01(e.distance / ModSettings.RemotePickupRange);
             _onScreenStyle.normal.textColor = Color.Lerp(Color.green, Color.red, t);
 
             // 绘制清爽的无边框按钮（▼形状 + 名称）
@@ -220,7 +264,7 @@ namespace FullBrightMod.Modules
             const float ICON_SIZE = 32f;
             
             // 1. 箭头颜色随距离变化
-            float t = Mathf.Clamp01(e.distance / Settings.RemotePickupRange);
+            float t = Mathf.Clamp01(e.distance / ModSettings.RemotePickupRange);
             _offScreenArrowStyle.normal.textColor = Color.Lerp(Color.green, Color.red, t);
 
             // 2. 渲染旋转箭头
@@ -260,7 +304,7 @@ namespace FullBrightMod.Modules
             if (e.item == null || !e.item || !e.item.gameObject.activeInHierarchy) yield break;
 
             _isBlinking = true;
-            Settings.IsRemotePickupBlinking = true;
+            ModSettings.IsRemotePickupBlinking = true;
 
             Vector3 originalPos = body.transform.position;
             bool success = false;
@@ -280,7 +324,7 @@ namespace FullBrightMod.Modules
                 }
                 ClientMain.Client_SendCharacterSyncPacket();
             }
-            catch { _isBlinking = false; Settings.IsRemotePickupBlinking = false; yield break; }
+            catch { _isBlinking = false; ModSettings.IsRemotePickupBlinking = false; yield break; }
 
             yield return new WaitForSeconds(BLINK_DELAY);
 
@@ -312,7 +356,7 @@ namespace FullBrightMod.Modules
                 PlayerCamera.main.DoAlert($"<color=green>拾取 {e.label}</color>", false);
 
             _isBlinking = false;
-            Settings.IsRemotePickupBlinking = false;
+            ModSettings.IsRemotePickupBlinking = false;
         }
 
         // ═══════════════════════════════════════════

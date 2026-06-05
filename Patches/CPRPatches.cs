@@ -14,7 +14,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static bool Prefix(ref bool __result)
         {
-            if (Settings.IsInstantReviveEnabled || Settings.IsRibCrusherEnabled)
+            if (ModSettings.IsInstantReviveEnabled || ModSettings.IsRibCrusherEnabled)
             {
                 __result = true;
                 return false;
@@ -30,7 +30,7 @@ namespace FullBrightMod.Patches
         [HarmonyPostfix]
         private static void Postfix(CPRMinigame __instance)
         {
-            if (!Settings.IsInstantReviveEnabled) return;
+            if (!ModSettings.IsInstantReviveEnabled) return;
 
             // 优化参数：
             //   BPM = 100 (安全中间值，远低于 220 上限，容差大)
@@ -57,7 +57,7 @@ namespace FullBrightMod.Patches
         [HarmonyPostfix]
         private static void Postfix(CPRMinigame __instance)
         {
-            if (!Settings.IsRibCrusherEnabled) return;
+            if (!ModSettings.IsRibCrusherEnabled) return;
             
             // 限制为100次，防止施救者过度疲劳
             CPRPacketSender.Send(

@@ -13,8 +13,8 @@ namespace FullBrightMod.Patches
         [HarmonyPostfix]
         private static void Postfix(ref float __result)
         {
-            if (Settings.IsJumpBoostEnabled && Settings.CustomJumpForce > 0f)
-                __result = Settings.CustomJumpForce;
+            if (ModSettings.IsJumpBoostEnabled && ModSettings.CustomJumpForce > 0f)
+                __result = ModSettings.CustomJumpForce;
         }
     }
 
@@ -29,18 +29,39 @@ namespace FullBrightMod.Patches
         [HarmonyPostfix]
         private static void Postfix(Body __instance)
         {
-            if (!Settings.IsSpeedModifierEnabled) return;
+            if (!ModSettings.IsSpeedModifierEnabled) return;
             
             // ★ 修复冲突：如果开启了飞行，彻底交出速度控制权，防止相互覆盖
-            if (Settings.IsFlightEnabled) return;
+            if (ModSettings.IsFlightEnabled) return;
 
             if (PlayerCamera.main == null || PlayerCamera.main.body != __instance) return;
             if (!__instance.standing || !__instance.conscious || __instance.rb == null) return;
 
             float originalMaxSpeed = __instance.actualMaxSpeed;
 
-            // ★ 修复失效：正确通过 Traverse 获取当前 __instance 实例的 moveDir 字段
-            Vector2 moveDir = Traverse.Create(__instance).Field("moveDir").GetValue<Vector2>();
+            // ★ 安全反射：正确通过 Traverse 获取当前 __instance 实例的 moveDir 字段
+            //    7.0.1 已验证字段名未变 (public Vector2 moveDir)，保留盲测回退
+            Vector2 moveDir = Vector2.zero;
+            try
+            {
+                moveDir = Traverse.Create(__instance).Field("moveDir").GetValue<Vector2>();
+            }
+            catch
+            {
+                // 盲测回退：遍历实例字段，按类型 Vector2 匹配含 "move" 的字段
+                try
+                {
+                    foreach (var f in __instance.GetType().GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance))
+                    {
+                        if (f.FieldType == typeof(Vector2) && f.Name.ToLower().Contains("move"))
+                        {
+                            moveDir = (Vector2)f.GetValue(__instance);
+                            break;
+                        }
+                    }
+                }
+                catch { }
+            }
             
             float inputX = moveDir.x;
             
@@ -53,7 +74,7 @@ namespace FullBrightMod.Patches
 
             if (inputX != 0f)
             {
-                float targetSpeed = originalMaxSpeed * Settings.CustomSpeedMultiplier;
+                float targetSpeed = originalMaxSpeed * ModSettings.CustomSpeedMultiplier;
                 __instance.rb.velocity = new Vector2(
                     targetSpeed * Mathf.Sign(inputX),
                     __instance.rb.velocity.y);  // 严格保留 Y 轴重力/跳跃，防止干扰
@@ -70,7 +91,7 @@ namespace FullBrightMod.Patches
         [HarmonyPostfix]
         private static void Postfix(Body __instance)
         {
-            if (!Settings.IsAirJumpEnabled) return;
+            if (!ModSettings.IsAirJumpEnabled) return;
             if (PlayerCamera.main == null || PlayerCamera.main.body != __instance) return;
 
             // 监听原版跳跃键
@@ -83,7 +104,27 @@ namespace FullBrightMod.Patches
                     
                     // 模拟特效与消耗
                     __instance.stamina -= 1f;
-                    var origColSize = Traverse.Create(__instance).Field("origColSize").GetValue<Vector2>();
+                    // ★ 7.0.1 安全反射：原名 + 类型盲测回退
+                    Vector2 origColSize = Vector2.one;
+                    try
+                    {
+                        origColSize = Traverse.Create(__instance).Field("origColSize").GetValue<Vector2>();
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            foreach (var f in __instance.GetType().GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+                            {
+                                if (f.FieldType == typeof(Vector2) && f.Name.ToLower().Contains("col") && f.Name.ToLower().Contains("size"))
+                                {
+                                    origColSize = (Vector2)f.GetValue(__instance);
+                                    break;
+                                }
+                            }
+                        }
+                        catch { }
+                    }
                     __instance.CreateCloudBig(__instance.transform.position + Vector3.down * origColSize.y * 0.5f);
                 }
             }
@@ -98,12 +139,12 @@ namespace FullBrightMod.Patches
     internal static class JetpackPatch
     {
         private static readonly Traverse _moveDirT =
-            Traverse.Create(typeof(Body)).Property("moveDir");
+            Traverse.Create(typeof(Body)).Field("moveDir");
 
         [HarmonyPostfix]
         private static void Postfix(Body __instance)
         {
-            if (!Settings.IsJetpackEnabled) return;
+            if (!ModSettings.IsJetpackEnabled) return;
             if (PlayerCamera.main == null || PlayerCamera.main.body != __instance) return;
             if (__instance.rb == null || !__instance.conscious) return;
             if (!Input.GetKey(KeyBinds.GetBind("up"))) return;
@@ -139,7 +180,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static void Prefix(Body __instance)
         {
-            if (!Settings.IsNoClipEnabled) return;
+            if (!ModSettings.IsNoClipEnabled) return;
 
             // 仅作用于本地玩家，不影响 NPC 和其他玩家
             if (PlayerCamera.main == null || PlayerCamera.main.body != __instance) return;

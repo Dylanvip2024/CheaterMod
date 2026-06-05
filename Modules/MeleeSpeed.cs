@@ -12,14 +12,14 @@ namespace FullBrightMod.Modules
     {
         public override string Name => Utils.I18n.Get("mod_melee_speed") ?? "攻速调整";
         public override ModuleCategory Category => ModuleCategory.Combat;
-        public override void OnEnable()  => Settings.IsMeleeSpeedEnabled = true;
-        public override void OnDisable() => Settings.IsMeleeSpeedEnabled = false;
+        public override void OnEnable()  => ModSettings.IsMeleeSpeedEnabled = true;
+        public override void OnDisable() => ModSettings.IsMeleeSpeedEnabled = false;
 
         public override float GetSettingsHeight() => 28f;
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
-            float val = Settings.MeleeSpeedMultiplier;
+            float val = ModSettings.MeleeSpeedMultiplier;
             string label = (Utils.I18n.Get("set_melee_speed") ?? "攻速倍率") + $": {val:F1}x";
 
             GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
@@ -33,7 +33,7 @@ namespace FullBrightMod.Modules
 
             Rect sliderRect = new Rect(x + 100, y + 6, width - 115, 14);
             float newVal = ClickGUIManager.DrawSlider(sliderRect, val, 1f, 8f, e);
-            if (Mathf.Abs(newVal - val) > 0.001f) Settings.MeleeSpeedMultiplier = newVal;
+            if (Mathf.Abs(newVal - val) > 0.001f) ModSettings.MeleeSpeedMultiplier = newVal;
 
             y += 28f;
         }

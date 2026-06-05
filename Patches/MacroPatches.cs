@@ -18,17 +18,17 @@ namespace FullBrightMod.Patches
             if (PlayerCamera.main == null || PlayerCamera.main.body != __instance) return;
 
             // 1. 隔空取物逻辑
-            if (Settings.IsFetchMacroEnabled)
+            if (ModSettings.IsFetchMacroEnabled)
             {
                 ExecuteFetchMacro(__instance);
-                Settings.IsFetchMacroEnabled = false; // 执行一次后立刻重置开关
+                ModSettings.IsFetchMacroEnabled = false; // 执行一次后立刻重置开关
             }
 
             // 2. 一键引爆逻辑
-            if (Settings.IsExplosivesMacroEnabled)
+            if (ModSettings.IsExplosivesMacroEnabled)
             {
                 ExecuteExplosivesMacro(__instance);
-                Settings.IsExplosivesMacroEnabled = false; // 执行一次后立刻重置开关
+                ModSettings.IsExplosivesMacroEnabled = false; // 执行一次后立刻重置开关
             }
         }
 
@@ -47,14 +47,14 @@ namespace FullBrightMod.Patches
                 if (item != null)
                 {
                     float dist = Vector2.Distance(body.transform.position, item.transform.position);
-                    if (dist <= Settings.FetchDistance)
+                    if (dist <= ModSettings.FetchDistance)
                     {
                         body.AutoPickUpItem(item);
                         PlayerCamera.main.DoAlert($"<color=green>已隔空拾取：{item.Stats?.fullName ?? item.id}</color>", false);
                     }
                     else
                     {
-                        PlayerCamera.main.DoAlert($"<color=orange>拾取失败：超出距离 ({dist:F1}m > {Settings.FetchDistance:F1}m)</color>", false);
+                        PlayerCamera.main.DoAlert($"<color=orange>拾取失败：超出距离 ({dist:F1}m > {ModSettings.FetchDistance:F1}m)</color>", false);
                     }
                 }
             }

@@ -17,11 +17,32 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static void Prefix(SyringeMinigame __instance)
         {
-            if (!Settings.IsShrapnelMakerEnabled) return;
+            if (!ModSettings.IsShrapnelMakerEnabled) return;
             if (Minigame.game == null) return;
 
             // 利用 Harmony 的 Traverse 工具直接读取私有状态变量
-            bool isHolding = Traverse.Create(__instance).Field("holdingSyringe").GetValue<bool>();
+            // ★ 7.0.1 安全反射：原名 + 类型盲测回退 + try-catch 兜底
+            bool isHolding = false;
+            try
+            {
+                isHolding = Traverse.Create(__instance).Field("holdingSyringe").GetValue<bool>();
+            }
+            catch
+            {
+                // 盲测回退：遍历非公开字段，按类型匹配 bool
+                try
+                {
+                    foreach (var f in __instance.GetType().GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+                    {
+                        if (f.FieldType == typeof(bool) && f.Name.ToLower().Contains("holding"))
+                        {
+                            isHolding = (bool)f.GetValue(__instance);
+                            break;
+                        }
+                    }
+                }
+                catch { }
+            }
 
             if (!isHolding)
             {
@@ -47,7 +68,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static void Prefix(AmputationMinigame __instance)
         {
-            if (!Settings.IsInstantAmputationEnabled) return;
+            if (!ModSettings.IsInstantAmputationEnabled) return;
             if (Minigame.game == null) return;
 
             // 1. 强行将手压下，确保处于切割判定区内 (cutting = true)
@@ -87,7 +108,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static bool Prefix(DislocationMinigame __instance)
         {
-            if (!Settings.IsAutoDislocationEnabled) return true;
+            if (!ModSettings.IsAutoDislocationEnabled) return true;
             if (Minigame.game == null) return true;
 
             // 核心修复：获取当前实例的唯一物理 ID
@@ -125,12 +146,28 @@ namespace FullBrightMod.Patches
 
             Vector2 startPos = Vector2.zero;
             RectTransform bone = null;
+            // ★ 7.0.1 安全反射：原名 + 类型盲测回退 + try-catch 兜底
             try
             {
                 bone = Traverse.Create(minigame).Field("bone").GetValue<RectTransform>();
-                if (bone != null) startPos = bone.anchoredPosition;
             }
             catch { }
+            if (bone == null)
+            {
+                try
+                {
+                    foreach (var f in minigame.GetType().GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+                    {
+                        if (f.FieldType == typeof(RectTransform) && f.Name.ToLower().Contains("bone"))
+                        {
+                            bone = f.GetValue(minigame) as RectTransform;
+                            break;
+                        }
+                    }
+                }
+                catch { }
+            }
+            if (bone != null) startPos = bone.anchoredPosition;
 
             Vector2 targetPos = new Vector2(375f, 54.6f);
             Vector2 dir = (targetPos - startPos).normalized;
@@ -184,11 +221,32 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static void Prefix(ShrapnelMinigame __instance)
         {
-            if (!Settings.IsInstantShrapnelRemovalEnabled) return;
+            if (!ModSettings.IsInstantShrapnelRemovalEnabled) return;
             if (Minigame.game == null) return;
 
             var trav = Traverse.Create(__instance);
-            var objectsList = trav.Field("objects").GetValue<System.Collections.Generic.List<RectTransform>>();
+            // ★ 7.0.1 安全反射：原名 + 类型盲测回退 + try-catch 兜底
+            System.Collections.Generic.List<RectTransform> objectsList = null;
+            try
+            {
+                objectsList = trav.Field("objects").GetValue<System.Collections.Generic.List<RectTransform>>();
+            }
+            catch { }
+            if (objectsList == null)
+            {
+                try
+                {
+                    foreach (var f in __instance.GetType().GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance))
+                    {
+                        if (f.FieldType == typeof(System.Collections.Generic.List<RectTransform>) && f.Name.ToLower().Contains("object"))
+                        {
+                            objectsList = f.GetValue(__instance) as System.Collections.Generic.List<RectTransform>;
+                            break;
+                        }
+                    }
+                }
+                catch { }
+            }
             if (objectsList == null) return;
 
             RectTransform target = null;

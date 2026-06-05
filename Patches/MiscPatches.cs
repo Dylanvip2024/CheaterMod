@@ -17,7 +17,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static bool Prefix(string plrname, string msg, bool richtext)
         {
-            if (!Settings.IsAutoTranslateEnabled) return true;
+            if (!ModSettings.IsAutoTranslateEnabled) return true;
 
             // 拦截空消息、或是我们自己发出的 [译] 消息，防止死循环无限翻译
             if (string.IsNullOrEmpty(msg) || msg.Contains("[译]")) return true;
@@ -47,15 +47,42 @@ namespace FullBrightMod.Patches
     [HarmonyPatch(typeof(Chat), "Client_ChatMessageRecieve")]
     internal static class ChatPlayerMessagePatch
     {
-        // CHAT_LOG 是 private static MaxCapacityQueue<ChatMsgContainer>
-        private static readonly Traverse _chatLogTraverse = Traverse.Create(typeof(Chat)).Field("CHAT_LOG");
+        // ★ 7.0.1 安全反射：CHAT_LOG 是 private static MaxCapacityQueue<ChatMsgContainer>
+        //     使用 lazy-init 模式 + 类型盲测回退
+        private static Traverse _chatLogTraverse;
+        private static Traverse GetChatLogTraverse()
+        {
+            if (_chatLogTraverse != null) return _chatLogTraverse;
+            _chatLogTraverse = Traverse.Create(typeof(Chat)).Field("CHAT_LOG");
+            // 验证是否有效
+            try { var _ = _chatLogTraverse.GetValue(); } catch { _chatLogTraverse = null; }
+            if (_chatLogTraverse == null)
+            {
+                // 盲测回退：遍历静态字段找包含 "CHAT" 和 "LOG" 的集合类型
+                try
+                {
+                    foreach (var f in typeof(Chat).GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
+                    {
+                        if (f.Name.ToUpper().Contains("CHAT") && f.Name.ToUpper().Contains("LOG"))
+                        {
+                            _chatLogTraverse = Traverse.Create(typeof(Chat)).Field(f.Name);
+                            break;
+                        }
+                    }
+                }
+                catch { }
+            }
+            return _chatLogTraverse;
+        }
 
         /// <summary>从 MaxCapacityQueue 中读取最新一条 ChatMsgContainer</summary>
         private static Chat.ChatMsgContainer GetLastMessage()
         {
             try
             {
-                var queue = _chatLogTraverse.GetValue();
+                var chatLogTrav = GetChatLogTraverse();
+                if (chatLogTrav == null) return default;
+                var queue = chatLogTrav.GetValue();
                 if (queue == null) return default;
 
                 // JustGiveTheQueue() 返回 IEnumerable<ChatMsgContainer>
@@ -80,7 +107,7 @@ namespace FullBrightMod.Patches
         [HarmonyPostfix]
         private static void Postfix()
         {
-            if (!Settings.IsAutoTranslateEnabled) return;
+            if (!ModSettings.IsAutoTranslateEnabled) return;
 
             var lastMsg = GetLastMessage();
             if (lastMsg.msg == null || lastMsg.msg.Contains("[译]")) return;
@@ -111,11 +138,33 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static bool Prefix()
         {
-            if (!Settings.IsAutoTranslateEnabled || !Settings.IsTwoWayTranslationEnabled) return true;
+            if (!ModSettings.IsAutoTranslateEnabled || !ModSettings.IsTwoWayTranslationEnabled) return true;
             if (_isSendingTranslated) return true;
 
-            var inputTraverse = Traverse.Create(typeof(Chat)).Field("CHAT_current_input");
-            string originalMsg = inputTraverse.GetValue<string>() ?? "";
+            // ★ 7.0.1 安全反射：CHAT_current_input（静态字段），原名 + 类型盲测回退
+            string originalMsg = "";
+            Traverse inputTraverse = null;
+            try
+            {
+                inputTraverse = Traverse.Create(typeof(Chat)).Field("CHAT_current_input");
+                originalMsg = inputTraverse.GetValue<string>() ?? "";
+            }
+            catch
+            {
+                try
+                {
+                    foreach (var f in typeof(Chat).GetFields(System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
+                    {
+                        if (f.FieldType == typeof(string) && f.Name.ToLower().Contains("chat") && f.Name.ToLower().Contains("input"))
+                        {
+                            originalMsg = f.GetValue(null) as string ?? "";
+                            inputTraverse = Traverse.Create(typeof(Chat)).Field(f.Name);
+                            break;
+                        }
+                    }
+                }
+                catch { }
+            }
 
             if (string.IsNullOrWhiteSpace(originalMsg) || originalMsg.StartsWith("/")) return true;
 
@@ -161,7 +210,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static void Prefix(KeypadMinigame __instance, List<RaycastResult> uiCasts)
         {
-            if (!Settings.IsAutoUnlockEnabled) return;
+            if (!ModSettings.IsAutoUnlockEnabled) return;
 
             if (_currentMinigame != __instance)
             {
@@ -226,7 +275,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static void Prefix(LockpingMinigame __instance)
         {
-            if (!Settings.IsAutoUnlockEnabled) return;
+            if (!ModSettings.IsAutoUnlockEnabled) return;
 
             float perfectAngleRad = __instance.correctAngle * Mathf.Deg2Rad;
             Vector2 perfectPos = new Vector2(Mathf.Cos(perfectAngleRad), Mathf.Sin(perfectAngleRad)) * 220f;
@@ -255,7 +304,7 @@ namespace FullBrightMod.Patches
         [HarmonyPostfix]
         static void Postfix(ref bool __result)
         {
-            if (Settings.IsIQ250Enabled) __result = true;
+            if (ModSettings.IsIQ250Enabled) __result = true;
         }
     }
 }

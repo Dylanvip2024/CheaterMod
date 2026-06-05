@@ -9,8 +9,8 @@ namespace FullBrightMod.Modules
         public override string Name => Utils.I18n.Get("mod_fetch_macro") ?? "隔空取物 (宏)";
         public override ModuleCategory Category => ModuleCategory.World;
 
-        public override void OnEnable() => Settings.IsFetchMacroEnabled = true;
-        public override void OnDisable() => Settings.IsFetchMacroEnabled = false;
+        public override void OnEnable() => ModSettings.IsFetchMacroEnabled = true;
+        public override void OnDisable() => ModSettings.IsFetchMacroEnabled = false;
 
         public override float GetSettingsHeight() => 30f;
 
@@ -24,10 +24,10 @@ namespace FullBrightMod.Modules
                 padding = new RectOffset(0, 0, 0, 0)
             };
             Rect labelRect = new Rect(x + 8, y, 70, 22);
-            GUI.Label(labelRect, $"  {Utils.I18n.Get("set_fetch_distance") ?? "拾取距离"}: {Settings.FetchDistance:F1}m", labelStyle);
+            GUI.Label(labelRect, $"  {Utils.I18n.Get("set_fetch_distance") ?? "拾取距离"}: {ModSettings.FetchDistance:F1}m", labelStyle);
 
             Rect barRect = new Rect(x + 78, y + 6, width - 93, 14);
-            Settings.FetchDistance = ClickGUIManager.DrawSlider(barRect, Settings.FetchDistance, 5f, 100f, e);
+            ModSettings.FetchDistance = ClickGUIManager.DrawSlider(barRect, ModSettings.FetchDistance, 5f, 100f, e);
 
             y += 30f;
         }
@@ -37,7 +37,7 @@ namespace FullBrightMod.Modules
         {
             // 如果底层的 MacroPatches 执行完毕并将 Settings 设为了 false，
             // 这里我们自动同步关闭模块自身的 Enabled 状态，让 ClickGUI 上的高亮消失。
-            if (!Settings.IsFetchMacroEnabled && this.Enabled)
+            if (!ModSettings.IsFetchMacroEnabled && this.Enabled)
             {
                 this.Enabled = false;
             }

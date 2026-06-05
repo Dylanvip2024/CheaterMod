@@ -6,7 +6,7 @@ namespace FullBrightMod.Modules.Player
     {
         public override string Name => Utils.I18n.Get("mod_instant_revive");
         public override ModuleCategory Category => ModuleCategory.Player;
-        public override void OnEnable()  => Settings.IsInstantReviveEnabled = true;
-        public override void OnDisable() => Settings.IsInstantReviveEnabled = false;
+        public override void OnEnable()  => ModSettings.IsInstantReviveEnabled = true;
+        public override void OnDisable() => ModSettings.IsInstantReviveEnabled = false;
     }
 }

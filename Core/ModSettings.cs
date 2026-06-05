@@ -25,7 +25,7 @@ namespace FullBrightMod.Core
     /// 全局状态仓库 —— 所有模块的功能开关与动态参数集中于此。
     /// 各个 Module 和 Harmony Patch 均可通过 Settings.Xxx 读写。
     /// </summary>
-    public static class Settings
+    public static class ModSettings
     {
         // 语言设置
         public static AppLanguage CurrentLanguage = AppLanguage.Chinese;
@@ -42,6 +42,17 @@ namespace FullBrightMod.Core
         public static bool IsTrapEspWireframeEnabled     = false;
         public static bool IsPlayerEspWireframeEnabled   = false;
         public static float EspLineWidth         = 2f;
+
+        // ======== 按键映射 ========
+        public class KeyMapEntry
+        {
+            public KeyCode Source = KeyCode.None;
+            public KeyCode Target = KeyCode.None;
+            public bool Bidirectional = false;
+        }
+        public static bool IsKeyMapperEnabled = false;
+        public static System.Collections.Generic.List<KeyMapEntry> KeyMappings = new System.Collections.Generic.List<KeyMapEntry>();
+
         public static bool IsCameraZoomEnabled   = false;
         public static bool IsIQ250Enabled        = false;
         public static bool IsLongHandsEnabled    = false;
@@ -64,6 +75,29 @@ namespace FullBrightMod.Core
         public static bool StopMusicWhenTalking = true;
         public static bool IsSTTEnabled = false;
         public static bool IsSTTTranslateLinkEnabled = false;
+        public static string STTServerUrl = "http://127.0.0.1:8080/inference";
+        public static int STTLanguageIndex = 0;
+
+        // ======== 变色龙 ========
+        public static bool IsChameleonEnabled = false;
+        public static float ChameleonIntensity = 1.5f;
+        public static bool IsChameleonGlowEnabled = true;
+        public static bool IsChameleonRainbowModeEnabled = false;
+        public static float ChameleonRainbowSpeed = 0.5f;
+        public static int ChameleonPartIndex = 0;
+        // 6 部位独立开关 + 颜色
+        public static bool IsHeadColorEnabled = true;
+        public static Color HeadColor = new Color(1f, 0.4f, 0.4f);
+        public static bool IsEyesColorEnabled = true;
+        public static Color EyesColor = new Color(1f, 0.8f, 0.2f);
+        public static bool IsTorsoColorEnabled = true;
+        public static Color TorsoColor = new Color(0.4f, 0.6f, 1f);
+        public static bool IsArmsColorEnabled = true;
+        public static Color ArmsColor = new Color(0.4f, 1f, 0.5f);
+        public static bool IsLegsColorEnabled = true;
+        public static Color LegsColor = new Color(0.7f, 0.5f, 1f);
+        public static bool IsTailColorEnabled = true;
+        public static Color TailColor = new Color(1f, 0.5f, 0.7f);
 
         // 库存整理（一键执行，始终为 false，仅为持久化一致性）
         public static bool IsAutoSortSpaceEnabled = false;
@@ -179,5 +213,15 @@ namespace FullBrightMod.Core
         public static float ContainerEspRange    = 50f;
         public static Color ContainerEspColor    = Color.yellow;
         public static bool ContainerEspUseArrows = false;  // false=线条模式, true=箭头模式
+
+        // ======== 闯祸光环 ========
+        public static bool IsTroublemakerAuraEnabled   = false;
+        public static int  TroublemakerTargetMode      = 0;   // 0=最近玩家, 1=范围内所有玩家
+        public static float TroublemakerRange          = 10f; // 光环范围(1~50m)
+        public static bool TroublemakerEnableShrapnel  = true;  // 破片制造
+        public static bool TroublemakerEnableRibCrusher = true; // 肋骨粉碎
+        public static bool TroublemakerEnablePush      = true;  // 推倒
+        public static bool TroublemakerEnableAmputation = true; // 截肢
+        public static bool TroublemakerEnableBurn       = true;  // 激光灼烧
     }
 }

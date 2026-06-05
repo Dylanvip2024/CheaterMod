@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FullBrightMod.Utils;
 using UnityEngine;
 
 namespace FullBrightMod.Core
@@ -38,6 +39,7 @@ namespace FullBrightMod.Core
                 if (Input.GetKeyDown(m.BindKey))
                 {
                     m.Enabled = !m.Enabled;
+                    Utils.UISoundHelper.PlayToggleSound(m.Enabled);
                     if (m.Enabled) m.OnEnable();
                     else m.OnDisable();
                 }

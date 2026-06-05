@@ -66,7 +66,7 @@ namespace FullBrightMod.Utils
             float distance = Vector3.Distance(cam.transform.position, worldPos);
             int distMeters = (int)(distance * 0.3f);
 
-            float thickness = Settings.EspLineWidth;
+            float thickness = ModSettings.EspLineWidth;
 
             // 1. Tracer line from screen center
             RenderUtils.DrawTracerLine(guiPos, color, thickness);
@@ -79,7 +79,7 @@ namespace FullBrightMod.Utils
             RenderUtils.DrawScreenBox(guiPos, boxSize, color, Mathf.Max(thickness, 1f));
 
             // 3. Info label above the box
-            int fontSize = Mathf.Max(Settings.EspFontSize - 2, 10);
+            int fontSize = Mathf.Max(ModSettings.EspFontSize - 2, 10);
             GUIStyle style = new GUIStyle(GUI.skin.label)
             {
                 alignment = TextAnchor.LowerCenter,
@@ -111,16 +111,16 @@ namespace FullBrightMod.Utils
                 if (item == null || item.transform.parent != null || !ESPCache.IsInRange(item.transform.position)) continue;
                 string cleanName = (item.Stats != null) ? item.Stats.fullName : "未知物品";
 
-                if (Settings.IsItemEspWireframeEnabled)
+                if (ModSettings.IsItemEspWireframeEnabled)
                 {
                     Vector2 dynSize = GetDynamicEntitySize(item.gameObject, DefaultItemSize);
-                    DrawWireframeFor(cam, item.transform.position, Settings.SelectedEspColor,
+                    DrawWireframeFor(cam, item.transform.position, ModSettings.SelectedEspColor,
                         cleanName, dynSize);
                 }
                 else
                 {
                     RenderUtils.DrawEspLabel(cam, item.transform.position, cleanName,
-                        Settings.SelectedEspColor, Settings.EspFontSize);
+                        ModSettings.SelectedEspColor, ModSettings.EspFontSize);
                 }
             }
         }
@@ -141,16 +141,16 @@ namespace FullBrightMod.Utils
                 string tagStr = entity.metallic ? "[机械] " : "[异星] ";
                 string info = tagStr + creatureName + "\nHP: " + Mathf.RoundToInt(entity.health);
 
-                if (Settings.IsCreatureEspWireframeEnabled)
+                if (ModSettings.IsCreatureEspWireframeEnabled)
                 {
                     Vector2 dynSize = GetDynamicEntitySize(entity.gameObject, DefaultCreatureSize);
-                    DrawWireframeFor(cam, entity.transform.position, Settings.SelectedCreatureColor,
+                    DrawWireframeFor(cam, entity.transform.position, ModSettings.SelectedCreatureColor,
                         info, dynSize);
                 }
                 else
                 {
                     RenderUtils.DrawEspLabel(cam, entity.transform.position, info,
-                        Settings.SelectedCreatureColor, Settings.EspFontSize);
+                        ModSettings.SelectedCreatureColor, ModSettings.EspFontSize);
                 }
             }
         }
@@ -171,14 +171,14 @@ namespace FullBrightMod.Utils
             // ---- Helper to draw trap with wireframe awareness ----
             System.Action<Vector3, GameObject, string> drawTrap = (worldPos, obj, label) =>
             {
-                if (Settings.IsTrapEspWireframeEnabled)
+                if (ModSettings.IsTrapEspWireframeEnabled)
                 {
                     Vector2 dynSize = GetDynamicEntitySize(obj, DefaultTrapSize);
                     DrawWireframeFor(cam, worldPos, c, label, dynSize);
                 }
                 else
                 {
-                    RenderUtils.DrawEspLabel(cam, worldPos, label, c, Settings.EspFontSize);
+                    RenderUtils.DrawEspLabel(cam, worldPos, label, c, ModSettings.EspFontSize);
                 }
             };
 
@@ -331,16 +331,16 @@ namespace FullBrightMod.Utils
 
                 string info = prefix + "[ " + playerName + " ]\n[ " + distMeters + "m ]";
 
-                if (Settings.IsPlayerEspWireframeEnabled)
+                if (ModSettings.IsPlayerEspWireframeEnabled)
                 {
                     Vector2 dynSize = GetDynamicEntitySize(body.gameObject, DefaultPlayerSize);
-                    DrawWireframeFor(cam, worldPos, Settings.SelectedPlayerColor,
+                    DrawWireframeFor(cam, worldPos, ModSettings.SelectedPlayerColor,
                         prefix + "[ " + playerName + " ]", dynSize);
                 }
                 else
                 {
                     RenderUtils.DrawEspLabel(cam, worldPos, info,
-                        Settings.SelectedPlayerColor, Settings.EspFontSize);
+                        ModSettings.SelectedPlayerColor, ModSettings.EspFontSize);
                 }
             }
         }

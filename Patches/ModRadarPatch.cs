@@ -19,14 +19,35 @@ namespace FullBrightMod.Patches
         {
             if (bIOFailure) return;
             if (!GlobalSettings.EnableModRadar) return;
+            BroadcastModFlag(pCallback.m_ulSteamIDLobby);
+        }
 
+        internal static void BroadcastModFlag(ulong lobbyIdRaw)
+        {
             try
             {
-                CSteamID lobbyId = (CSteamID)pCallback.m_ulSteamIDLobby;
+                CSteamID lobbyId = (CSteamID)lobbyIdRaw;
                 SteamMatchmaking.SetLobbyMemberData(lobbyId, "_chk_mod", "1");
                 Debug.Log("[CheaterMod] 已向 Steam 大厅广播CM标识。");
             }
             catch { }
+        }
+    }
+
+    /// <summary>
+    /// 主机创建大厅后广播 CM使用者 标识
+    /// （OnLobbyEnter_APIDispatch 仅在加入大厅时触发，创建者需额外 Hook OnLobbyCreated）
+    /// </summary>
+    [HarmonyPatch(typeof(KSteam), "OnLobbyCreated")]
+    internal static class ModRadarHostBroadcastPatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix(LobbyCreated_t pCallback, bool bIOFailure)
+        {
+            if (bIOFailure) return;
+            if (pCallback.m_eResult != EResult.k_EResultOK) return;
+            if (!GlobalSettings.EnableModRadar) return;
+            ModRadarBroadcastPatch.BroadcastModFlag(pCallback.m_ulSteamIDLobby);
         }
     }
 

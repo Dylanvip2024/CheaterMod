@@ -31,7 +31,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static void Prefix(BandageMinigame __instance)
         {
-            if (!Settings.IsAutoBandageEnabled) return;
+            if (!ModSettings.IsAutoBandageEnabled) return;
             if (Minigame.game == null) return;
 
             // ★ 修复核心：如果已经完成止血，彻底放权，允许用户用真实的鼠标接管后续操作（如涂抹瘀伤药）
@@ -70,7 +70,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static void Prefix(BandageMinigame __instance, float deltaTime)
         {
-            if (!Settings.IsAutoBandageEnabled) return;
+            if (!ModSettings.IsAutoBandageEnabled) return;
             if (Minigame.game == null) return;
 
             // 如果已经检测到止血完成，直接掐断物理旋转引擎

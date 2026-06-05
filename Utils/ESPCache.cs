@@ -29,6 +29,7 @@ namespace FullBrightMod.Utils
         public static GroundGlass[]       CachedGlassShards;
         public static RadioactiveObject[] CachedRadObjects;
         public static CaveTickSpawner[]   CachedTickSwarms;
+        public static TraderScript[]      CachedTraders;   // ★ 商人缓存（供 KillAura 等模块过滤用，1秒刷新1次）
 
         public static readonly List<LineData> CachedLines = new List<LineData>();
 
@@ -59,6 +60,7 @@ namespace FullBrightMod.Utils
             CachedItems    = GameObject.FindObjectsOfType<Item>();
             CachedEntities = GameObject.FindObjectsOfType<BuildingEntity>();
             RefreshPlayers();
+            RefreshTraders();   // ★ 商人缓存（供 KillAura 过滤用，1秒刷新1次）
             RefreshTraps();
         }
 
@@ -81,6 +83,15 @@ namespace FullBrightMod.Utils
                 list.Add(body);
             }
             CachedPlayers = list.Count > 0 ? list.ToArray() : null;
+        }
+
+        /// <summary>
+        /// ★ 刷新商人缓存 —— 将全局 TraderScript 搜索降至 1秒1次。
+        /// KillAura 及其他模块可通过 CachedTraders 获取，避免高频 FindObjectsOfType 的 GC 开销。
+        /// </summary>
+        private static void RefreshTraders()
+        {
+            CachedTraders = GameObject.FindObjectsOfType<TraderScript>();
         }
 
         private static void RefreshTraps()

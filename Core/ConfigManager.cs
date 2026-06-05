@@ -190,6 +190,29 @@ namespace FullBrightMod.Core
             public float ContainerEspRange;
             public SColor ContainerEspColor;
             public bool ContainerEspUseArrows;
+
+            // TroublemakerAura
+            public bool IsTroublemakerAuraEnabled;
+            public int  TroublemakerTargetMode;
+            public float TroublemakerRange;
+            public bool TroublemakerEnableShrapnel;
+            public bool TroublemakerEnableRibCrusher;
+            public bool TroublemakerEnablePush;
+            public bool TroublemakerEnableAmputation;
+            public bool TroublemakerEnableBurn;
+
+            // FeatureList
+            public bool EnableFeatureList;
+            public float FeatureListRectX, FeatureListRectY, FeatureListRectW, FeatureListRectH;
+            public bool FeatureListAlignLeft;
+            public int FeatureListFontSize;
+            public SColor FeatureListColor;
+            public bool FeatureListRainbow;
+            public bool FeatureListBackground;
+            public bool FeatureListAccentLine;
+
+            // UI Sound
+            public bool EnableToggleSound;
         }
 
         [Serializable]
@@ -225,110 +248,110 @@ namespace FullBrightMod.Core
                 SaveData data = new SaveData();
 
                 // --- Settings ---
-                data.IsFullBrightEnabled   = Settings.IsFullBrightEnabled;
-                data.IsVisionExpandEnabled = Settings.IsVisionExpandEnabled;
-                data.IsItemEspEnabled      = Settings.IsItemEspEnabled;
-                data.IsCreatureEspEnabled  = Settings.IsCreatureEspEnabled;
-                data.IsTrapEspEnabled      = Settings.IsTrapEspEnabled;
-                data.IsPlayerEspEnabled    = Settings.IsPlayerEspEnabled;
-                data.IsItemEspWireframeEnabled     = Settings.IsItemEspWireframeEnabled;
-                data.IsCreatureEspWireframeEnabled = Settings.IsCreatureEspWireframeEnabled;
-                data.IsTrapEspWireframeEnabled     = Settings.IsTrapEspWireframeEnabled;
-                data.IsPlayerEspWireframeEnabled   = Settings.IsPlayerEspWireframeEnabled;
-                data.EspLineWidth          = Settings.EspLineWidth;
-                data.IsCameraZoomEnabled   = Settings.IsCameraZoomEnabled;
-                data.IsIQ250Enabled        = Settings.IsIQ250Enabled;
-                data.IsLongHandsEnabled    = Settings.IsLongHandsEnabled;
-                data.IsThroughWallEnabled  = Settings.IsThroughWallEnabled;
-                data.IsAutoTranslateEnabled= Settings.IsAutoTranslateEnabled;
-                data.IsAutoUnlockEnabled   = Settings.IsAutoUnlockEnabled;
-                data.IsFreecamEnabled      = Settings.IsFreecamEnabled;
-                data.IsFlightEnabled       = Settings.IsFlightEnabled;
-                data.IsJumpBoostEnabled    = Settings.IsJumpBoostEnabled;
-                data.IsNoClipEnabled              = Settings.IsNoClipEnabled;
-                data.IsAutoBandageEnabled         = Settings.IsAutoBandageEnabled;
-                data.IsAntiRagdollEnabled         = Settings.IsAntiRagdollEnabled;
-                data.IsShrapnelMakerEnabled       = Settings.IsShrapnelMakerEnabled;
-                data.IsInstantAmputationEnabled   = Settings.IsInstantAmputationEnabled;
-                data.IsExplosivesMacroEnabled     = Settings.IsExplosivesMacroEnabled;
-                data.IsFetchMacroEnabled           = Settings.IsFetchMacroEnabled;
-                data.IsInstantShrapnelRemovalEnabled = Settings.IsInstantShrapnelRemovalEnabled;
-                data.IsBoomboxEnabled             = Settings.IsBoomboxEnabled;
-                data.StopMusicWhenTalking         = Settings.StopMusicWhenTalking;
-                data.InventorySortMode            = (int)Settings.InventorySortMode;
-                data.IsSTTEnabled                 = Settings.IsSTTEnabled;
-                data.IsSTTTranslateLinkEnabled  = Settings.IsSTTTranslateLinkEnabled;
-                data.AutoSortSpaceEnabled     = Settings.IsAutoSortSpaceEnabled;
-                data.AutoSortWeightEnabled    = Settings.IsAutoSortWeightEnabled;
-                data.IsInfiniteAmmoEnabled        = Settings.IsInfiniteAmmoEnabled;
-                data.IsNoSpreadEnabled            = Settings.IsNoSpreadEnabled;
-                data.IsRapidFireEnabled           = Settings.IsRapidFireEnabled;
-                data.IsNoJamEnabled               = Settings.IsNoJamEnabled;
-                data.IsNoRecoilEnabled            = Settings.IsNoRecoilEnabled;
-                data.IsAutoReloadEnabled          = Settings.IsAutoReloadEnabled;
-                data.IsAutoBoltEnabled            = Settings.IsAutoBoltEnabled;
-                data.IsMouseAimbotEnabled         = Settings.IsMouseAimbotEnabled;
-                data.IsTrajectoryEnabled          = Settings.IsTrajectoryEnabled;
-                data.TrajectoryMaxLength          = Settings.TrajectoryMaxLength;
-                data.IsSpeedModifierEnabled       = Settings.IsSpeedModifierEnabled;
-                data.CustomSpeedMultiplier        = Settings.CustomSpeedMultiplier;
-                data.IsAntiWeightEnabled          = Settings.IsAntiWeightEnabled;
-                data.IsAirJumpEnabled             = Settings.IsAirJumpEnabled;
-                data.IsJetpackEnabled             = Settings.IsJetpackEnabled;
-                data.IsInstantReviveEnabled        = Settings.IsInstantReviveEnabled;
-                data.IsRibCrusherEnabled          = Settings.IsRibCrusherEnabled;
+                data.IsFullBrightEnabled   = ModSettings.IsFullBrightEnabled;
+                data.IsVisionExpandEnabled = ModSettings.IsVisionExpandEnabled;
+                data.IsItemEspEnabled      = ModSettings.IsItemEspEnabled;
+                data.IsCreatureEspEnabled  = ModSettings.IsCreatureEspEnabled;
+                data.IsTrapEspEnabled      = ModSettings.IsTrapEspEnabled;
+                data.IsPlayerEspEnabled    = ModSettings.IsPlayerEspEnabled;
+                data.IsItemEspWireframeEnabled     = ModSettings.IsItemEspWireframeEnabled;
+                data.IsCreatureEspWireframeEnabled = ModSettings.IsCreatureEspWireframeEnabled;
+                data.IsTrapEspWireframeEnabled     = ModSettings.IsTrapEspWireframeEnabled;
+                data.IsPlayerEspWireframeEnabled   = ModSettings.IsPlayerEspWireframeEnabled;
+                data.EspLineWidth          = ModSettings.EspLineWidth;
+                data.IsCameraZoomEnabled   = ModSettings.IsCameraZoomEnabled;
+                data.IsIQ250Enabled        = ModSettings.IsIQ250Enabled;
+                data.IsLongHandsEnabled    = ModSettings.IsLongHandsEnabled;
+                data.IsThroughWallEnabled  = ModSettings.IsThroughWallEnabled;
+                data.IsAutoTranslateEnabled= ModSettings.IsAutoTranslateEnabled;
+                data.IsAutoUnlockEnabled   = ModSettings.IsAutoUnlockEnabled;
+                data.IsFreecamEnabled      = ModSettings.IsFreecamEnabled;
+                data.IsFlightEnabled       = ModSettings.IsFlightEnabled;
+                data.IsJumpBoostEnabled    = ModSettings.IsJumpBoostEnabled;
+                data.IsNoClipEnabled              = ModSettings.IsNoClipEnabled;
+                data.IsAutoBandageEnabled         = ModSettings.IsAutoBandageEnabled;
+                data.IsAntiRagdollEnabled         = ModSettings.IsAntiRagdollEnabled;
+                data.IsShrapnelMakerEnabled       = ModSettings.IsShrapnelMakerEnabled;
+                data.IsInstantAmputationEnabled   = ModSettings.IsInstantAmputationEnabled;
+                data.IsExplosivesMacroEnabled     = ModSettings.IsExplosivesMacroEnabled;
+                data.IsFetchMacroEnabled           = ModSettings.IsFetchMacroEnabled;
+                data.IsInstantShrapnelRemovalEnabled = ModSettings.IsInstantShrapnelRemovalEnabled;
+                data.IsBoomboxEnabled             = ModSettings.IsBoomboxEnabled;
+                data.StopMusicWhenTalking         = ModSettings.StopMusicWhenTalking;
+                data.InventorySortMode            = (int)ModSettings.InventorySortMode;
+                data.IsSTTEnabled                 = ModSettings.IsSTTEnabled;
+                data.IsSTTTranslateLinkEnabled  = ModSettings.IsSTTTranslateLinkEnabled;
+                data.AutoSortSpaceEnabled     = ModSettings.IsAutoSortSpaceEnabled;
+                data.AutoSortWeightEnabled    = ModSettings.IsAutoSortWeightEnabled;
+                data.IsInfiniteAmmoEnabled        = ModSettings.IsInfiniteAmmoEnabled;
+                data.IsNoSpreadEnabled            = ModSettings.IsNoSpreadEnabled;
+                data.IsRapidFireEnabled           = ModSettings.IsRapidFireEnabled;
+                data.IsNoJamEnabled               = ModSettings.IsNoJamEnabled;
+                data.IsNoRecoilEnabled            = ModSettings.IsNoRecoilEnabled;
+                data.IsAutoReloadEnabled          = ModSettings.IsAutoReloadEnabled;
+                data.IsAutoBoltEnabled            = ModSettings.IsAutoBoltEnabled;
+                data.IsMouseAimbotEnabled         = ModSettings.IsMouseAimbotEnabled;
+                data.IsTrajectoryEnabled          = ModSettings.IsTrajectoryEnabled;
+                data.TrajectoryMaxLength          = ModSettings.TrajectoryMaxLength;
+                data.IsSpeedModifierEnabled       = ModSettings.IsSpeedModifierEnabled;
+                data.CustomSpeedMultiplier        = ModSettings.CustomSpeedMultiplier;
+                data.IsAntiWeightEnabled          = ModSettings.IsAntiWeightEnabled;
+                data.IsAirJumpEnabled             = ModSettings.IsAirJumpEnabled;
+                data.IsJetpackEnabled             = ModSettings.IsJetpackEnabled;
+                data.IsInstantReviveEnabled        = ModSettings.IsInstantReviveEnabled;
+                data.IsRibCrusherEnabled          = ModSettings.IsRibCrusherEnabled;
 
-                data.IsAutoPushEnabled          = Settings.IsAutoPushEnabled;
-                data.AutoPushDistance           = Settings.AutoPushDistance;
-                data.IsAutoCarryEnabled         = Settings.IsAutoCarryEnabled;
-                data.IsAutoDislocationEnabled  = Settings.IsAutoDislocationEnabled;
-                data.IsLongHandsTPModeEnabled   = Settings.IsLongHandsTPModeEnabled;
+                data.IsAutoPushEnabled          = ModSettings.IsAutoPushEnabled;
+                data.AutoPushDistance           = ModSettings.AutoPushDistance;
+                data.IsAutoCarryEnabled         = ModSettings.IsAutoCarryEnabled;
+                data.IsAutoDislocationEnabled  = ModSettings.IsAutoDislocationEnabled;
+                data.IsLongHandsTPModeEnabled   = ModSettings.IsLongHandsTPModeEnabled;
 
-                data.IsCameraTeleportEnabled    = Settings.IsCameraTeleportEnabled;
+                data.IsCameraTeleportEnabled    = ModSettings.IsCameraTeleportEnabled;
 
-                data.KillAuraTeleportAttack     = Settings.KillAuraTeleportAttack;
-                data.KillAuraTeleportRange      = Settings.KillAuraTeleportRange;
+                data.KillAuraTeleportAttack     = ModSettings.KillAuraTeleportAttack;
+                data.KillAuraTeleportRange      = ModSettings.KillAuraTeleportRange;
 
-                data.IsKillAuraEnabled          = Settings.IsKillAuraEnabled;
-                data.KillAuraAttackPlayers      = Settings.KillAuraAttackPlayers;
-                data.KillAuraAttackCreatures  = Settings.KillAuraAttackCreatures;
-                data.KillAuraAttackGlass      = Settings.KillAuraAttackGlass;
-                data.KillAuraAPS                = Settings.KillAuraAPS;
-                data.KillAuraRange              = Settings.KillAuraRange;
-                data.KillAuraRenderTarget       = Settings.KillAuraRenderTarget;
-                data.KillAuraTargetColor        = ToSColor(Settings.KillAuraTargetColor);
-                data.CustomFireRateMultiplier     = Settings.CustomFireRateMultiplier;
+                data.IsKillAuraEnabled          = ModSettings.IsKillAuraEnabled;
+                data.KillAuraAttackPlayers      = ModSettings.KillAuraAttackPlayers;
+                data.KillAuraAttackCreatures  = ModSettings.KillAuraAttackCreatures;
+                data.KillAuraAttackGlass      = ModSettings.KillAuraAttackGlass;
+                data.KillAuraAPS                = ModSettings.KillAuraAPS;
+                data.KillAuraRange              = ModSettings.KillAuraRange;
+                data.KillAuraRenderTarget       = ModSettings.KillAuraRenderTarget;
+                data.KillAuraTargetColor        = ToSColor(ModSettings.KillAuraTargetColor);
+                data.CustomFireRateMultiplier     = ModSettings.CustomFireRateMultiplier;
 
-                data.BrightenIntensity  = Settings.BrightenIntensity;
-                data.CustomVisionRadius = Settings.CustomVisionRadius;
-                data.CustomCameraSize   = Settings.CustomCameraSize;
-                data.EspFontSize        = Settings.EspFontSize;
-                data.CustomPickupRange  = Settings.CustomPickupRange;
-                data.CustomJumpForce    = Settings.CustomJumpForce;
-                data.FetchDistance      = Settings.FetchDistance;
-                data.AimbotRadius       = Settings.AimbotRadius;
-                data.CurrentTrackIndex  = Settings.CurrentTrackIndex;
+                data.BrightenIntensity  = ModSettings.BrightenIntensity;
+                data.CustomVisionRadius = ModSettings.CustomVisionRadius;
+                data.CustomCameraSize   = ModSettings.CustomCameraSize;
+                data.EspFontSize        = ModSettings.EspFontSize;
+                data.CustomPickupRange  = ModSettings.CustomPickupRange;
+                data.CustomJumpForce    = ModSettings.CustomJumpForce;
+                data.FetchDistance      = ModSettings.FetchDistance;
+                data.AimbotRadius       = ModSettings.AimbotRadius;
+                data.CurrentTrackIndex  = ModSettings.CurrentTrackIndex;
 
-                data.SelectedEspColor      = ToSColor(Settings.SelectedEspColor);
-                data.SelectedCreatureColor = ToSColor(Settings.SelectedCreatureColor);
-                data.SelectedTrapColor     = ToSColor(Settings.SelectedTrapColor);
-                data.SelectedPlayerColor   = ToSColor(Settings.SelectedPlayerColor);
-                data.TrajectoryColor       = ToSColor(Settings.TrajectoryColor);
+                data.SelectedEspColor      = ToSColor(ModSettings.SelectedEspColor);
+                data.SelectedCreatureColor = ToSColor(ModSettings.SelectedCreatureColor);
+                data.SelectedTrapColor     = ToSColor(ModSettings.SelectedTrapColor);
+                data.SelectedPlayerColor   = ToSColor(ModSettings.SelectedPlayerColor);
+                data.TrajectoryColor       = ToSColor(ModSettings.TrajectoryColor);
 
-                data.FreecamX = Settings.FreecamPosition.x;
-                data.FreecamY = Settings.FreecamPosition.y;
-                data.FreecamZ = Settings.FreecamPosition.z;
+                data.FreecamX = ModSettings.FreecamPosition.x;
+                data.FreecamY = ModSettings.FreecamPosition.y;
+                data.FreecamZ = ModSettings.FreecamPosition.z;
 
-                data.Language = (int)Settings.CurrentLanguage;
+                data.Language = (int)ModSettings.CurrentLanguage;
 
-                data.TranslateSourceIndex = Settings.TranslateSourceIndex;
-                data.TranslateTargetIndex = Settings.TranslateTargetIndex;
-                data.IsTwoWayTranslationEnabled = Settings.IsTwoWayTranslationEnabled;
-                data.CurrentTranslationEngine = (int)Settings.CurrentTranslationEngine;
-                data.OpenAIBaseUrl = Settings.OpenAIBaseUrl;
-                data.OpenAIApiKey = Settings.OpenAIApiKey;
-                data.OpenAIModel = Settings.OpenAIModel;
-                data.IsTranslationContextEnabled = Settings.IsTranslationContextEnabled;
+                data.TranslateSourceIndex = ModSettings.TranslateSourceIndex;
+                data.TranslateTargetIndex = ModSettings.TranslateTargetIndex;
+                data.IsTwoWayTranslationEnabled = ModSettings.IsTwoWayTranslationEnabled;
+                data.CurrentTranslationEngine = (int)ModSettings.CurrentTranslationEngine;
+                data.OpenAIBaseUrl = ModSettings.OpenAIBaseUrl;
+                data.OpenAIApiKey = ModSettings.OpenAIApiKey;
+                data.OpenAIModel = ModSettings.OpenAIModel;
+                data.IsTranslationContextEnabled = ModSettings.IsTranslationContextEnabled;
 
                 // --- ModuleManager ---
                 foreach (var mod in modManager.GetAllModules())
@@ -380,24 +403,47 @@ namespace FullBrightMod.Core
 
                 data.EnableModRadar     = GlobalSettings.EnableModRadar;
 
-                data.IsMeleeSpeedEnabled      = Settings.IsMeleeSpeedEnabled;
-                data.MeleeSpeedMultiplier      = Settings.MeleeSpeedMultiplier;
+                data.IsMeleeSpeedEnabled      = ModSettings.IsMeleeSpeedEnabled;
+                data.MeleeSpeedMultiplier      = ModSettings.MeleeSpeedMultiplier;
 
-                data.DisableBloodFx       = Settings.DisableBloodFx;
-                data.DisableTemperatureFx = Settings.DisableTemperatureFx;
-                data.DisableMentalFx      = Settings.DisableMentalFx;
-                data.DisableBlurFx        = Settings.DisableBlurFx;
-                data.DisableRadiationFx   = Settings.DisableRadiationFx;
-                data.DisableDamageFx      = Settings.DisableDamageFx;
-                data.DisableUIOverlays    = Settings.DisableUIOverlays;
+                data.DisableBloodFx       = ModSettings.DisableBloodFx;
+                data.DisableTemperatureFx = ModSettings.DisableTemperatureFx;
+                data.DisableMentalFx      = ModSettings.DisableMentalFx;
+                data.DisableBlurFx        = ModSettings.DisableBlurFx;
+                data.DisableRadiationFx   = ModSettings.DisableRadiationFx;
+                data.DisableDamageFx      = ModSettings.DisableDamageFx;
+                data.DisableUIOverlays    = ModSettings.DisableUIOverlays;
 
-                data.IsRemotePickupEnabled = Settings.IsRemotePickupEnabled;
-                data.RemotePickupRange     = Settings.RemotePickupRange;
+                data.IsRemotePickupEnabled = ModSettings.IsRemotePickupEnabled;
+                data.RemotePickupRange     = ModSettings.RemotePickupRange;
 
-                data.IsContainerEspEnabled = Settings.IsContainerEspEnabled;
-                data.ContainerEspRange     = Settings.ContainerEspRange;
-                data.ContainerEspColor     = ToSColor(Settings.ContainerEspColor);
-                data.ContainerEspUseArrows = Settings.ContainerEspUseArrows;
+                data.IsContainerEspEnabled = ModSettings.IsContainerEspEnabled;
+                data.ContainerEspRange     = ModSettings.ContainerEspRange;
+                data.ContainerEspColor     = ToSColor(ModSettings.ContainerEspColor);
+                data.ContainerEspUseArrows = ModSettings.ContainerEspUseArrows;
+
+                data.IsTroublemakerAuraEnabled   = ModSettings.IsTroublemakerAuraEnabled;
+                data.TroublemakerTargetMode      = ModSettings.TroublemakerTargetMode;
+                data.TroublemakerRange            = ModSettings.TroublemakerRange;
+                data.TroublemakerEnableShrapnel  = ModSettings.TroublemakerEnableShrapnel;
+                data.TroublemakerEnableRibCrusher = ModSettings.TroublemakerEnableRibCrusher;
+                data.TroublemakerEnablePush      = ModSettings.TroublemakerEnablePush;
+                data.TroublemakerEnableAmputation = ModSettings.TroublemakerEnableAmputation;
+                data.TroublemakerEnableBurn       = ModSettings.TroublemakerEnableBurn;
+
+                data.EnableFeatureList   = GlobalSettings.EnableFeatureList;
+                data.FeatureListRectX    = GlobalSettings.FeatureListRect.x;
+                data.FeatureListRectY    = GlobalSettings.FeatureListRect.y;
+                data.FeatureListRectW    = GlobalSettings.FeatureListRect.width;
+                data.FeatureListRectH    = GlobalSettings.FeatureListRect.height;
+                data.FeatureListAlignLeft = GlobalSettings.FeatureListAlignLeft;
+                data.FeatureListFontSize = GlobalSettings.FeatureListFontSize;
+                data.FeatureListColor    = ToSColor(GlobalSettings.FeatureListColor);
+                data.FeatureListRainbow  = GlobalSettings.FeatureListRainbow;
+                data.FeatureListBackground = GlobalSettings.FeatureListBackground;
+                data.FeatureListAccentLine = GlobalSettings.FeatureListAccentLine;
+
+                data.EnableToggleSound = GlobalSettings.EnableToggleSound;
 
                 string json = JsonConvert.SerializeObject(data, Formatting.Indented);
                 File.WriteAllText(ConfigPath, json);
@@ -426,114 +472,114 @@ namespace FullBrightMod.Core
                 if (data == null) return;
 
                 // --- Settings ---
-                Settings.IsFullBrightEnabled   = data.IsFullBrightEnabled;
-                Settings.IsVisionExpandEnabled = data.IsVisionExpandEnabled;
-                Settings.IsItemEspEnabled      = data.IsItemEspEnabled;
-                Settings.IsCreatureEspEnabled  = data.IsCreatureEspEnabled;
-                Settings.IsTrapEspEnabled      = data.IsTrapEspEnabled;
-                Settings.IsPlayerEspEnabled    = data.IsPlayerEspEnabled;
-                Settings.IsItemEspWireframeEnabled     = data.IsItemEspWireframeEnabled;
-                Settings.IsCreatureEspWireframeEnabled = data.IsCreatureEspWireframeEnabled;
-                Settings.IsTrapEspWireframeEnabled     = data.IsTrapEspWireframeEnabled;
-                Settings.IsPlayerEspWireframeEnabled   = data.IsPlayerEspWireframeEnabled;
-                Settings.EspLineWidth          = data.EspLineWidth > 0f ? data.EspLineWidth : 2f;
-                Settings.IsCameraZoomEnabled   = data.IsCameraZoomEnabled;
-                Settings.IsIQ250Enabled        = data.IsIQ250Enabled;
-                Settings.IsLongHandsEnabled    = data.IsLongHandsEnabled;
-                Settings.IsThroughWallEnabled  = data.IsThroughWallEnabled;
-                Settings.IsAutoTranslateEnabled= data.IsAutoTranslateEnabled;
-                Settings.IsAutoUnlockEnabled   = data.IsAutoUnlockEnabled;
-                Settings.IsFreecamEnabled      = data.IsFreecamEnabled;
-                Settings.IsFlightEnabled       = data.IsFlightEnabled;
-                Settings.IsJumpBoostEnabled    = data.IsJumpBoostEnabled;
-                Settings.IsNoClipEnabled              = data.IsNoClipEnabled;
-                Settings.IsAutoBandageEnabled         = data.IsAutoBandageEnabled;
-                Settings.IsAntiRagdollEnabled         = data.IsAntiRagdollEnabled;
-                Settings.IsShrapnelMakerEnabled       = data.IsShrapnelMakerEnabled;
-                Settings.IsInstantAmputationEnabled   = data.IsInstantAmputationEnabled;
-                Settings.IsExplosivesMacroEnabled     = data.IsExplosivesMacroEnabled;
-                Settings.IsFetchMacroEnabled           = data.IsFetchMacroEnabled;
-                Settings.IsInstantShrapnelRemovalEnabled = data.IsInstantShrapnelRemovalEnabled;
-                Settings.IsBoomboxEnabled             = data.IsBoomboxEnabled;
-                Settings.StopMusicWhenTalking         = data.StopMusicWhenTalking;
+                ModSettings.IsFullBrightEnabled   = data.IsFullBrightEnabled;
+                ModSettings.IsVisionExpandEnabled = data.IsVisionExpandEnabled;
+                ModSettings.IsItemEspEnabled      = data.IsItemEspEnabled;
+                ModSettings.IsCreatureEspEnabled  = data.IsCreatureEspEnabled;
+                ModSettings.IsTrapEspEnabled      = data.IsTrapEspEnabled;
+                ModSettings.IsPlayerEspEnabled    = data.IsPlayerEspEnabled;
+                ModSettings.IsItemEspWireframeEnabled     = data.IsItemEspWireframeEnabled;
+                ModSettings.IsCreatureEspWireframeEnabled = data.IsCreatureEspWireframeEnabled;
+                ModSettings.IsTrapEspWireframeEnabled     = data.IsTrapEspWireframeEnabled;
+                ModSettings.IsPlayerEspWireframeEnabled   = data.IsPlayerEspWireframeEnabled;
+                ModSettings.EspLineWidth          = data.EspLineWidth > 0f ? data.EspLineWidth : 2f;
+                ModSettings.IsCameraZoomEnabled   = data.IsCameraZoomEnabled;
+                ModSettings.IsIQ250Enabled        = data.IsIQ250Enabled;
+                ModSettings.IsLongHandsEnabled    = data.IsLongHandsEnabled;
+                ModSettings.IsThroughWallEnabled  = data.IsThroughWallEnabled;
+                ModSettings.IsAutoTranslateEnabled= data.IsAutoTranslateEnabled;
+                ModSettings.IsAutoUnlockEnabled   = data.IsAutoUnlockEnabled;
+                ModSettings.IsFreecamEnabled      = data.IsFreecamEnabled;
+                ModSettings.IsFlightEnabled       = data.IsFlightEnabled;
+                ModSettings.IsJumpBoostEnabled    = data.IsJumpBoostEnabled;
+                ModSettings.IsNoClipEnabled              = data.IsNoClipEnabled;
+                ModSettings.IsAutoBandageEnabled         = data.IsAutoBandageEnabled;
+                ModSettings.IsAntiRagdollEnabled         = data.IsAntiRagdollEnabled;
+                ModSettings.IsShrapnelMakerEnabled       = data.IsShrapnelMakerEnabled;
+                ModSettings.IsInstantAmputationEnabled   = data.IsInstantAmputationEnabled;
+                ModSettings.IsExplosivesMacroEnabled     = data.IsExplosivesMacroEnabled;
+                ModSettings.IsFetchMacroEnabled           = data.IsFetchMacroEnabled;
+                ModSettings.IsInstantShrapnelRemovalEnabled = data.IsInstantShrapnelRemovalEnabled;
+                ModSettings.IsBoomboxEnabled             = data.IsBoomboxEnabled;
+                ModSettings.StopMusicWhenTalking         = data.StopMusicWhenTalking;
                 if (Enum.IsDefined(typeof(InventorySortMode), data.InventorySortMode))
-                    Settings.InventorySortMode    = (InventorySortMode)data.InventorySortMode;
-                Settings.IsSTTEnabled                 = data.IsSTTEnabled;
-                Settings.IsSTTTranslateLinkEnabled  = data.IsSTTTranslateLinkEnabled;
-                Settings.IsAutoSortSpaceEnabled     = data.AutoSortSpaceEnabled;
-                Settings.IsAutoSortWeightEnabled    = data.AutoSortWeightEnabled;
-                Settings.IsInfiniteAmmoEnabled        = data.IsInfiniteAmmoEnabled;
-                Settings.IsNoSpreadEnabled            = data.IsNoSpreadEnabled;
-                Settings.IsRapidFireEnabled           = data.IsRapidFireEnabled;
-                Settings.IsNoJamEnabled               = data.IsNoJamEnabled;
-                Settings.IsNoRecoilEnabled            = data.IsNoRecoilEnabled;
-                Settings.IsAutoReloadEnabled          = data.IsAutoReloadEnabled;
-                Settings.IsAutoBoltEnabled            = data.IsAutoBoltEnabled;
-                Settings.IsMouseAimbotEnabled         = data.IsMouseAimbotEnabled;
-                Settings.IsTrajectoryEnabled          = data.IsTrajectoryEnabled;
-                Settings.TrajectoryMaxLength          = data.TrajectoryMaxLength > 0f ? data.TrajectoryMaxLength : 20f;
-                Settings.IsSpeedModifierEnabled       = data.IsSpeedModifierEnabled;
-                Settings.CustomSpeedMultiplier        = data.CustomSpeedMultiplier > 0f ? data.CustomSpeedMultiplier : 1.5f;
-                Settings.IsAntiWeightEnabled          = data.IsAntiWeightEnabled;
-                Settings.IsAirJumpEnabled             = data.IsAirJumpEnabled;
-                Settings.IsJetpackEnabled             = data.IsJetpackEnabled;
-                Settings.IsInstantReviveEnabled        = data.IsInstantReviveEnabled;
-                Settings.IsRibCrusherEnabled          = data.IsRibCrusherEnabled;
+                    ModSettings.InventorySortMode    = (InventorySortMode)data.InventorySortMode;
+                ModSettings.IsSTTEnabled                 = data.IsSTTEnabled;
+                ModSettings.IsSTTTranslateLinkEnabled  = data.IsSTTTranslateLinkEnabled;
+                ModSettings.IsAutoSortSpaceEnabled     = data.AutoSortSpaceEnabled;
+                ModSettings.IsAutoSortWeightEnabled    = data.AutoSortWeightEnabled;
+                ModSettings.IsInfiniteAmmoEnabled        = data.IsInfiniteAmmoEnabled;
+                ModSettings.IsNoSpreadEnabled            = data.IsNoSpreadEnabled;
+                ModSettings.IsRapidFireEnabled           = data.IsRapidFireEnabled;
+                ModSettings.IsNoJamEnabled               = data.IsNoJamEnabled;
+                ModSettings.IsNoRecoilEnabled            = data.IsNoRecoilEnabled;
+                ModSettings.IsAutoReloadEnabled          = data.IsAutoReloadEnabled;
+                ModSettings.IsAutoBoltEnabled            = data.IsAutoBoltEnabled;
+                ModSettings.IsMouseAimbotEnabled         = data.IsMouseAimbotEnabled;
+                ModSettings.IsTrajectoryEnabled          = data.IsTrajectoryEnabled;
+                ModSettings.TrajectoryMaxLength          = data.TrajectoryMaxLength > 0f ? data.TrajectoryMaxLength : 20f;
+                ModSettings.IsSpeedModifierEnabled       = data.IsSpeedModifierEnabled;
+                ModSettings.CustomSpeedMultiplier        = data.CustomSpeedMultiplier > 0f ? data.CustomSpeedMultiplier : 1.5f;
+                ModSettings.IsAntiWeightEnabled          = data.IsAntiWeightEnabled;
+                ModSettings.IsAirJumpEnabled             = data.IsAirJumpEnabled;
+                ModSettings.IsJetpackEnabled             = data.IsJetpackEnabled;
+                ModSettings.IsInstantReviveEnabled        = data.IsInstantReviveEnabled;
+                ModSettings.IsRibCrusherEnabled          = data.IsRibCrusherEnabled;
 
-                Settings.IsAutoPushEnabled          = data.IsAutoPushEnabled;
-                Settings.AutoPushDistance           = data.AutoPushDistance > 0f ? data.AutoPushDistance : 1.5f;
-                Settings.IsAutoCarryEnabled         = data.IsAutoCarryEnabled;
-                Settings.IsAutoDislocationEnabled  = data.IsAutoDislocationEnabled;
-                Settings.IsLongHandsTPModeEnabled   = data.IsLongHandsTPModeEnabled;
+                ModSettings.IsAutoPushEnabled          = data.IsAutoPushEnabled;
+                ModSettings.AutoPushDistance           = data.AutoPushDistance > 0f ? data.AutoPushDistance : 1.5f;
+                ModSettings.IsAutoCarryEnabled         = data.IsAutoCarryEnabled;
+                ModSettings.IsAutoDislocationEnabled  = data.IsAutoDislocationEnabled;
+                ModSettings.IsLongHandsTPModeEnabled   = data.IsLongHandsTPModeEnabled;
 
-                Settings.IsCameraTeleportEnabled    = data.IsCameraTeleportEnabled;
+                ModSettings.IsCameraTeleportEnabled    = data.IsCameraTeleportEnabled;
 
-                Settings.KillAuraTeleportAttack     = data.KillAuraTeleportAttack;
-                Settings.KillAuraTeleportRange      = data.KillAuraTeleportRange > 0f ? data.KillAuraTeleportRange : 50f;
+                ModSettings.KillAuraTeleportAttack     = data.KillAuraTeleportAttack;
+                ModSettings.KillAuraTeleportRange      = data.KillAuraTeleportRange > 0f ? data.KillAuraTeleportRange : 50f;
 
-                Settings.IsKillAuraEnabled          = data.IsKillAuraEnabled;
-                Settings.KillAuraAttackPlayers      = data.KillAuraAttackPlayers;
-                Settings.KillAuraAttackCreatures  = data.KillAuraAttackCreatures;
-                Settings.KillAuraAttackGlass      = data.KillAuraAttackGlass;
-                Settings.KillAuraAPS                = data.KillAuraAPS > 0f ? data.KillAuraAPS : 10f;
-                Settings.KillAuraRange              = data.KillAuraRange > 0f ? data.KillAuraRange : 4f;
-                Settings.KillAuraRenderTarget       = data.KillAuraRenderTarget;
+                ModSettings.IsKillAuraEnabled          = data.IsKillAuraEnabled;
+                ModSettings.KillAuraAttackPlayers      = data.KillAuraAttackPlayers;
+                ModSettings.KillAuraAttackCreatures  = data.KillAuraAttackCreatures;
+                ModSettings.KillAuraAttackGlass      = data.KillAuraAttackGlass;
+                ModSettings.KillAuraAPS                = data.KillAuraAPS > 0f ? data.KillAuraAPS : 10f;
+                ModSettings.KillAuraRange              = data.KillAuraRange > 0f ? data.KillAuraRange : 4f;
+                ModSettings.KillAuraRenderTarget       = data.KillAuraRenderTarget;
                 if (data.KillAuraTargetColor != null)
-                    Settings.KillAuraTargetColor    = ToColor(data.KillAuraTargetColor);
+                    ModSettings.KillAuraTargetColor    = ToColor(data.KillAuraTargetColor);
 
-                Settings.BrightenIntensity  = data.BrightenIntensity;
-                Settings.CustomVisionRadius = data.CustomVisionRadius;
-                Settings.CustomCameraSize   = data.CustomCameraSize;
-                Settings.EspFontSize        = data.EspFontSize;
-                Settings.CustomPickupRange  = data.CustomPickupRange;
-                Settings.CustomJumpForce    = data.CustomJumpForce;
-                Settings.FetchDistance      = data.FetchDistance;
-                Settings.AimbotRadius       = data.AimbotRadius;
-                Settings.CurrentTrackIndex  = data.CurrentTrackIndex;
+                ModSettings.BrightenIntensity  = data.BrightenIntensity;
+                ModSettings.CustomVisionRadius = data.CustomVisionRadius;
+                ModSettings.CustomCameraSize   = data.CustomCameraSize;
+                ModSettings.EspFontSize        = data.EspFontSize;
+                ModSettings.CustomPickupRange  = data.CustomPickupRange;
+                ModSettings.CustomJumpForce    = data.CustomJumpForce;
+                ModSettings.FetchDistance      = data.FetchDistance;
+                ModSettings.AimbotRadius       = data.AimbotRadius;
+                ModSettings.CurrentTrackIndex  = data.CurrentTrackIndex;
 
-                Settings.SelectedEspColor      = ToColor(data.SelectedEspColor);
-                Settings.SelectedCreatureColor = ToColor(data.SelectedCreatureColor);
-                Settings.SelectedTrapColor     = ToColor(data.SelectedTrapColor);
+                ModSettings.SelectedEspColor      = ToColor(data.SelectedEspColor);
+                ModSettings.SelectedCreatureColor = ToColor(data.SelectedCreatureColor);
+                ModSettings.SelectedTrapColor     = ToColor(data.SelectedTrapColor);
                 if (data.SelectedPlayerColor != null)
-                    Settings.SelectedPlayerColor = ToColor(data.SelectedPlayerColor);
+                    ModSettings.SelectedPlayerColor = ToColor(data.SelectedPlayerColor);
                 if (data.TrajectoryColor != null)
-                    Settings.TrajectoryColor  = ToColor(data.TrajectoryColor);
+                    ModSettings.TrajectoryColor  = ToColor(data.TrajectoryColor);
 
-                Settings.FreecamPosition = new Vector3(data.FreecamX, data.FreecamY, data.FreecamZ);
+                ModSettings.FreecamPosition = new Vector3(data.FreecamX, data.FreecamY, data.FreecamZ);
 
                 if (Enum.IsDefined(typeof(AppLanguage), data.Language))
-                    Settings.CurrentLanguage = (AppLanguage)data.Language;
+                    ModSettings.CurrentLanguage = (AppLanguage)data.Language;
 
-                Settings.TranslateSourceIndex = data.TranslateSourceIndex;
-                Settings.TranslateTargetIndex = data.TranslateTargetIndex == 0 ? 1 : data.TranslateTargetIndex;
-                Settings.IsTwoWayTranslationEnabled = data.IsTwoWayTranslationEnabled;
+                ModSettings.TranslateSourceIndex = data.TranslateSourceIndex;
+                ModSettings.TranslateTargetIndex = data.TranslateTargetIndex == 0 ? 1 : data.TranslateTargetIndex;
+                ModSettings.IsTwoWayTranslationEnabled = data.IsTwoWayTranslationEnabled;
                 if (Enum.IsDefined(typeof(TranslationEngine), data.CurrentTranslationEngine))
-                    Settings.CurrentTranslationEngine = (TranslationEngine)data.CurrentTranslationEngine;
-                if (!string.IsNullOrEmpty(data.OpenAIBaseUrl)) Settings.OpenAIBaseUrl = data.OpenAIBaseUrl;
-                if (data.OpenAIApiKey != null) Settings.OpenAIApiKey = data.OpenAIApiKey;
-                if (!string.IsNullOrEmpty(data.OpenAIModel)) Settings.OpenAIModel = data.OpenAIModel;
-                Settings.IsTranslationContextEnabled = data.IsTranslationContextEnabled;
-                Settings.CustomFireRateMultiplier = data.CustomFireRateMultiplier <= 0f ? 1.0f : data.CustomFireRateMultiplier;
+                    ModSettings.CurrentTranslationEngine = (TranslationEngine)data.CurrentTranslationEngine;
+                if (!string.IsNullOrEmpty(data.OpenAIBaseUrl)) ModSettings.OpenAIBaseUrl = data.OpenAIBaseUrl;
+                if (data.OpenAIApiKey != null) ModSettings.OpenAIApiKey = data.OpenAIApiKey;
+                if (!string.IsNullOrEmpty(data.OpenAIModel)) ModSettings.OpenAIModel = data.OpenAIModel;
+                ModSettings.IsTranslationContextEnabled = data.IsTranslationContextEnabled;
+                ModSettings.CustomFireRateMultiplier = data.CustomFireRateMultiplier <= 0f ? 1.0f : data.CustomFireRateMultiplier;
 
                 // --- 模块状态 ---
                 if (data.Modules != null)
@@ -611,25 +657,49 @@ namespace FullBrightMod.Core
 
                 GlobalSettings.EnableModRadar = data.EnableModRadar;
 
-                Settings.IsMeleeSpeedEnabled      = data.IsMeleeSpeedEnabled;
-                Settings.MeleeSpeedMultiplier      = data.MeleeSpeedMultiplier > 0f ? data.MeleeSpeedMultiplier : 2f;
+                ModSettings.IsMeleeSpeedEnabled      = data.IsMeleeSpeedEnabled;
+                ModSettings.MeleeSpeedMultiplier      = data.MeleeSpeedMultiplier > 0f ? data.MeleeSpeedMultiplier : 2f;
 
-                Settings.DisableBloodFx       = data.DisableBloodFx;
-                Settings.DisableTemperatureFx = data.DisableTemperatureFx;
-                Settings.DisableMentalFx      = data.DisableMentalFx;
-                Settings.DisableBlurFx        = data.DisableBlurFx;
-                Settings.DisableRadiationFx   = data.DisableRadiationFx;
-                Settings.DisableDamageFx      = data.DisableDamageFx;
-                Settings.DisableUIOverlays    = data.DisableUIOverlays;
+                ModSettings.DisableBloodFx       = data.DisableBloodFx;
+                ModSettings.DisableTemperatureFx = data.DisableTemperatureFx;
+                ModSettings.DisableMentalFx      = data.DisableMentalFx;
+                ModSettings.DisableBlurFx        = data.DisableBlurFx;
+                ModSettings.DisableRadiationFx   = data.DisableRadiationFx;
+                ModSettings.DisableDamageFx      = data.DisableDamageFx;
+                ModSettings.DisableUIOverlays    = data.DisableUIOverlays;
 
-                Settings.IsRemotePickupEnabled = data.IsRemotePickupEnabled;
-                Settings.RemotePickupRange     = data.RemotePickupRange > 0f ? data.RemotePickupRange : 50f;
+                ModSettings.IsRemotePickupEnabled = data.IsRemotePickupEnabled;
+                ModSettings.RemotePickupRange     = data.RemotePickupRange > 0f ? data.RemotePickupRange : 50f;
 
-                Settings.IsContainerEspEnabled = data.IsContainerEspEnabled;
-                Settings.ContainerEspRange     = data.ContainerEspRange > 0f ? data.ContainerEspRange : 50f;
+                ModSettings.IsContainerEspEnabled = data.IsContainerEspEnabled;
+                ModSettings.ContainerEspRange     = data.ContainerEspRange > 0f ? data.ContainerEspRange : 50f;
                 if (data.ContainerEspColor != null)
-                    Settings.ContainerEspColor = ToColor(data.ContainerEspColor);
-                Settings.ContainerEspUseArrows = data.ContainerEspUseArrows;
+                    ModSettings.ContainerEspColor = ToColor(data.ContainerEspColor);
+                ModSettings.ContainerEspUseArrows = data.ContainerEspUseArrows;
+
+                ModSettings.IsTroublemakerAuraEnabled   = data.IsTroublemakerAuraEnabled;
+                ModSettings.TroublemakerTargetMode      = data.TroublemakerTargetMode;
+                ModSettings.TroublemakerRange            = data.TroublemakerRange > 0f ? data.TroublemakerRange : 10f;
+                ModSettings.TroublemakerEnableShrapnel  = data.TroublemakerEnableShrapnel;
+                ModSettings.TroublemakerEnableRibCrusher = data.TroublemakerEnableRibCrusher;
+                ModSettings.TroublemakerEnablePush      = data.TroublemakerEnablePush;
+                ModSettings.TroublemakerEnableAmputation = data.TroublemakerEnableAmputation;
+                ModSettings.TroublemakerEnableBurn       = data.TroublemakerEnableBurn;
+
+                GlobalSettings.EnableFeatureList   = data.EnableFeatureList;
+                // ★ 防越界检测：确保列表坐标在屏幕可见范围内
+                float safeX = Mathf.Clamp(data.FeatureListRectX, 0f, Mathf.Max(0f, Screen.width - 50f));
+                float safeY = Mathf.Clamp(data.FeatureListRectY, 0f, Mathf.Max(0f, Screen.height - 50f));
+                GlobalSettings.FeatureListRect = new Rect(safeX, safeY, 200f, 200f);
+                GlobalSettings.FeatureListAlignLeft = data.FeatureListAlignLeft;
+                GlobalSettings.FeatureListFontSize = data.FeatureListFontSize > 0 ? data.FeatureListFontSize : 14;
+                if (data.FeatureListColor != null)
+                    GlobalSettings.FeatureListColor = ToColor(data.FeatureListColor);
+                GlobalSettings.FeatureListRainbow   = data.FeatureListRainbow;
+                GlobalSettings.FeatureListBackground = data.FeatureListBackground;
+                GlobalSettings.FeatureListAccentLine = data.FeatureListAccentLine;
+
+                GlobalSettings.EnableToggleSound = data.EnableToggleSound;
 
                 Debug.Log("[CheaterMod] 配置加载成功！");
             }

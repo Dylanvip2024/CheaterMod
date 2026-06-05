@@ -28,8 +28,8 @@ namespace FullBrightMod.Modules
         public override string Name => Utils.I18n.Get("mod_trajectory");
         public override string Description => "Predictive throw trajectory with collision detection.";
         public override ModuleCategory Category => ModuleCategory.Render;
-        public override void OnEnable() => Settings.IsTrajectoryEnabled = true;
-        public override void OnDisable() => Settings.IsTrajectoryEnabled = false;
+        public override void OnEnable() => ModSettings.IsTrajectoryEnabled = true;
+        public override void OnDisable() => ModSettings.IsTrajectoryEnabled = false;
 
         // 物理模拟参数
         private const float TimeStep = 0.05f;
@@ -44,38 +44,22 @@ namespace FullBrightMod.Modules
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
-            // 颜色选择器
-            ItemESP.DrawColorPicker(x, ref y, width, e,
+            CustomGUI.DrawColorPicker(x, ref y, width, e,
                 Utils.I18n.Get("set_trajectory_color") + ":",
-                ref Settings.TrajectoryColor);
+                ref ModSettings.TrajectoryColor);
             y += 8f;
 
             // 最大模拟距离滑块
-            float labelWidth = 120f;
-            GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
-            {
-                alignment = TextAnchor.MiddleLeft,
-                fontSize = 11,
-                normal = { textColor = Color.white },
-                padding = new RectOffset(14, 0, 4, 0)
-            };
-            GUI.Label(new Rect(x, y, labelWidth, 22),
-                Utils.I18n.Get("set_trajectory_length") + $": {Settings.TrajectoryMaxLength:F0}m", labelStyle);
-
-            float sliderY = y + 2f;
-            float sliderH = 18f;
-            Rect sliderRect = new Rect(x + labelWidth, sliderY, width - labelWidth - 14f, sliderH);
-            float newVal = ClickGUIManager.DrawSlider(sliderRect,
-                Settings.TrajectoryMaxLength, 5f, 80f, e);
-            if (Mathf.Abs(newVal - Settings.TrajectoryMaxLength) > 0.01f)
-                Settings.TrajectoryMaxLength = newVal;
-
-            y += 30f;
+            float val = ModSettings.TrajectoryMaxLength;
+            CustomGUI.DrawSlider(x, ref y, width, e,
+                Utils.I18n.Get("set_trajectory_length") + $": {val:F0}m",
+                ref val, 5f, 80f);
+            ModSettings.TrajectoryMaxLength = val;
         }
 
         public override void OnGUI()
         {
-            if (!Settings.IsTrajectoryEnabled) return;
+            if (!ModSettings.IsTrajectoryEnabled) return;
 
             // ---- 安全校验 ----
             if (PlayerCamera.main == null) return;
@@ -111,7 +95,7 @@ namespace FullBrightMod.Modules
             Vector2 gravity = Physics2D.gravity * gravityScale;
 
             float totalDist = 0f;
-            float maxDist = Settings.TrajectoryMaxLength;
+            float maxDist = ModSettings.TrajectoryMaxLength;
 
             for (int i = 0; i < MaxSteps; i++)
             {
@@ -123,7 +107,7 @@ namespace FullBrightMod.Modules
                 if (totalDist > maxDist)
                 {
                     // 绘制截断前最后一段
-                    RenderUtils.DrawWorldLine(cam, pos, nextPos, Settings.TrajectoryColor);
+                    RenderUtils.DrawWorldLine(cam, pos, nextPos, ModSettings.TrajectoryColor);
                     break;
                 }
 
@@ -132,14 +116,14 @@ namespace FullBrightMod.Modules
                 if (hit.collider != null)
                 {
                     // 在线段上找到碰撞点，绘制直到碰撞点的线段
-                    RenderUtils.DrawWorldLine(cam, pos, hit.point, Settings.TrajectoryColor);
+                    RenderUtils.DrawWorldLine(cam, pos, hit.point, ModSettings.TrajectoryColor);
                     // 落点画圈
-                    RenderUtils.DrawWorldCircle(cam, hit.point, 0.3f, Settings.TrajectoryColor);
+                    RenderUtils.DrawWorldCircle(cam, hit.point, 0.3f, ModSettings.TrajectoryColor);
                     break;
                 }
 
                 // 绘制当前线段
-                RenderUtils.DrawWorldLine(cam, pos, nextPos, Settings.TrajectoryColor);
+                RenderUtils.DrawWorldLine(cam, pos, nextPos, ModSettings.TrajectoryColor);
 
                 // 更新物理状态
                 vel += gravity * TimeStep;
@@ -147,7 +131,7 @@ namespace FullBrightMod.Modules
 
                 // 最后一个步进完成且未碰撞也没超距：在终点画圈标记
                 if (i == MaxSteps - 1)
-                    RenderUtils.DrawWorldCircle(cam, pos, 0.3f, Settings.TrajectoryColor);
+                    RenderUtils.DrawWorldCircle(cam, pos, 0.3f, ModSettings.TrajectoryColor);
             }
         }
     }

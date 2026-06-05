@@ -32,7 +32,7 @@ namespace FullBrightMod.Patches
         private void Update()
         {
             // 如果模块关闭，停止本地播放
-            if (!Settings.IsBoomboxEnabled)
+            if (!ModSettings.IsBoomboxEnabled)
             {
                 if (_localAudioSource.isPlaying) _localAudioSource.Stop();
                 
@@ -45,10 +45,10 @@ namespace FullBrightMod.Patches
             }
 
             // 检查 UI 上的歌曲是否被切换
-            if (Settings.CurrentTrackIndex != _lastTrackIndex && Settings.AvailableMusicTracks.Count > 0)
+            if (ModSettings.CurrentTrackIndex != _lastTrackIndex && ModSettings.AvailableMusicTracks.Count > 0)
             {
-                _lastTrackIndex = Settings.CurrentTrackIndex;
-                string fileName = Settings.AvailableMusicTracks[_lastTrackIndex];
+                _lastTrackIndex = ModSettings.CurrentTrackIndex;
+                string fileName = ModSettings.AvailableMusicTracks[_lastTrackIndex];
                 string filePath = Path.Combine(Application.dataPath, "../music", fileName);
                 
                 StartCoroutine(LoadAudioFile(filePath));
@@ -145,7 +145,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static void Prefix(float[] data)
         {
-            if (!Settings.IsBoomboxEnabled || BoomboxManager.Instance == null) return;
+            if (!ModSettings.IsBoomboxEnabled || BoomboxManager.Instance == null) return;
 
             bool isTalking = Voicechat.IsPushToTalkKeyPushed() || (Voicechat.my_output_volume > Voicechat.MINIMUM_VOLUME_TRESHOLD);
 
@@ -181,7 +181,7 @@ namespace FullBrightMod.Patches
         [HarmonyPrefix]
         private static void Prefix()
         {
-            if (Settings.IsBoomboxEnabled)
+            if (ModSettings.IsBoomboxEnabled)
             {
                 Traverse.Create(typeof(Voicechat)).Field("_push_to_talk_pushed").SetValue(true);
                 Voicechat.AlwaysOn_TimeBelowTreshold = 0f;
