@@ -64,5 +64,13 @@ namespace FullBrightMod.Core
         // ======== UI 音效 ========
         /// <summary>是否播放模块开关提示音</summary>
         public static bool EnableToggleSound = true;
+
+        // ======== Toast 通知 ========
+        /// <summary>是否弹出模块开关通知</summary>
+        public static bool EnableNotifications = true;
+        /// <summary>通知在屏幕上的 Y 轴起始位置</summary>
+        public static float NotificationYPosition = 60f;
+        /// <summary>通知滑入方向：true=从右侧滑入, false=从左侧滑入</summary>
+        public static bool NotificationSlideFromRight = false;
     }
 }

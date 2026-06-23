@@ -70,7 +70,7 @@ namespace FullBrightMod.Modules.Player
             try
             {
                 if (targetNetBody.StartPiggyback(myNetBody, check_distance: false, force: true))
-                    KrokoshaScavMultiplayer.Client_SendSimpleMessageToServer((ushort)30033, targetNetBody.netId);
+                    KrokoshaScavMultiplayer.Client_SendSimpleMessageToServer((ushort)10033, targetNetBody.netId);
             }
             catch { }
 

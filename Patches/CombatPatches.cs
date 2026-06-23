@@ -1,5 +1,6 @@
 using HarmonyLib;
 using FullBrightMod.Core;
+using UnityEngine;
 
 namespace FullBrightMod.Patches
 {
@@ -27,6 +28,22 @@ namespace FullBrightMod.Patches
                 // 倍率越高冷却越短：cooldown / multiplier
                 __instance.attackCooldown /= ModSettings.MeleeSpeedMultiplier;
             }
+        }
+    }
+
+    /// <summary>
+    /// 反地刺 — 在 SpikeStabberScript.OnTriggerEnter2D 执行前拦截，
+    /// 当模块启用时直接阻止触发，确保地刺在任何情况下都不会扎到玩家。
+    /// 与 AntiSpikes 模块的主动扫描式禁用互补（前置扫描为第一道防线，此处为最后防爆发）。
+    /// </summary>
+    [HarmonyPatch(typeof(SpikeStabberScript), "OnTriggerEnter2D")]
+    internal static class AntiSpikesTriggerPatch
+    {
+        [HarmonyPrefix]
+        private static bool Prefix()
+        {
+            // 反地刺模块启用时，直接跳过 OnTriggerEnter2D，阻止地刺触发
+            return !ModSettings.IsAntiSpikesEnabled;
         }
     }
 }

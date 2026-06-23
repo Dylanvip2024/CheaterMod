@@ -44,7 +44,7 @@ namespace FullBrightMod.Patches
     // 消息格式：[byte type] [uint senderId] [string tag] [string msg]
     // 本 Postfix 在消息入队后读取 CHAT_LOG 最新条目，提取 sender 和 msg 进行翻译。
     // =========================================================
-    [HarmonyPatch(typeof(Chat), "Client_ChatMessageRecieve")]
+    [HarmonyPatch(typeof(Chat), "Client_ChatMessageReceive")]
     internal static class ChatPlayerMessagePatch
     {
         // ★ 7.0.1 安全反射：CHAT_LOG 是 private static MaxCapacityQueue<ChatMsgContainer>
@@ -305,6 +305,19 @@ namespace FullBrightMod.Patches
         static void Postfix(ref bool __result)
         {
             if (ModSettings.IsIQ250Enabled) __result = true;
+        }
+    }
+
+    // =========================================================
+    // 反耀斑 — 强制脑芯片保持激活
+    // =========================================================
+    [HarmonyPatch(typeof(WorldGeneration), "get_unchipped")]
+    internal static class AntiSolarFlarePatch
+    {
+        [HarmonyPostfix]
+        private static void Postfix(ref bool __result)
+        {
+            if (ModSettings.IsAntiSolarFlareEnabled) __result = false;
         }
     }
 }

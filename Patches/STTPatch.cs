@@ -27,7 +27,7 @@ namespace FullBrightMod.Patches
         [HarmonyTargetMethod]
         static System.Reflection.MethodBase TargetMethod()
         {
-            return AccessTools.Method(typeof(StreamedAudioOutput), "RecieveVoiceBlob");
+            return AccessTools.Method(typeof(StreamedAudioOutput), "ReceiveVoiceBlob");
         }
 
         [HarmonyPostfix]

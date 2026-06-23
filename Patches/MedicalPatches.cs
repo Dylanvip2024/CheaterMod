@@ -204,7 +204,7 @@ namespace FullBrightMod.Patches
 
         private static void SendHitPacket(Vector2 velocityDelta)
         {
-            var writer = Net.CreateWriter(30065);
+            var writer = Net.CreateWriter((ushort)10079);
             MyLiteNetLibExtensions.Put(writer, velocityDelta);
             writer.Put(true);
             Net.Client_Send(DeliveryMethod.ReliableOrdered, in writer);

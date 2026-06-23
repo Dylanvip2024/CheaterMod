@@ -379,7 +379,7 @@ namespace FullBrightMod.Modules.Player
             for (int i = 0; i < count; i++)
             {
                 if (nb == null || nb.body == null || !nb.body.alive) break;
-                NetDataWriter writer = Net.CreateWriter((ushort)30050);
+                NetDataWriter writer = Net.CreateWriter((ushort)10049);
                 writer.Put(nb.netId);
                 writer.Put(down);
                 writer.Put(up);

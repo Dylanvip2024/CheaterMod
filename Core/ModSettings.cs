@@ -118,6 +118,8 @@ namespace FullBrightMod.Core
         public static float KillAuraRange          = 4f;
         public static bool KillAuraRenderTarget    = true;
         public static Color KillAuraTargetColor    = Color.red;
+        public static bool KillAuraPrioritizeHead  = true;
+        public static int  KillAuraIndicatorStyle  = 0; // 0=Circle, 1=Crosshair, 2=Arrow, 3=Diamond, 4=Pulse
 
         // ======== 速度修改 / 反负重 ========
         public static bool IsSpeedModifierEnabled = false;
@@ -125,6 +127,19 @@ namespace FullBrightMod.Core
         public static bool IsAntiWeightEnabled    = false;
         public static bool IsAirJumpEnabled       = false;
         public static bool IsJetpackEnabled       = false;
+
+        // ======== 飞行速度 ========
+        public static float FlightSpeed = 15f;
+
+        // ======== 拾取光环 ========
+        public static bool IsPickupAuraEnabled          = false;
+        public static float PickupAuraRange             = 10f;
+        public static bool PickupAuraFilterLowValue     = false;
+        public static bool PickupAuraTeleportPickup     = false;
+        public static float PickupAuraTeleportRange     = 200f;
+
+        // ======== 反地刺 ========
+        public static bool IsAntiSpikesEnabled = false;
 
         // ======== CPR ========
         public static bool IsInstantReviveEnabled  = false;
@@ -223,5 +238,17 @@ namespace FullBrightMod.Core
         public static bool TroublemakerEnablePush      = true;  // 推倒
         public static bool TroublemakerEnableAmputation = true; // 截肢
         public static bool TroublemakerEnableBurn       = true;  // 激光灼烧
+
+        // ======== 自动发电 ========
+        public static bool IsAutoGeneratorEnabled = false;
+
+        // ======== 反耀斑 ========
+        public static bool IsAntiSolarFlareEnabled = false;
+
+        // ======== 声波炮指示器 ========
+        public static bool IsSoundCannonIndicatorEnabled = false;
+
+        // ======== 自动补货 ========
+        public static bool IsAutoReplenishEnabled = false;
     }
 }

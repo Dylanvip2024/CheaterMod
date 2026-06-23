@@ -403,6 +403,7 @@ namespace FullBrightMod.UI
                                 {
                                     module.Enabled = !module.Enabled;
                                     Utils.UISoundHelper.PlayToggleSound(module.Enabled);
+                                    Utils.NotificationManager.Show(module.Name, module.Enabled);
                                     if (module.Enabled) module.OnEnable();
                                     else module.OnDisable();
                                     e.Use(); return;
@@ -595,13 +596,26 @@ namespace FullBrightMod.UI
 
             currentY += 6f;
 
-            // ======== UI 音效 ========
-            bool prevSound = GlobalSettings.EnableToggleSound;
-            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("gs_section_sound"), sectionStyle);
+            // ======== UI 反馈 ========
+            GUI.Label(new Rect(panelX, currentY, panelW, rowH), Utils.I18n.Get("gs_section_feedback"), sectionStyle);
             currentY += rowH + 2f;
 
             DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
                 Utils.I18n.Get("gs_enable_toggle_sound"), ref GlobalSettings.EnableToggleSound);
+
+            DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                Utils.I18n.Get("gs_enable_notifications"), ref GlobalSettings.EnableNotifications);
+
+            if (GlobalSettings.EnableNotifications)
+            {
+                float notifY = GlobalSettings.NotificationYPosition;
+                DrawSliderRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_notif_y") + $": {notifY:F0}" + Utils.I18n.Get("unit_px"), ref notifY, 0f, 600f);
+                GlobalSettings.NotificationYPosition = notifY;
+
+                DrawToggleRow(panelX, ref currentY, panelW, rowH, e,
+                    Utils.I18n.Get("gs_notif_right"), ref GlobalSettings.NotificationSlideFromRight);
+            }
 
             // ★ Bug1 修复：同步 ModuleBase 生命周期 ★
             if (prevGrid != GlobalSettings.EnableGridSnap) { /* GridSnap 无对应 Module */ }
@@ -643,9 +657,10 @@ namespace FullBrightMod.UI
             h += rowH;      // toggle
             if (GlobalSettings.EnableFeatureList)
                 h += rowH * 6; // align toggle + font slider + color picker + 3 toggles
-            // UI Sound section
+            // UI Feedback section
             h += rowH + 2f; // section title
-            h += rowH;      // toggle
+            h += rowH * 2;  // sound toggle + notification toggle
+            if (GlobalSettings.EnableNotifications) h += rowH * 2; // Y slider + direction toggle
             h += 6f;
             return h;
         }

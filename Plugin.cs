@@ -20,7 +20,7 @@ namespace FullBrightMod
     {
         private const string PluginGuid   = "com.mod.casualties.cheatermod";
         private const string PluginName   = "CheaterMod";
-        private const string PluginVersion = "1.0.6";
+        private const string PluginVersion = "1.0.7";
 
         public static FullBrightPlugin Instance { get; private set; }
 
@@ -110,7 +110,13 @@ namespace FullBrightMod
                     new MinimapModule(),   // 小地图
                     new LimbStatusModule(), // 肢体状态 HUD
                     new TroublemakerAura(), // 闯祸光环
-                    new FeatureListModule() // 功能列表
+                    new AntiSolarFlare(), // 反耀斑
+                    new PickupAura(),     // 拾取光环
+                    new AntiSpikes(),     // 反地刺
+                    new AutoReplenish(),  // 自动补货
+                    new SoundCannonIndicator(), // 声波炮指示器
+                    new FeatureListModule(), // 功能列表
+                    new AutoGenerator()   // 自动发电
                 );
 
                 _clickGUI = new ClickGUIManager(_moduleManager);
@@ -209,6 +215,9 @@ namespace FullBrightMod
                 if (ModSettings.IsTrapEspEnabled)     ESPRenderer.DrawTraps(_mainCam);
                 if (ModSettings.IsPlayerEspEnabled)   ESPRenderer.DrawPlayers(_mainCam);
             }
+
+            // 2.5. Toast 通知层
+            Utils.NotificationManager.Draw();
 
             // 3. 最后绘制 ClickGUI 菜单，确保它永远在最顶层，不被任何东西遮挡
             _clickGUI?.OnGUI();

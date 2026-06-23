@@ -146,6 +146,21 @@ namespace FullBrightMod.Core
             public float KillAuraRange;
             public bool KillAuraRenderTarget;
             public SColor KillAuraTargetColor;
+            public bool KillAuraPrioritizeHead;
+            public int  KillAuraIndicatorStyle;
+
+            // Flight
+            public float FlightSpeed;
+
+            // PickupAura
+            public bool IsPickupAuraEnabled;
+            public float PickupAuraRange;
+            public bool PickupAuraFilterLowValue;
+            public bool PickupAuraTeleportPickup;
+            public float PickupAuraTeleportRange;
+
+            // AntiSpikes
+            public bool IsAntiSpikesEnabled;
 
             // ============================================================
             // ★ GlobalSettings 持久化字段 ★
@@ -201,6 +216,18 @@ namespace FullBrightMod.Core
             public bool TroublemakerEnableAmputation;
             public bool TroublemakerEnableBurn;
 
+            // Auto Generator
+            public bool IsAutoGeneratorEnabled;
+
+            // Anti Solar Flare
+            public bool IsAntiSolarFlareEnabled;
+
+            // SoundCannon Indicator
+            public bool IsSoundCannonIndicatorEnabled;
+
+            // Auto Replenish
+            public bool IsAutoReplenishEnabled;
+
             // FeatureList
             public bool EnableFeatureList;
             public float FeatureListRectX, FeatureListRectY, FeatureListRectW, FeatureListRectH;
@@ -213,6 +240,11 @@ namespace FullBrightMod.Core
 
             // UI Sound
             public bool EnableToggleSound;
+
+            // Toast Notifications
+            public bool EnableNotifications;
+            public float NotificationYPosition;
+            public bool NotificationSlideFromRight;
         }
 
         [Serializable]
@@ -320,6 +352,18 @@ namespace FullBrightMod.Core
                 data.KillAuraRange              = ModSettings.KillAuraRange;
                 data.KillAuraRenderTarget       = ModSettings.KillAuraRenderTarget;
                 data.KillAuraTargetColor        = ToSColor(ModSettings.KillAuraTargetColor);
+                data.KillAuraPrioritizeHead     = ModSettings.KillAuraPrioritizeHead;
+                data.KillAuraIndicatorStyle     = ModSettings.KillAuraIndicatorStyle;
+
+                data.FlightSpeed                = ModSettings.FlightSpeed;
+
+                data.IsPickupAuraEnabled        = ModSettings.IsPickupAuraEnabled;
+                data.PickupAuraRange              = ModSettings.PickupAuraRange;
+                data.PickupAuraFilterLowValue   = ModSettings.PickupAuraFilterLowValue;
+                data.PickupAuraTeleportPickup   = ModSettings.PickupAuraTeleportPickup;
+                data.PickupAuraTeleportRange    = ModSettings.PickupAuraTeleportRange;
+
+                data.IsAntiSpikesEnabled        = ModSettings.IsAntiSpikesEnabled;
                 data.CustomFireRateMultiplier     = ModSettings.CustomFireRateMultiplier;
 
                 data.BrightenIntensity  = ModSettings.BrightenIntensity;
@@ -431,6 +475,14 @@ namespace FullBrightMod.Core
                 data.TroublemakerEnableAmputation = ModSettings.TroublemakerEnableAmputation;
                 data.TroublemakerEnableBurn       = ModSettings.TroublemakerEnableBurn;
 
+                data.IsAutoGeneratorEnabled = ModSettings.IsAutoGeneratorEnabled;
+
+                data.IsAntiSolarFlareEnabled = ModSettings.IsAntiSolarFlareEnabled;
+
+                data.IsSoundCannonIndicatorEnabled = ModSettings.IsSoundCannonIndicatorEnabled;
+
+                data.IsAutoReplenishEnabled = ModSettings.IsAutoReplenishEnabled;
+
                 data.EnableFeatureList   = GlobalSettings.EnableFeatureList;
                 data.FeatureListRectX    = GlobalSettings.FeatureListRect.x;
                 data.FeatureListRectY    = GlobalSettings.FeatureListRect.y;
@@ -444,6 +496,10 @@ namespace FullBrightMod.Core
                 data.FeatureListAccentLine = GlobalSettings.FeatureListAccentLine;
 
                 data.EnableToggleSound = GlobalSettings.EnableToggleSound;
+
+                data.EnableNotifications = GlobalSettings.EnableNotifications;
+                data.NotificationYPosition = GlobalSettings.NotificationYPosition;
+                data.NotificationSlideFromRight = GlobalSettings.NotificationSlideFromRight;
 
                 string json = JsonConvert.SerializeObject(data, Formatting.Indented);
                 File.WriteAllText(ConfigPath, json);
@@ -546,6 +602,19 @@ namespace FullBrightMod.Core
                 ModSettings.KillAuraRenderTarget       = data.KillAuraRenderTarget;
                 if (data.KillAuraTargetColor != null)
                     ModSettings.KillAuraTargetColor    = ToColor(data.KillAuraTargetColor);
+
+                ModSettings.KillAuraPrioritizeHead = data.KillAuraPrioritizeHead;
+                ModSettings.KillAuraIndicatorStyle = data.KillAuraIndicatorStyle;
+
+                ModSettings.FlightSpeed            = data.FlightSpeed > 0f ? data.FlightSpeed : 15f;
+
+                ModSettings.IsPickupAuraEnabled       = data.IsPickupAuraEnabled;
+                ModSettings.PickupAuraRange            = data.PickupAuraRange > 0f ? data.PickupAuraRange : 10f;
+                ModSettings.PickupAuraFilterLowValue = data.PickupAuraFilterLowValue;
+                ModSettings.PickupAuraTeleportPickup = data.PickupAuraTeleportPickup;
+                ModSettings.PickupAuraTeleportRange  = data.PickupAuraTeleportRange > 0f ? data.PickupAuraTeleportRange : 200f;
+
+                ModSettings.IsAntiSpikesEnabled     = data.IsAntiSpikesEnabled;
 
                 ModSettings.BrightenIntensity  = data.BrightenIntensity;
                 ModSettings.CustomVisionRadius = data.CustomVisionRadius;
@@ -686,6 +755,14 @@ namespace FullBrightMod.Core
                 ModSettings.TroublemakerEnableAmputation = data.TroublemakerEnableAmputation;
                 ModSettings.TroublemakerEnableBurn       = data.TroublemakerEnableBurn;
 
+                ModSettings.IsAutoGeneratorEnabled = data.IsAutoGeneratorEnabled;
+
+                ModSettings.IsAntiSolarFlareEnabled = data.IsAntiSolarFlareEnabled;
+
+                ModSettings.IsSoundCannonIndicatorEnabled = data.IsSoundCannonIndicatorEnabled;
+
+                ModSettings.IsAutoReplenishEnabled = data.IsAutoReplenishEnabled;
+
                 GlobalSettings.EnableFeatureList   = data.EnableFeatureList;
                 // ★ 防越界检测：确保列表坐标在屏幕可见范围内
                 float safeX = Mathf.Clamp(data.FeatureListRectX, 0f, Mathf.Max(0f, Screen.width - 50f));
@@ -700,6 +777,10 @@ namespace FullBrightMod.Core
                 GlobalSettings.FeatureListAccentLine = data.FeatureListAccentLine;
 
                 GlobalSettings.EnableToggleSound = data.EnableToggleSound;
+
+                GlobalSettings.EnableNotifications = data.EnableNotifications;
+                GlobalSettings.NotificationYPosition = data.NotificationYPosition > 0f ? data.NotificationYPosition : 60f;
+                GlobalSettings.NotificationSlideFromRight = data.NotificationSlideFromRight;
 
                 Debug.Log("[CheaterMod] 配置加载成功！");
             }

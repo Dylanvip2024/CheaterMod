@@ -107,6 +107,52 @@ namespace FullBrightMod.Modules
         public override ModuleCategory Category => ModuleCategory.Movement;
         public override void OnEnable()  => ModSettings.IsFlightEnabled = true;
         public override void OnDisable() => ModSettings.IsFlightEnabled = false;
+
+        public override float GetSettingsHeight() => 30f;
+
+        public override void DrawSettings(float x, ref float y, float width, Event e)
+        {
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 10,
+                normal = { textColor = new Color(0.7f, 0.7f, 0.7f) },
+                padding = new RectOffset(0, 0, 0, 0)
+            };
+            float speed = ModSettings.FlightSpeed;
+            GUI.Label(new Rect(x + 8, y, 90, 22),
+                $"  {(Utils.I18n.Get("set_flight_speed") ?? "飞行速度")}: {speed:F0}", labelStyle);
+            Rect barRect = new Rect(x + 98, y + 6, width - 113, 14);
+            float newSpeed = ClickGUIManager.DrawSlider(barRect, speed, 2f, 50f, e);
+            if (Mathf.Abs(newSpeed - speed) > 0.001f) ModSettings.FlightSpeed = newSpeed;
+            y += 30f;
+        }
+
+        public override void OnUpdate()
+        {
+            if (!ModSettings.IsFlightEnabled) return;
+            var body = PlayerCamera.main?.body;
+            if (body == null || body.rb == null) return;
+
+            float targetSpeed = ModSettings.FlightSpeed;
+            float h = Input.GetAxis("Horizontal");
+            float vInput = Input.GetAxis("Vertical");
+
+            if (Mathf.Abs(h) > 0.05f || Mathf.Abs(vInput) > 0.05f)
+            {
+                Vector3 forward = body.transform.forward;
+                Vector3 right = body.transform.right;
+                forward.y = 0f;
+                right.y = 0f;
+                forward.Normalize();
+                right.Normalize();
+
+                Vector3 moveDir = forward * vInput + right * h;
+                if (moveDir.magnitude > 0.01f)
+                    moveDir.Normalize();
+
+                body.rb.velocity = new Vector3(moveDir.x * targetSpeed, body.rb.velocity.y, moveDir.z * targetSpeed);
+            }
+        }
     }
 
     public class AutoUnlock : ModuleBase

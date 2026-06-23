@@ -36,6 +36,8 @@ namespace FullBrightMod.Modules
             h += 28f;        // 传送攻击
             if (ModSettings.KillAuraTeleportAttack)
                 h += 28f;    // 传送范围
+            h += 28f;        // 优先锁头
+            h += 28f;        // 指示器样式
             return h;
         }
 
@@ -66,6 +68,14 @@ namespace FullBrightMod.Modules
                 CustomGUI.DrawSlider(x, ref y, width, e, Utils.I18n.Get("set_ka_tp_range") + $": {tpRange:F0}m", ref tpRange, 10f, 100f);
                 ModSettings.KillAuraTeleportRange = tpRange;
             }
+
+            CustomGUI.DrawToggle(x, ref y, width, e, Utils.I18n.Get("set_ka_headshot"), ref ModSettings.KillAuraPrioritizeHead);
+
+            // 目标指示器样式循环选择
+            string[] indicatorOptions = { "Circle", "Crosshair", "Arrow", "Diamond", "Pulse" };
+            int styleIdx = ModSettings.KillAuraIndicatorStyle;
+            DrawIndicatorCycle(x, ref y, width, e, Utils.I18n.Get("set_ka_indicator") ?? "Indicator", indicatorOptions, ref styleIdx);
+            ModSettings.KillAuraIndicatorStyle = styleIdx;
         }
 
         public override void OnUpdate()
@@ -145,10 +155,10 @@ namespace FullBrightMod.Modules
                 // 玻璃碴贴地放置，需要更近距离 + 瞄准精确位置避免射线穿过
                 float offset = isGlass ? 0.8f : 1.5f;
                 body.transform.position = targetEdge + dir * offset;
-                // 玻璃碴瞄准中心点（不加 0.5f 偏移），其他目标瞄准胸部
-                body.targetLookPos = isGlass
-                    ? _currentTarget.position
-                    : targetEdge + Vector3.up * 0.5f;
+
+                // ★ 计算目标视角落点（优先锁头）
+                Vector3 aimPoint = GetAimPoint(_currentTarget, targetEdge);
+                body.targetLookPos = isGlass ? _currentTarget.position : aimPoint;
 
                 if (_cooldownField != null) _cooldownField.SetValue(body, 0f);
                 if (_useItemMethod != null) _useItemMethod.Invoke(body, null);
@@ -182,9 +192,8 @@ namespace FullBrightMod.Modules
                 body.transform.position = safePos;
 
                 bool isGlass = target.TryGetComponent<GroundGlass>(out var _);
-                body.targetLookPos = isGlass
-                    ? target.position
-                    : targetEdge + Vector3.up * 0.5f;
+                Vector3 aimPoint = GetAimPoint(target, targetEdge);
+                body.targetLookPos = isGlass ? target.position : aimPoint;
                 ClientMain.Client_SendCharacterSyncPacket();
             }
             catch { error = true; }
@@ -227,9 +236,8 @@ namespace FullBrightMod.Modules
                 if (target != null)
                 {
                     bool isGlass2 = target.TryGetComponent<GroundGlass>(out var _);
-                    body.targetLookPos = isGlass2
-                        ? target.position
-                        : targetEdge + Vector3.up * 0.5f;
+                    Vector3 aimPoint = GetAimPoint(target, targetEdge);
+                    body.targetLookPos = isGlass2 ? target.position : aimPoint;
                 }
 
                 if (_cooldownField != null) _cooldownField.SetValue(body, 0f);
@@ -261,7 +269,35 @@ namespace FullBrightMod.Modules
             {
                 var cam = Camera.main;
                 if (cam == null) return;
-                RenderUtils.DrawWorldCircle(cam, _currentTarget.position, 0.8f, ModSettings.KillAuraTargetColor, 24);
+                Vector3 targetPos = _currentTarget.position;
+                Color color = ModSettings.KillAuraTargetColor;
+
+                switch (ModSettings.KillAuraIndicatorStyle)
+                {
+                    case 0: // Circle
+                        RenderUtils.DrawWorldCircle(cam, targetPos, 0.8f, color, 24);
+                        break;
+                    case 1: // Crosshair
+                        RenderUtils.DrawWorldLine(cam, targetPos + Vector3.left * 0.8f, targetPos + Vector3.right * 0.8f, color);
+                        RenderUtils.DrawWorldLine(cam, targetPos + Vector3.up * 0.8f, targetPos + Vector3.down * 0.8f, color);
+                        break;
+                    case 2: // Arrow
+                        RenderUtils.DrawWorldLine(cam, targetPos, targetPos + Vector3.up * 1.2f, color);
+                        RenderUtils.DrawWorldLine(cam, targetPos + Vector3.up * 1.2f, targetPos + Vector3.up * 0.8f + Vector3.left * 0.4f, color);
+                        RenderUtils.DrawWorldLine(cam, targetPos + Vector3.up * 1.2f, targetPos + Vector3.up * 0.8f + Vector3.right * 0.4f, color);
+                        break;
+                    case 3: // Diamond
+                        RenderUtils.DrawWorldLine(cam, targetPos + Vector3.up * 0.8f, targetPos + Vector3.right * 0.8f, color);
+                        RenderUtils.DrawWorldLine(cam, targetPos + Vector3.right * 0.8f, targetPos + Vector3.down * 0.8f, color);
+                        RenderUtils.DrawWorldLine(cam, targetPos + Vector3.down * 0.8f, targetPos + Vector3.left * 0.8f, color);
+                        RenderUtils.DrawWorldLine(cam, targetPos + Vector3.left * 0.8f, targetPos + Vector3.up * 0.8f, color);
+                        break;
+                    case 4: // Pulse
+                        float pulse = Mathf.Sin(Time.time * 4f) * 0.3f + 0.7f;
+                        RenderUtils.DrawWorldCircle(cam, targetPos, 0.5f + pulse * 0.5f, color, 24);
+                        RenderUtils.DrawWorldCircle(cam, targetPos, 0.3f, color * 0.5f, 16);
+                        break;
+                }
             }
             catch { }
         }
@@ -383,6 +419,38 @@ namespace FullBrightMod.Modules
                 catch { }
             }
             return target.position;
+        }
+
+        /// <summary>循环选择按钮（用于指示器样式）</summary>
+        private static void DrawIndicatorCycle(float x, ref float y, float width, Event e, string label, string[] options, ref int index)
+        {
+            Rect btnRect = new Rect(x + 8, y + 2, width - 16, 22);
+            string display = label + ": " + options[System.Math.Max(0, System.Math.Min(options.Length - 1, index))];
+            bool hover = btnRect.Contains(e.mousePosition);
+            GUI.color = new Color(0.2f, 0.5f, 0.3f, 0.85f);
+            if (hover) GUI.color = new Color(0.3f, 0.6f, 0.4f, 0.9f);
+            GUI.DrawTexture(btnRect, ClickGUIManager.WhiteTexture);
+            GUI.color = Color.white;
+            GUIStyle btnStyle = new GUIStyle(GUI.skin.label) { fontSize = 10, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, normal = { textColor = Color.white } };
+            GUI.Label(btnRect, display, btnStyle);
+            if (e.type == EventType.MouseDown && e.button == 0 && btnRect.Contains(e.mousePosition)) { index = (index + 1) % options.Length; e.Use(); }
+            y += 28f;
+        }
+
+        /// <summary>
+        /// ★ 计算攻击瞄点。
+        /// 当 KillAuraPrioritizeHead 开启且目标为玩家（有 Body 组件）时，返回头部 limbs[0] 坐标。
+        /// 其他情况返回胸部位置（targetEdge + 0.5f Y）。
+        /// </summary>
+        private static Vector3 GetAimPoint(Transform targetTransform, Vector3 targetEdge)
+        {
+            if (ModSettings.KillAuraPrioritizeHead && targetTransform.TryGetComponent<Body>(out var targetBody))
+            {
+                if (targetBody.limbs != null && targetBody.limbs.Length > 0 && targetBody.limbs[0] != null && !targetBody.limbs[0].dismembered)
+                    return targetBody.limbs[0].transform.position;
+            }
+            // 非玩家或头部已截肢 → 瞄准胸部
+            return targetEdge + Vector3.up * 0.5f;
         }
     }
 }

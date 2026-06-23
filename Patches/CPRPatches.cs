@@ -98,7 +98,7 @@ namespace FullBrightMod.Patches
                     break;
                 }
 
-                NetDataWriter writer = Net.CreateWriter((ushort)30050);
+                NetDataWriter writer = Net.CreateWriter((ushort)10049);
                 writer.Put(nb.netId);
                 writer.Put(down);
                 writer.Put(up);

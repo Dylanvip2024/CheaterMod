@@ -335,7 +335,7 @@ namespace FullBrightMod.Patches
             if (Input.GetKey(KeyCode.A)) moveX -= 1f;
             if (Input.GetKey(KeyCode.D)) moveX += 1f;
 
-            float speed = 12f;
+            float speed = ModSettings.FlightSpeed;
             if (Input.GetKey(KeyCode.LeftShift)) speed *= 2.5f;
 
             __instance.rb.velocity = new Vector2(moveX, moveY).normalized * speed;

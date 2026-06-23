@@ -40,6 +40,7 @@ namespace FullBrightMod.Core
                 {
                     m.Enabled = !m.Enabled;
                     Utils.UISoundHelper.PlayToggleSound(m.Enabled);
+                    Utils.NotificationManager.Show(m.Name, m.Enabled);
                     if (m.Enabled) m.OnEnable();
                     else m.OnDisable();
                 }

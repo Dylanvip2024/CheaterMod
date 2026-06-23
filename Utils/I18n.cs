@@ -46,6 +46,8 @@ namespace FullBrightMod.Utils
             { "mod_instant_amputation", "秒截肢" },
             { "mod_instant_shrapnel", "秒拔破片" },
             { "mod_auto_dislocation", "正骨大师" },
+            { "mod_auto_generator", "自动发电" },
+            { "mod_anti_solar_flare", "反耀斑" },
 
             // Render modules
             { "mod_fullbright", "全亮模式" },
@@ -80,6 +82,9 @@ namespace FullBrightMod.Utils
             { "set_autopush_distance", "推人距离" },
             { "set_longhands_tp", "TP 模式 (突破服务端距离限制)" },
 
+            // Player modules - Auto Replenish
+            { "mod_auto_replenish", "自动补货" },
+
             // World modules
             { "mod_autounlock", "秒开锁" },
 
@@ -109,6 +114,9 @@ namespace FullBrightMod.Utils
             { "container_esp_mode", "渲染模式" },
             { "mode_lines", "线条" },
             { "mode_arrows", "箭头" },
+
+            // SoundCannon Indicator
+            { "mod_sound_cannon_indicator", "声波炮指示器" },
 
             // Chameleon module
             { "mod_chameleon", "变色龙" },
@@ -230,9 +238,12 @@ namespace FullBrightMod.Utils
             { "gs_fl_bg", "背景底框" },
             { "gs_fl_accent", "边缘强调线" },
 
-            // Global Settings - UI Sound
-            { "gs_section_sound", "--- UI 音效 ---" },
+            // Global Settings - UI Sound / Feedback
+            { "gs_section_feedback", "--- UI 反馈 ---" },
             { "gs_enable_toggle_sound", "模块开关提示音" },
+            { "gs_enable_notifications", "模块状态提示通知" },
+            { "gs_notif_y", "通知Y轴位置" },
+            { "gs_notif_right", "从右侧弹出" },
 
             // TroublemakerAura module
             { "mod_troublemaker_aura", "闯祸光环" },
@@ -245,6 +256,14 @@ namespace FullBrightMod.Utils
             { "set_ta_push", "推倒" },
             { "set_ta_amputation", "截肢" },
             { "set_ta_burn", "激光灼烧" },
+            { "set_ka_headshot", "优先锁头 (仅玩家)" },
+            { "set_ka_indicator", "目标指示器样式" },
+            { "mod_pickup_aura", "拾取光环" },
+            { "set_pickup_filter", "过滤低价值物品" },
+            { "set_pickup_tp", "传送捡取" },
+            { "set_pickup_tp_range", "传送捡取范围" },
+            { "mod_anti_spikes", "反地刺" },
+            { "set_flight_speed", "飞行速度" },
         };
 
         private static readonly Dictionary<string, string> _en = new Dictionary<string, string>
@@ -288,6 +307,8 @@ namespace FullBrightMod.Utils
             { "mod_instant_amputation", "Instant Amputation" },
             { "mod_instant_shrapnel", "Instant Shrapnel Removal" },
             { "mod_auto_dislocation", "Auto Bone Setter" },
+            { "mod_auto_generator", "Auto Generator" },
+            { "mod_anti_solar_flare", "Anti-Solar Flare" },
 
             // Render modules
             { "mod_fullbright", "Full Luminance" },
@@ -325,6 +346,9 @@ namespace FullBrightMod.Utils
             { "set_autopush_distance", "Push Distance" },
             { "set_longhands_tp", "Blink Mode (Bypass Server Distance)" },
 
+            // Player modules - Auto Replenish
+            { "mod_auto_replenish", "Auto Replenish" },
+
             // World modules
             { "mod_autounlock", "Auto Unlock" },
 
@@ -354,6 +378,9 @@ namespace FullBrightMod.Utils
             { "container_esp_mode", "Render Mode" },
             { "mode_lines", "Lines" },
             { "mode_arrows", "Arrows" },
+
+            // SoundCannon Indicator
+            { "mod_sound_cannon_indicator", "Sound Cannon Indicator" },
 
             // Chameleon module
             { "mod_chameleon", "Chameleon" },
@@ -460,9 +487,12 @@ namespace FullBrightMod.Utils
             { "gs_fl_bg", "Background Box" },
             { "gs_fl_accent", "Accent Line" },
 
-            // Global Settings - UI Sound
-            { "gs_section_sound", "--- UI Sounds ---" },
+            // Global Settings - UI Sound / Feedback
+            { "gs_section_feedback", "--- UI Feedback ---" },
             { "gs_enable_toggle_sound", "Toggle Sound Effect" },
+            { "gs_enable_notifications", "Toast Notifications" },
+            { "gs_notif_y", "Notification Y Pos" },
+            { "gs_notif_right", "Slide From Right" },
 
             // TroublemakerAura module
             { "mod_troublemaker_aura", "Troublemaker Aura" },
@@ -475,6 +505,14 @@ namespace FullBrightMod.Utils
             { "set_ta_push", "Push" },
             { "set_ta_amputation", "Amputation" },
             { "set_ta_burn", "Laser Burn" },
+            { "set_ka_headshot", "Prioritize Head (Players)" },
+            { "set_ka_indicator", "Target Indicator Style" },
+            { "mod_pickup_aura", "Pickup Aura" },
+            { "set_pickup_filter", "Filter Low Value Items" },
+            { "set_pickup_tp", "Teleport Pickup" },
+            { "set_pickup_tp_range", "Teleport Pickup Range" },
+            { "mod_anti_spikes", "Anti-Spikes" },
+            { "set_flight_speed", "Flight Speed" },
         };
 
         public static string Get(string key)
