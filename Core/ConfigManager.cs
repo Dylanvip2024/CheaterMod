@@ -183,9 +183,11 @@ namespace FullBrightMod.Core
             // Logo Overlay
             public bool EnableLogoOverlay;
             public float LogoOverlayHeight;
+            public int LogoIndex;
 
             // CM使用者识别
             public bool EnableModRadar;
+            public bool HideCheaterModGUID;
 
             public bool IsMeleeSpeedEnabled;
             public float MeleeSpeedMultiplier;
@@ -444,8 +446,10 @@ namespace FullBrightMod.Core
 
                 data.EnableLogoOverlay    = GlobalSettings.EnableLogoOverlay;
                 data.LogoOverlayHeight    = GlobalSettings.LogoOverlayHeight;
+                data.LogoIndex            = GlobalSettings.LogoIndex;
 
                 data.EnableModRadar     = GlobalSettings.EnableModRadar;
+                data.HideCheaterModGUID = GlobalSettings.HideCheaterModGUID;
 
                 data.IsMeleeSpeedEnabled      = ModSettings.IsMeleeSpeedEnabled;
                 data.MeleeSpeedMultiplier      = ModSettings.MeleeSpeedMultiplier;
@@ -723,8 +727,10 @@ namespace FullBrightMod.Core
 
                 GlobalSettings.EnableLogoOverlay = data.EnableLogoOverlay;
                 GlobalSettings.LogoOverlayHeight = data.LogoOverlayHeight > 0f ? data.LogoOverlayHeight : 300f;
+                GlobalSettings.LogoIndex         = Mathf.Clamp(data.LogoIndex, 0, 1);
 
                 GlobalSettings.EnableModRadar = data.EnableModRadar;
+                GlobalSettings.HideCheaterModGUID = data.HideCheaterModGUID;
 
                 ModSettings.IsMeleeSpeedEnabled      = data.IsMeleeSpeedEnabled;
                 ModSettings.MeleeSpeedMultiplier      = data.MeleeSpeedMultiplier > 0f ? data.MeleeSpeedMultiplier : 2f;

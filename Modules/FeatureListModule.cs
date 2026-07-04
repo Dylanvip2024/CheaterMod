@@ -78,7 +78,6 @@ namespace FullBrightMod.Modules
             {
                 if (e.width > maxWidth) maxWidth = e.width;
             }
-            // 背景框内边距
             float padX = 10f;
             float padY = 4f;
             float totalWidth = maxWidth + padX * 2f;
@@ -103,7 +102,6 @@ namespace FullBrightMod.Modules
                     float newX = ev.mousePosition.x - _dragOffset.x;
                     float newY = ev.mousePosition.y - _dragOffset.y;
 
-                    // ★ 补上缺失的网格吸附逻辑
                     if (GlobalSettings.EnableGridSnap && GlobalSettings.GridSize > 1f)
                     {
                         float gs = GlobalSettings.GridSize;
@@ -130,24 +128,20 @@ namespace FullBrightMod.Modules
                 float textW = entries[i].width;
                 float currentY = featureRect.y + padY + i * lineHeight;
 
-                // 计算当前行所需的总宽度（文字宽度 + 左右内边距 + 强调线的空间）
                 float rowWidth = textW + 12f;
 
-                // 计算当前行的起始 X 坐标
                 float rowX = isRightAlign
                     ? (featureRect.x + featureRect.width - rowWidth)
                     : featureRect.x;
 
-                // ★ 独立宽度的阶梯状背景框
                 if (GlobalSettings.FeatureListBackground)
                 {
                     Rect bgRect = new Rect(rowX, currentY, rowWidth, lineHeight);
-                    GUI.color = new Color(0f, 0f, 0f, 0.4f); // 半透明黑色
+                    GUI.color = new Color(0f, 0f, 0f, 0.4f);
                     GUI.DrawTexture(bgRect, Texture2D.whiteTexture);
-                    GUI.color = Color.white; // 【关键修复】：防止污染后续渲染
+                    GUI.color = Color.white;
                 }
 
-                // ★ 边缘强调线
                 if (GlobalSettings.FeatureListAccentLine)
                 {
                     float lineX = isRightAlign
@@ -161,10 +155,9 @@ namespace FullBrightMod.Modules
 
                     GUI.color = lineColor;
                     GUI.DrawTexture(lineRect, Texture2D.whiteTexture);
-                    GUI.color = Color.white; // 【关键修复】：防止污染文字颜色
+                    GUI.color = Color.white;
                 }
 
-                // ★ 文字渲染
                 Color textColor = GlobalSettings.FeatureListRainbow
                     ? Color.HSVToRGB((Time.realtimeSinceStartup * 0.5f + i * 0.08f) % 1f, 0.6f, 1f)
                     : GlobalSettings.FeatureListColor;
@@ -177,12 +170,10 @@ namespace FullBrightMod.Modules
                     normal = { textColor = textColor }
                 };
 
-                // 文字的位置需避开强调线并保留一点边距
                 float textX = isRightAlign ? (rowX + 4f) : (rowX + 6f);
                 Rect textRect = new Rect(textX, currentY, textW, lineHeight);
                 GUI.Label(textRect, name, textStyle);
             }
-            // 循环结束后，最后保险重置一次颜色
             GUI.color = Color.white;
         }
     }

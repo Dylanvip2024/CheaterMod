@@ -69,6 +69,10 @@
     <Reference Include="UnityEngine.Physics2DModule">
       <HintPath>$(GameFolder)\CasualtiesUnknown_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>$(GameFolder)\CasualtiesUnknown_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="KrokoshaCasualtiesMP">
       <HintPath>$(GameFolder)\BepInEx\plugins\KrokMP\KrokoshaCasualtiesMP.dll</HintPath>
     </Reference>
@@ -111,7 +115,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="logo.png" />
+    <EmbeddedResource Include="Resources\logo.png" />
+    <EmbeddedResource Include="Resources\logo2.png" />
+    <EmbeddedResource Include="Resources\glowesp.bundle" />
   </ItemGroup>
 
   <ItemGroup>

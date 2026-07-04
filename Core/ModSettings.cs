@@ -250,5 +250,8 @@ namespace FullBrightMod.Core
 
         // ======== 自动补货 ========
         public static bool IsAutoReplenishEnabled = false;
+
+        // ======== 发光透视 ========
+        public static bool IsGlowEspEnabled = false;
     }
 }

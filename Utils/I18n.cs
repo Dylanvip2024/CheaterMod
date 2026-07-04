@@ -56,6 +56,7 @@ namespace FullBrightMod.Utils
             { "mod_trapesp", "陷阱警告" },
             { "mod_playeresp", "玩家透视" },
             { "set_esp_wireframe", "线框模式" },
+            { "set_esp_glow", "发光模式" },
             { "set_esp_line_width", "线条粗细" },
             { "mod_visionexpand", "局部光照扩大" },
             { "mod_camerazoom", "视距拉远" },
@@ -221,7 +222,9 @@ namespace FullBrightMod.Utils
             { "gs_section_logo", "--- Logo 水印 ---" },
             { "gs_enable_logo", "显示 Logo" },
             { "gs_logo_height", "Logo 大小" },
+            { "gs_logo_select", "选择 Logo" },
             { "gs_mod_radar", "开启CM使用者识别" },
+            { "gs_hide_guid", "隐藏CheaterMod GUID" },
 
             // Unit suffixes (appended to slider values)
             { "unit_px", "px" },
@@ -317,6 +320,7 @@ namespace FullBrightMod.Utils
             { "mod_trapesp", "Trap ESP" },
             { "mod_playeresp", "Player ESP" },
             { "set_esp_wireframe", "Wireframe" },
+            { "set_esp_glow", "Glow Mode" },
             { "set_esp_line_width", "Line Width" },
             { "mod_visionexpand", "Vision Expand" },
             { "mod_camerazoom", "Camera Zoom" },
@@ -470,7 +474,9 @@ namespace FullBrightMod.Utils
             { "gs_section_logo", "--- Logo ---" },
             { "gs_enable_logo", "Show Logo" },
             { "gs_logo_height", "Logo Size" },
+            { "gs_logo_select", "Select Logo" },
             { "gs_mod_radar", "CM User Detection" },
+            { "gs_hide_guid", "Hide CheaterMod GUID" },
 
             // Unit suffixes
             { "unit_px", "px" },

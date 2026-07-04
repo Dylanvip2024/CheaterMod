@@ -14,10 +14,11 @@ namespace FullBrightMod.UI
         private CanvasGroup _canvasGroup;
         private RawImage _logoImage;
         private RectTransform _logoRt;
+        private int _lastLogoIdx = -1;
 
         private void Start()
         {
-            var logoTexture = Utils.ResourceManager.LogoTexture;
+            var logoTexture = Utils.ResourceManager.ActiveLogoTexture;
             if (logoTexture == null) return;
 
             // ---- 1. 创建 Canvas ----
@@ -59,6 +60,18 @@ namespace FullBrightMod.UI
         private void Update()
         {
             if (_canvasObj == null) return;
+
+            // Logo 切换检测
+            if (_lastLogoIdx != GlobalSettings.LogoIndex)
+            {
+                _lastLogoIdx = GlobalSettings.LogoIndex;
+                var newTex = Utils.ResourceManager.ActiveLogoTexture;
+                if (newTex != null && _logoImage != null)
+                {
+                    _logoImage.texture = newTex;
+                    UpdateLogoSize();
+                }
+            }
 
             bool shouldShow = GlobalSettings.EnableLogoOverlay && _logoImage != null && _logoImage.texture != null;
             if (_canvasObj.activeSelf != shouldShow)

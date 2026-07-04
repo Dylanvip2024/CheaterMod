@@ -11,13 +11,17 @@ namespace FullBrightMod.Modules
         public override void OnEnable()  => ModSettings.IsTrapEspEnabled = true;
         public override void OnDisable() => ModSettings.IsTrapEspEnabled = false;
 
-        public override float GetSettingsHeight() => 60f;
+        public override float GetSettingsHeight() => 90f;
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
         {
             CustomGUI.DrawToggle(x, ref y, width, e,
                 Utils.I18n.Get("set_esp_wireframe"),
                 ref ModSettings.IsTrapEspWireframeEnabled);
+
+            CustomGUI.DrawToggle(x, ref y, width, e,
+                Utils.I18n.Get("set_esp_glow"),
+                ref ModSettings.IsGlowEspEnabled);
 
             CustomGUI.DrawColorPicker(x, ref y, width, e,
                 Utils.I18n.Get("set_trap_color") + ":",

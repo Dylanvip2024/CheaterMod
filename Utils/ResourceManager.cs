@@ -1,31 +1,65 @@
 using System.Reflection;
+using FullBrightMod.Core;
 using UnityEngine;
 
 namespace FullBrightMod.Utils
 {
-    /// <summary>
-    /// 嵌入资源管理器 —— 读取 .csproj 中声明的 EmbeddedResource。
-    /// 资源路径规则：由于 logo.png 在项目根目录，其清单名称为 {AssemblyName}.logo.png
-    /// 即 "CheaterMod.logo.png"。
-    /// </summary>
     public static class ResourceManager
     {
         private static Texture2D _logoTexture;
         private static bool _logoLoaded;
 
-        /// <summary>
-        /// 缓存的 Logo 纹理。首次访问时从嵌入资源加载，之后返回缓存对象。
-        /// </summary>
+        private static Texture2D _logo2Texture;
+        private static bool _logo2Loaded;
+
+        private static Material _glowMaterial;
+        private static bool _glowMaterialLoaded;
+
         public static Texture2D LogoTexture
         {
             get
             {
                 if (!_logoLoaded)
                 {
-                    _logoTexture = LoadEmbeddedTexture("CheaterMod.logo.png");
+                    _logoTexture = LoadEmbeddedTexture("CheaterMod.Resources.logo.png");
                     _logoLoaded = true;
                 }
                 return _logoTexture;
+            }
+        }
+
+        public static Texture2D Logo2Texture
+        {
+            get
+            {
+                if (!_logo2Loaded)
+                {
+                    _logo2Texture = LoadEmbeddedTexture("CheaterMod.Resources.logo2.png");
+                    _logo2Loaded = true;
+                }
+                return _logo2Texture;
+            }
+        }
+
+        /// <summary>根据 GlobalSettings 返回当前使用的 Logo 纹理</summary>
+        public static Texture2D ActiveLogoTexture
+        {
+            get
+            {
+                return GlobalSettings.LogoIndex == 1 ? Logo2Texture : LogoTexture;
+            }
+        }
+
+        public static Material GlowMaterial
+        {
+            get
+            {
+                if (!_glowMaterialLoaded)
+                {
+                    LoadEmbeddedBundle("CheaterMod.Resources.glowesp.bundle", out _glowMaterial);
+                    _glowMaterialLoaded = true;
+                }
+                return _glowMaterial;
             }
         }
 
@@ -60,7 +94,39 @@ namespace FullBrightMod.Utils
             }
         }
 
-        /// <summary>释放所有缓存的资源（模块 OnDisable 时调用）</summary>
+        /// <summary>
+        /// 从嵌入资源加载 AssetBundle 并提取 GlowMaterial。
+        /// </summary>
+        private static void LoadEmbeddedBundle(string resourceName, out Material material)
+        {
+            material = null;
+            var assembly = Assembly.GetExecutingAssembly();
+            using (var stream = assembly.GetManifestResourceStream(resourceName))
+            {
+                if (stream == null)
+                {
+                    Debug.LogWarning($"[CheaterMod] 嵌入资源未找到: {resourceName}");
+                    return;
+                }
+
+                byte[] buffer = new byte[stream.Length];
+                stream.Read(buffer, 0, buffer.Length);
+
+                AssetBundle bundle = AssetBundle.LoadFromMemory(buffer);
+                if (bundle == null)
+                {
+                    Debug.LogWarning($"[CheaterMod] AssetBundle 加载失败: {resourceName}");
+                    return;
+                }
+
+                material = bundle.LoadAsset<Material>("GlowMaterial");
+                bundle.Unload(false);
+
+                if (material == null)
+                    Debug.LogWarning("[CheaterMod] AssetBundle 中未找到 GlowMaterial");
+            }
+        }
+
         public static void ReleaseAll()
         {
             if (_logoTexture != null)
@@ -69,6 +135,21 @@ namespace FullBrightMod.Utils
                 _logoTexture = null;
             }
             _logoLoaded = false;
+
+            if (_logo2Texture != null)
+            {
+                Object.Destroy(_logo2Texture);
+                _logo2Texture = null;
+            }
+            _logo2Loaded = false;
+
+            if (_glowMaterial != null)
+            {
+                Object.Destroy(_glowMaterial);
+                _glowMaterial = null;
+            }
+            _glowMaterialLoaded = false;
         }
     }
 }
+

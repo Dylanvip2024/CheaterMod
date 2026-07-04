@@ -20,7 +20,7 @@ namespace FullBrightMod
     {
         private const string PluginGuid   = "com.mod.casualties.cheatermod";
         private const string PluginName   = "CheaterMod";
-        private const string PluginVersion = "1.0.7";
+        private const string PluginVersion = "1.0.8";
 
         public static FullBrightPlugin Instance { get; private set; }
 
@@ -215,6 +215,10 @@ namespace FullBrightMod
                 if (ModSettings.IsTrapEspEnabled)     ESPRenderer.DrawTraps(_mainCam);
                 if (ModSettings.IsPlayerEspEnabled)   ESPRenderer.DrawPlayers(_mainCam);
             }
+
+            // 2.3. Glow ESP 材质替换层（发光透视）
+            if (ModSettings.IsGlowEspEnabled)
+                Utils.GlowESPManager.ProcessESPEntities();
 
             // 2.5. Toast 通知层
             Utils.NotificationManager.Draw();
