@@ -12,6 +12,9 @@ namespace FullBrightMod.Utils
         private static Texture2D _logo2Texture;
         private static bool _logo2Loaded;
 
+        private static Texture2D _cmLogoTexture;
+        private static bool _cmLogoLoaded;
+
         private static Material _glowMaterial;
         private static bool _glowMaterialLoaded;
 
@@ -47,6 +50,19 @@ namespace FullBrightMod.Utils
             get
             {
                 return GlobalSettings.LogoIndex == 1 ? Logo2Texture : LogoTexture;
+            }
+        }
+
+        public static Texture2D CMLogoTexture
+        {
+            get
+            {
+                if (!_cmLogoLoaded)
+                {
+                    _cmLogoTexture = LoadEmbeddedTexture("CheaterMod.Resources.CheaterMod.png");
+                    _cmLogoLoaded = true;
+                }
+                return _cmLogoTexture;
             }
         }
 

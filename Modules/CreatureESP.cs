@@ -21,7 +21,7 @@ namespace FullBrightMod.Modules
 
             CustomGUI.DrawToggle(x, ref y, width, e,
                 Utils.I18n.Get("set_esp_glow"),
-                ref ModSettings.IsGlowEspEnabled);
+                ref ModSettings.IsCreatureGlowEnabled);
 
             CustomGUI.DrawColorPicker(x, ref y, width, e,
                 Utils.I18n.Get("set_creature_color") + ":",

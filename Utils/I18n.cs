@@ -162,6 +162,7 @@ namespace FullBrightMod.Utils
             { "fx_radiation", "辐射噪点特效" },
             { "fx_damage", "损伤视觉遮罩" },
             { "fx_ui_overlays", "UI 覆盖层" },
+            { "fx_fog", "大雾/雨天雾效" },
 
             // Inventory sort modules
             { "mod_autosort_space", "整理背包 (空间优先)" },
@@ -195,7 +196,9 @@ namespace FullBrightMod.Utils
             { "credits_thanks", "特别鸣谢" },
             { "credits_wanxi", "晚夕睡不醒：为模组的开发出谋划策并进行漏洞反馈" },
             { "credits_yumo", "是是是钰墨：多次帮助测试模组在多人游戏中的表现" },
-            { "credits_andian", "四十毫克胺碘酮：多次报告该模组的BUG并提供建议" },
+            { "credits_andian_dev_name", "胺碘酮" },
+            { "credits_andian_dev_desc", "主动学习AI编程后为CheaterMod贡献了许多实用功能" },
+            { "credits_andian", "胺碘酮：多次报告该模组的BUG并提供建议" },
             { "credits_about", "关于" },
             { "credits_author_account", "作者账号: B站Dylanvip2024" },
             { "credits_source_url", "开源地址: https://github.com/Dylanvip2024/CheaterMod/" },
@@ -240,6 +243,7 @@ namespace FullBrightMod.Utils
             { "gs_fl_rainbow", "彩虹模式" },
             { "gs_fl_bg", "背景底框" },
             { "gs_fl_accent", "边缘强调线" },
+            { "gs_fl_showlogo", "CM标志" },
 
             // Global Settings - UI Sound / Feedback
             { "gs_section_feedback", "--- UI 反馈 ---" },
@@ -266,7 +270,19 @@ namespace FullBrightMod.Utils
             { "set_pickup_tp", "传送捡取" },
             { "set_pickup_tp_range", "传送捡取范围" },
             { "mod_anti_spikes", "反地刺" },
+            { "mod_anti_headshot", "反爆头" },
             { "set_flight_speed", "飞行速度" },
+
+            // Lockpick Indicator
+            { "mod_lockpick_indicator", "开锁指示器" },
+
+            // Dynamite Countdown
+            { "mod_dynamite_countdown", "炸药倒计时" },
+
+            // Medical Panel++
+            { "mod_medical_panel_plus", "医疗面板++" },
+            { "set_mp_infection_always", "感染值常显示" },
+            { "set_mp_panel_always", "医疗面板常显示" },
         };
 
         private static readonly Dictionary<string, string> _en = new Dictionary<string, string>
@@ -429,6 +445,7 @@ namespace FullBrightMod.Utils
             { "fx_radiation", "Radiation Noise" },
             { "fx_damage", "Damage Overlay" },
             { "fx_ui_overlays", "UI Overlays" },
+            { "fx_fog", "Fog & Rain Haze" },
 
             // Inventory sort modules
             { "mod_autosort_space", "Auto Sort (Space)" },
@@ -492,6 +509,7 @@ namespace FullBrightMod.Utils
             { "gs_fl_rainbow", "Rainbow Mode" },
             { "gs_fl_bg", "Background Box" },
             { "gs_fl_accent", "Accent Line" },
+            { "gs_fl_showlogo", "CM Logo" },
 
             // Global Settings - UI Sound / Feedback
             { "gs_section_feedback", "--- UI Feedback ---" },
@@ -518,7 +536,19 @@ namespace FullBrightMod.Utils
             { "set_pickup_tp", "Teleport Pickup" },
             { "set_pickup_tp_range", "Teleport Pickup Range" },
             { "mod_anti_spikes", "Anti-Spikes" },
+            { "mod_anti_headshot", "Anti-Headshot" },
             { "set_flight_speed", "Flight Speed" },
+
+            // Lockpick Indicator
+            { "mod_lockpick_indicator", "Lockpick Indicator" },
+
+            // Dynamite Countdown
+            { "mod_dynamite_countdown", "Dynamite Countdown" },
+
+            // Medical Panel++
+            { "mod_medical_panel_plus", "Medical Panel++" },
+            { "set_mp_infection_always", "Always Show Infection" },
+            { "set_mp_panel_always", "Always Show Panel" },
         };
 
         public static string Get(string key)

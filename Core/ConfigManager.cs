@@ -16,6 +16,11 @@ namespace FullBrightMod.Core
     {
         private static string ConfigPath => Path.Combine(BepInEx.Paths.ConfigPath, "CheaterMod.json");
 
+        /// <summary>保存已解析的全部模块条目，供延迟注册的第三方模块恢复用</summary>
+        private static readonly List<ModuleEntry> _loadedModuleEntries = new List<ModuleEntry>();
+        /// <summary>保存已解析的全部面板条目，供延迟创建的第三方面板恢复用</summary>
+        private static readonly List<PanelEntry> _loadedPanelEntries = new List<PanelEntry>();
+
         [Serializable]
         public class SaveData
         {
@@ -31,6 +36,10 @@ namespace FullBrightMod.Core
             public bool IsTrapEspWireframeEnabled;
             public bool IsPlayerEspWireframeEnabled;
             public float EspLineWidth;
+            public bool IsItemGlowEnabled;
+            public bool IsCreatureGlowEnabled;
+            public bool IsTrapGlowEnabled;
+            public bool IsPlayerGlowEnabled;
             public bool IsCameraZoomEnabled;
             public bool IsIQ250Enabled;
             public bool IsLongHandsEnabled;
@@ -199,6 +208,7 @@ namespace FullBrightMod.Core
             public bool DisableRadiationFx;
             public bool DisableDamageFx;
             public bool DisableUIOverlays;
+            public bool DisableFogFx;
 
             public bool IsRemotePickupEnabled;
             public float RemotePickupRange;
@@ -227,6 +237,9 @@ namespace FullBrightMod.Core
             // SoundCannon Indicator
             public bool IsSoundCannonIndicatorEnabled;
 
+            // Anti Headshot
+            public bool IsAntiHeadshotEnabled;
+
             // Auto Replenish
             public bool IsAutoReplenishEnabled;
 
@@ -239,6 +252,7 @@ namespace FullBrightMod.Core
             public bool FeatureListRainbow;
             public bool FeatureListBackground;
             public bool FeatureListAccentLine;
+            public bool FeatureListShowLogo;
 
             // UI Sound
             public bool EnableToggleSound;
@@ -247,6 +261,17 @@ namespace FullBrightMod.Core
             public bool EnableNotifications;
             public float NotificationYPosition;
             public bool NotificationSlideFromRight;
+
+            // Lockpick Indicator
+            public bool IsLockpickIndicatorEnabled;
+
+            // Dynamite Countdown
+            public bool IsDynamiteCountdownEnabled;
+
+            // Medical Panel++
+            public bool IsMedicalPanelPlusEnabled;
+            public bool MedicalPanelInfectionAlways;
+            public bool MedicalPanelAlwaysAccessible;
         }
 
         [Serializable]
@@ -262,12 +287,14 @@ namespace FullBrightMod.Core
 
             [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
             public string Name;
+
+            public Dictionary<string, string> CustomSettings;
         }
 
         [Serializable]
         public class PanelEntry
         {
-            public int Category;
+            public string Category;
             public float X, Y;
             public bool IsExpanded;
         }
@@ -293,6 +320,10 @@ namespace FullBrightMod.Core
                 data.IsTrapEspWireframeEnabled     = ModSettings.IsTrapEspWireframeEnabled;
                 data.IsPlayerEspWireframeEnabled   = ModSettings.IsPlayerEspWireframeEnabled;
                 data.EspLineWidth          = ModSettings.EspLineWidth;
+                data.IsItemGlowEnabled      = ModSettings.IsItemGlowEnabled;
+                data.IsCreatureGlowEnabled  = ModSettings.IsCreatureGlowEnabled;
+                data.IsTrapGlowEnabled      = ModSettings.IsTrapGlowEnabled;
+                data.IsPlayerGlowEnabled    = ModSettings.IsPlayerGlowEnabled;
                 data.IsCameraZoomEnabled   = ModSettings.IsCameraZoomEnabled;
                 data.IsIQ250Enabled        = ModSettings.IsIQ250Enabled;
                 data.IsLongHandsEnabled    = ModSettings.IsLongHandsEnabled;
@@ -402,12 +433,15 @@ namespace FullBrightMod.Core
                 // --- ModuleManager ---
                 foreach (var mod in modManager.GetAllModules())
                 {
+                    bool hasSettings = mod.CustomSettings.Count > 0;
                     data.Modules.Add(new ModuleEntry
                     {
                         ClassName = mod.GetType().Name,
                         Enabled = mod.Enabled,
                         IsExpanded = mod.IsExpanded,
-                        BindKey = (int)mod.BindKey
+                        BindKey = (int)mod.BindKey,
+                        CustomSettings = hasSettings
+                            ? new Dictionary<string, string>(mod.CustomSettings) : null
                     });
                 }
 
@@ -418,7 +452,7 @@ namespace FullBrightMod.Core
                     {
                         data.Panels.Add(new PanelEntry
                         {
-                            Category = (int)panel.Category,
+                            Category = panel.Category.Name,
                             X = panel.Position.x,
                             Y = panel.Position.y,
                             IsExpanded = panel.IsExpanded
@@ -461,6 +495,7 @@ namespace FullBrightMod.Core
                 data.DisableRadiationFx   = ModSettings.DisableRadiationFx;
                 data.DisableDamageFx      = ModSettings.DisableDamageFx;
                 data.DisableUIOverlays    = ModSettings.DisableUIOverlays;
+                data.DisableFogFx         = ModSettings.DisableFogFx;
 
                 data.IsRemotePickupEnabled = ModSettings.IsRemotePickupEnabled;
                 data.RemotePickupRange     = ModSettings.RemotePickupRange;
@@ -484,6 +519,7 @@ namespace FullBrightMod.Core
                 data.IsAntiSolarFlareEnabled = ModSettings.IsAntiSolarFlareEnabled;
 
                 data.IsSoundCannonIndicatorEnabled = ModSettings.IsSoundCannonIndicatorEnabled;
+                data.IsAntiHeadshotEnabled = ModSettings.IsAntiHeadshotEnabled;
 
                 data.IsAutoReplenishEnabled = ModSettings.IsAutoReplenishEnabled;
 
@@ -498,12 +534,19 @@ namespace FullBrightMod.Core
                 data.FeatureListRainbow  = GlobalSettings.FeatureListRainbow;
                 data.FeatureListBackground = GlobalSettings.FeatureListBackground;
                 data.FeatureListAccentLine = GlobalSettings.FeatureListAccentLine;
+                data.FeatureListShowLogo = GlobalSettings.FeatureListShowLogo;
 
                 data.EnableToggleSound = GlobalSettings.EnableToggleSound;
 
                 data.EnableNotifications = GlobalSettings.EnableNotifications;
                 data.NotificationYPosition = GlobalSettings.NotificationYPosition;
                 data.NotificationSlideFromRight = GlobalSettings.NotificationSlideFromRight;
+
+                data.IsLockpickIndicatorEnabled = ModSettings.IsLockpickIndicatorEnabled;
+                data.IsDynamiteCountdownEnabled = ModSettings.IsDynamiteCountdownEnabled;
+                data.IsMedicalPanelPlusEnabled = ModSettings.IsMedicalPanelPlusEnabled;
+                data.MedicalPanelInfectionAlways = ModSettings.MedicalPanelInfectionAlways;
+                data.MedicalPanelAlwaysAccessible = ModSettings.MedicalPanelAlwaysAccessible;
 
                 string json = JsonConvert.SerializeObject(data, Formatting.Indented);
                 File.WriteAllText(ConfigPath, json);
@@ -543,6 +586,10 @@ namespace FullBrightMod.Core
                 ModSettings.IsTrapEspWireframeEnabled     = data.IsTrapEspWireframeEnabled;
                 ModSettings.IsPlayerEspWireframeEnabled   = data.IsPlayerEspWireframeEnabled;
                 ModSettings.EspLineWidth          = data.EspLineWidth > 0f ? data.EspLineWidth : 2f;
+                ModSettings.IsItemGlowEnabled      = data.IsItemGlowEnabled;
+                ModSettings.IsCreatureGlowEnabled  = data.IsCreatureGlowEnabled;
+                ModSettings.IsTrapGlowEnabled      = data.IsTrapGlowEnabled;
+                ModSettings.IsPlayerGlowEnabled    = data.IsPlayerGlowEnabled;
                 ModSettings.IsCameraZoomEnabled   = data.IsCameraZoomEnabled;
                 ModSettings.IsIQ250Enabled        = data.IsIQ250Enabled;
                 ModSettings.IsLongHandsEnabled    = data.IsLongHandsEnabled;
@@ -657,6 +704,15 @@ namespace FullBrightMod.Core
                 // --- 模块状态 ---
                 if (data.Modules != null)
                 {
+                    _loadedModuleEntries.Clear();
+                    _loadedModuleEntries.AddRange(data.Modules);
+
+                    foreach (var entry in data.Modules)
+                    {
+                        if (entry.CustomSettings != null && entry.CustomSettings.Count > 0)
+                            Debug.Log($"[CheaterMod] Loaded CustomSettings for '{entry.ClassName}': {entry.CustomSettings.Count} entries");
+                    }
+
                     var allMods = modManager.GetAllModules();
                     foreach (var entry in data.Modules)
                     {
@@ -671,6 +727,8 @@ namespace FullBrightMod.Core
                         mod.Enabled = entry.Enabled;
                         mod.IsExpanded = entry.IsExpanded;
                         mod.BindKey = (KeyCode)entry.BindKey;
+                        if (entry.CustomSettings != null)
+                            mod.CustomSettings = new Dictionary<string, string>(entry.CustomSettings);
 
                         if (mod.Enabled)
                             mod.OnEnable();
@@ -680,10 +738,14 @@ namespace FullBrightMod.Core
                 // --- 面板布局 ---
                 if (data.Panels != null && guiManager != null)
                 {
+                    _loadedPanelEntries.Clear();
+                    _loadedPanelEntries.AddRange(data.Panels);
+
                     foreach (var entry in data.Panels)
                     {
-                        ModuleCategory cat = (ModuleCategory)entry.Category;
-                        ClickGUIPanel panel = guiManager.Panels.Find(p => p.Category == cat);
+                        if (string.IsNullOrEmpty(entry.Category)) continue;
+                        ClickGUIPanel panel = guiManager.Panels.Find(p =>
+                            string.Equals(p.Category.Name, entry.Category, System.StringComparison.OrdinalIgnoreCase));
                         if (panel == null) continue;
 
                         panel.Position.x = entry.X;
@@ -742,6 +804,7 @@ namespace FullBrightMod.Core
                 ModSettings.DisableRadiationFx   = data.DisableRadiationFx;
                 ModSettings.DisableDamageFx      = data.DisableDamageFx;
                 ModSettings.DisableUIOverlays    = data.DisableUIOverlays;
+                ModSettings.DisableFogFx         = data.DisableFogFx;
 
                 ModSettings.IsRemotePickupEnabled = data.IsRemotePickupEnabled;
                 ModSettings.RemotePickupRange     = data.RemotePickupRange > 0f ? data.RemotePickupRange : 50f;
@@ -766,6 +829,7 @@ namespace FullBrightMod.Core
                 ModSettings.IsAntiSolarFlareEnabled = data.IsAntiSolarFlareEnabled;
 
                 ModSettings.IsSoundCannonIndicatorEnabled = data.IsSoundCannonIndicatorEnabled;
+                ModSettings.IsAntiHeadshotEnabled = data.IsAntiHeadshotEnabled;
 
                 ModSettings.IsAutoReplenishEnabled = data.IsAutoReplenishEnabled;
 
@@ -781,12 +845,19 @@ namespace FullBrightMod.Core
                 GlobalSettings.FeatureListRainbow   = data.FeatureListRainbow;
                 GlobalSettings.FeatureListBackground = data.FeatureListBackground;
                 GlobalSettings.FeatureListAccentLine = data.FeatureListAccentLine;
+                GlobalSettings.FeatureListShowLogo = data.FeatureListShowLogo;
 
                 GlobalSettings.EnableToggleSound = data.EnableToggleSound;
 
                 GlobalSettings.EnableNotifications = data.EnableNotifications;
                 GlobalSettings.NotificationYPosition = data.NotificationYPosition > 0f ? data.NotificationYPosition : 60f;
                 GlobalSettings.NotificationSlideFromRight = data.NotificationSlideFromRight;
+
+                ModSettings.IsLockpickIndicatorEnabled = data.IsLockpickIndicatorEnabled;
+                ModSettings.IsDynamiteCountdownEnabled = data.IsDynamiteCountdownEnabled;
+                ModSettings.IsMedicalPanelPlusEnabled = data.IsMedicalPanelPlusEnabled;
+                ModSettings.MedicalPanelInfectionAlways = data.MedicalPanelInfectionAlways;
+                ModSettings.MedicalPanelAlwaysAccessible = data.MedicalPanelAlwaysAccessible;
 
                 Debug.Log("[CheaterMod] 配置加载成功！");
             }
@@ -796,10 +867,56 @@ namespace FullBrightMod.Core
             }
         }
 
+        /// <summary>延迟恢复面板布局（供第三方 Addon 创建新面板后使用）</summary>
+        public static void RestorePanelPosition(ClickGUIPanel panel)
+        {
+            if (panel == null || _loadedPanelEntries.Count == 0) return;
+            var entry = _loadedPanelEntries.Find(e =>
+                string.Equals(e.Category, panel.Category.Name, System.StringComparison.OrdinalIgnoreCase));
+            if (entry == null) return;
+            panel.Position.x = entry.X;
+            panel.Position.y = entry.Y;
+            panel.IsExpanded = entry.IsExpanded;
+        }
+
         // ============================================================
         // 颜色转换
         // ============================================================
         private static SColor ToSColor(Color c) => new SColor { r = c.r, g = c.g, b = c.b, a = c.a };
         private static Color ToColor(SColor c) => new Color(c.r, c.g, c.b, c.a);
+
+        // ============================================================
+        // 延迟模块状态恢复（供第三方 Addon 使用）
+        // ============================================================
+        public static void RestoreModuleState(ModuleBase module)
+        {
+            if (module == null || _loadedModuleEntries.Count == 0) return;
+
+            ModuleEntry entry = _loadedModuleEntries.Find(e =>
+                string.Equals(e.ClassName, module.GetType().Name, System.StringComparison.OrdinalIgnoreCase));
+            if (entry == null && !string.IsNullOrEmpty(module.Name))
+                entry = _loadedModuleEntries.Find(e =>
+                    string.Equals(e.Name, module.Name, System.StringComparison.OrdinalIgnoreCase));
+
+            if (entry == null)
+            {
+                Debug.Log($"[CheaterMod] RestoreModuleState: no saved entry for '{module.GetType().Name}' ({module.Name})");
+                return;
+            }
+
+            Debug.Log($"[CheaterMod] RestoreModuleState: '{module.GetType().Name}' enabled={entry.Enabled} customSettings={entry.CustomSettings?.Count ?? 0}");
+
+            if (string.IsNullOrEmpty(entry.ClassName))
+                entry.ClassName = module.GetType().Name;
+
+            module.Enabled = entry.Enabled;
+            module.IsExpanded = entry.IsExpanded;
+            module.BindKey = (KeyCode)entry.BindKey;
+            if (entry.CustomSettings != null)
+                module.CustomSettings = new Dictionary<string, string>(entry.CustomSettings);
+
+            if (module.Enabled)
+                module.OnEnable();
+        }
     }
 }

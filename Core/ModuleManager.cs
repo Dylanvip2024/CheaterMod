@@ -17,6 +17,7 @@ namespace FullBrightMod.Core
         {
             if (module == null) return;
             _modules.Add(module);
+            ConfigManager.RestoreModuleState(module);
             Debug.Log($"[CheaterMod] Module registered: {module.Name}");
         }
 

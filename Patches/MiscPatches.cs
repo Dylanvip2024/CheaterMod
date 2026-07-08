@@ -309,12 +309,13 @@ namespace FullBrightMod.Patches
     }
 
     // =========================================================
-    // 反耀斑 — 强制脑芯片保持激活
+    // 反耀斑 — 强制脑芯片保持激活（Priority.Last 确保覆盖 MP 同步）
     // =========================================================
     [HarmonyPatch(typeof(WorldGeneration), "get_unchipped")]
     internal static class AntiSolarFlarePatch
     {
         [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
         private static void Postfix(ref bool __result)
         {
             if (ModSettings.IsAntiSolarFlareEnabled) __result = false;

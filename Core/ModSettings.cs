@@ -208,7 +208,7 @@ namespace FullBrightMod.Core
         public static bool IsMeleeSpeedEnabled   = false;
         public static float MeleeSpeedMultiplier = 2f;
 
-        // ======== 反屏幕特效（7 项独立开关，模块启用后生效） ========
+        // ======== 反屏幕特效（8 项独立开关，模块启用后生效） ========
         public static bool DisableBloodFx      = false;  // 流血/疼痛红屏
         public static bool DisableTemperatureFx = false;  // 寒冷冰冻 / 过热灼烧
         public static bool DisableMentalFx      = false;  // 疯狂扭曲 / 抑郁模糊 / 药物幻视
@@ -216,6 +216,7 @@ namespace FullBrightMod.Core
         public static bool DisableRadiationFx   = false;  // 辐射噪点
         public static bool DisableDamageFx      = false;  // 眼部/脑部损伤遮罩 / 污垢
         public static bool DisableUIOverlays    = false;  // 昏迷黑屏 / 死亡画面 / 脑损闪光 / 盲眼光 / 背景雪花 / 后处理色调
+        public static bool DisableFogFx         = false;  // 去除大雾/雨天雾效
         public static bool IsAntiScreenEffectsActive = false;  // 模块运行时总开关
 
         // ======== 远程拾取 ========
@@ -251,7 +252,24 @@ namespace FullBrightMod.Core
         // ======== 自动补货 ========
         public static bool IsAutoReplenishEnabled = false;
 
-        // ======== 发光透视 ========
-        public static bool IsGlowEspEnabled = false;
+        // ======== 发光透视（每个 ESP 类型独立控制） ========
+        public static bool IsItemGlowEnabled       = false;
+        public static bool IsCreatureGlowEnabled  = false;
+        public static bool IsTrapGlowEnabled      = false;
+        public static bool IsPlayerGlowEnabled    = false;
+
+        // ======== 反爆头 ========
+        public static bool IsAntiHeadshotEnabled = false;
+
+        // ======== 开锁指示器 ========
+        public static bool IsLockpickIndicatorEnabled = false;
+
+        // ======== 炸药倒计时 ========
+        public static bool IsDynamiteCountdownEnabled = false;
+
+        // ======== 医疗面板++ ========
+        public static bool IsMedicalPanelPlusEnabled = false;
+        public static bool MedicalPanelInfectionAlways = true;
+        public static bool MedicalPanelAlwaysAccessible = true;
     }
 }

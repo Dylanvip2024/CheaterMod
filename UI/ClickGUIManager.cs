@@ -58,11 +58,57 @@ namespace FullBrightMod.UI
         {
             _moduleManager = moduleManager;
             _panels = new List<ClickGUIPanel>();
-            int index = 0;
-            foreach (ModuleCategory cat in System.Enum.GetValues(typeof(ModuleCategory)))
+            BuildPanels();
+        }
+
+        private void BuildPanels()
+        {
+            var seen = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+            var uniqueCategories = new List<ModuleCategory>();
+            foreach (var mod in _moduleManager.GetAllModules())
             {
-                _panels.Add(new ClickGUIPanel(cat, index));
-                index++;
+                if (mod.Category == ModuleCategory.Hidden) continue;
+                if (seen.Add(mod.Category.Name))
+                    uniqueCategories.Add(mod.Category);
+            }
+            foreach (var cat in uniqueCategories)
+            {
+                int idx = _panels.Count;
+                if (idx >= 6) idx = _panels.Count;
+                _panels.Add(new ClickGUIPanel(cat, idx));
+            }
+        }
+
+        public void RebuildPanels()
+        {
+            var saved = new Dictionary<string, ClickGUIPanel>(System.StringComparer.OrdinalIgnoreCase);
+            foreach (var p in _panels)
+                saved[p.Category.Name] = p;
+
+            _panels.Clear();
+            var seen = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+            var uniqueCategories = new List<ModuleCategory>();
+            foreach (var mod in _moduleManager.GetAllModules())
+            {
+                if (mod.Category == ModuleCategory.Hidden) continue;
+                if (seen.Add(mod.Category.Name))
+                    uniqueCategories.Add(mod.Category);
+            }
+
+            for (int i = 0; i < uniqueCategories.Count; i++)
+            {
+                var cat = uniqueCategories[i];
+                if (saved.TryGetValue(cat.Name, out var oldPanel))
+                {
+                    oldPanel.Category = cat;
+                    _panels.Add(oldPanel);
+                }
+                else
+                {
+                    var newPanel = new ClickGUIPanel(cat, i);
+                    ConfigManager.RestorePanelPosition(newPanel);
+                    _panels.Add(newPanel);
+                }
             }
         }
 
@@ -77,6 +123,11 @@ namespace FullBrightMod.UI
             if (!_menuVisible) return;
             Event e = Event.current;
             if (e == null) return;
+
+            EventType originalType = e.type; // ★ 保存原始事件类型，供调色板穿透恢复
+            bool originalIsMouse = e.isMouse;
+            CustomGUI.SavedEventType = originalType;
+            CustomGUI.SavedIsMouse = originalIsMouse;
 
             GUI.color = Color.white;
 
@@ -338,7 +389,7 @@ namespace FullBrightMod.UI
             GUI.color = Color.white;
 
             // ── 鼠标交互 ──
-            if (e.isMouse)
+            if (e.isMouse && !IsMouseOverColorPicker())
             {
                 Rect fullRect = new Rect(panel.Position.x, panel.Position.y, panel.Position.width, currentH);
 
@@ -524,6 +575,7 @@ namespace FullBrightMod.UI
                 DrawToggleRow(panelX, ref currentY, panelW, rowH, e, Utils.I18n.Get("gs_fl_rainbow"), ref GlobalSettings.FeatureListRainbow);
                 DrawToggleRow(panelX, ref currentY, panelW, rowH, e, Utils.I18n.Get("gs_fl_bg"), ref GlobalSettings.FeatureListBackground);
                 DrawToggleRow(panelX, ref currentY, panelW, rowH, e, Utils.I18n.Get("gs_fl_accent"), ref GlobalSettings.FeatureListAccentLine);
+                DrawToggleRow(panelX, ref currentY, panelW, rowH, e, Utils.I18n.Get("gs_fl_showlogo"), ref GlobalSettings.FeatureListShowLogo);
             }
             currentY += 6f;
 
@@ -559,7 +611,7 @@ namespace FullBrightMod.UI
             if (GlobalSettings.EnableLogoOverlay) h += rowH * 2; h += 6f;
             h += rowH * 2; h += 6f;
             h += rowH + 6f; h += rowH;
-            if (GlobalSettings.EnableFeatureList) h += rowH * 6; h += 6f;
+            if (GlobalSettings.EnableFeatureList) h += rowH * 7; h += 6f;
             h += rowH + 6f; h += rowH * 2;
             if (GlobalSettings.EnableNotifications) h += rowH * 2; h += 6f;
             return h;
@@ -658,7 +710,7 @@ namespace FullBrightMod.UI
                 fontSize = 12, normal = { textColor = Color.white }, padding = new RectOffset(22, 0, 2, 0)
             };
 
-            int lines = 1 + 2 + 1 + 3 + 1 + 2;
+            int lines = 1 + 3 + 1 + 2 + 1 + 2;
             float contentH = lines * (rowH + 2f) + 20f;
 
             Rect bgRect = new Rect(panelX, panelY, panelW, contentH);
@@ -671,11 +723,11 @@ namespace FullBrightMod.UI
             float cy = panelY + 10f;
             GUI.Label(new Rect(panelX, cy, panelW, rowH), "--- " + Utils.I18n.Get("credits_developer") + " ---", sectionStyle); cy += rowH + 2f;
             GUI.Label(new Rect(panelX, cy, panelW, rowH), "Dylanvip2024：" + Utils.I18n.Get("credits_author_desc"), contentStyle); cy += rowH + 2f;
-            GUI.Label(new Rect(panelX, cy, panelW, rowH), "Darnmik：" + Utils.I18n.Get("credits_darnmik_desc"), contentStyle); cy += rowH + 6f;
+            GUI.Label(new Rect(panelX, cy, panelW, rowH), "Darnmik：" + Utils.I18n.Get("credits_darnmik_desc"), contentStyle); cy += rowH + 2f;
+            GUI.Label(new Rect(panelX, cy, panelW, rowH), Utils.I18n.Get("credits_andian_dev_name") + "：" + Utils.I18n.Get("credits_andian_dev_desc"), contentStyle); cy += rowH + 6f;
             GUI.Label(new Rect(panelX, cy, panelW, rowH), "--- " + Utils.I18n.Get("credits_thanks") + " ---", sectionStyle); cy += rowH + 2f;
             GUI.Label(new Rect(panelX, cy, panelW, rowH), Utils.I18n.Get("credits_wanxi"), contentStyle); cy += rowH + 2f;
-            GUI.Label(new Rect(panelX, cy, panelW, rowH), Utils.I18n.Get("credits_yumo"), contentStyle); cy += rowH + 2f;
-            GUI.Label(new Rect(panelX, cy, panelW, rowH), Utils.I18n.Get("credits_andian"), contentStyle); cy += rowH + 6f;
+            GUI.Label(new Rect(panelX, cy, panelW, rowH), Utils.I18n.Get("credits_yumo"), contentStyle); cy += rowH + 6f;
             GUI.Label(new Rect(panelX, cy, panelW, rowH), "--- " + Utils.I18n.Get("credits_about") + " ---", sectionStyle); cy += rowH + 2f;
             GUI.Label(new Rect(panelX, cy, panelW, rowH), Utils.I18n.Get("credits_author_account"), contentStyle); cy += rowH + 2f;
             GUI.Label(new Rect(panelX, cy, panelW, rowH), Utils.I18n.Get("credits_source_url"), contentStyle);
@@ -703,16 +755,20 @@ namespace FullBrightMod.UI
 
         private static string GetCategoryDisplayName(ModuleCategory cat)
         {
-            switch (cat)
-            {
-                case ModuleCategory.Combat:   return Utils.I18n.Get("cat_combat");
-                case ModuleCategory.Player:   return Utils.I18n.Get("cat_player");
-                case ModuleCategory.Movement: return Utils.I18n.Get("cat_movement");
-                case ModuleCategory.Render:   return Utils.I18n.Get("cat_render");
-                case ModuleCategory.World:    return Utils.I18n.Get("cat_world");
-                case ModuleCategory.Misc:     return Utils.I18n.Get("cat_misc");
-                default:                      return cat.ToString();
-            }
+            if (cat == ModuleCategory.Combat)   return Utils.I18n.Get("cat_combat");
+            if (cat == ModuleCategory.Player)   return Utils.I18n.Get("cat_player");
+            if (cat == ModuleCategory.Movement) return Utils.I18n.Get("cat_movement");
+            if (cat == ModuleCategory.Render)   return Utils.I18n.Get("cat_render");
+            if (cat == ModuleCategory.World)    return Utils.I18n.Get("cat_world");
+            if (cat == ModuleCategory.Misc)     return Utils.I18n.Get("cat_misc");
+            return cat.Name;
+        }
+
+        private static bool IsMouseOverColorPicker()
+        {
+            if (CustomGUI.ActiveColorPickerId == null) return false;
+            return new Rect(CustomGUI.ColorPickerRect.x - 3, CustomGUI.ColorPickerRect.y - 3,
+                CustomGUI.ColorPickerRect.width + 6, 305).Contains(Event.current.mousePosition);
         }
     }
 }

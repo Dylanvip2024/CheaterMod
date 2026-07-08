@@ -118,6 +118,7 @@
     <EmbeddedResource Include="Resources\logo.png" />
     <EmbeddedResource Include="Resources\logo2.png" />
     <EmbeddedResource Include="Resources\glowesp.bundle" />
+    <EmbeddedResource Include="Resources\CheaterMod.png" />
   </ItemGroup>
 
   <ItemGroup>

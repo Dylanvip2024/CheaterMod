@@ -20,7 +20,7 @@ namespace FullBrightMod.Modules
     {
         public override string Name => "Limb Status HUD";
         public override string Description => "Always-on limb health display cloned from native WoundView.";
-        public override ModuleCategory Category => (ModuleCategory)999;
+        public override ModuleCategory Category => ModuleCategory.Hidden;
 
         // ---- Canvas ----
         private GameObject _hudCanvasObj;

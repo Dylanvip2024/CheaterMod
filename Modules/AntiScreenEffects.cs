@@ -16,7 +16,7 @@ namespace FullBrightMod.Modules
 
         public override float GetSettingsHeight()
         {
-            return 7 * 28f;
+            return 8 * 28f;
         }
 
         public override void DrawSettings(float x, ref float y, float width, Event e)
@@ -29,6 +29,7 @@ namespace FullBrightMod.Modules
             DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_radiation")     ?? "辐射噪点特效",      ref ModSettings.DisableRadiationFx);
             DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_damage")        ?? "损伤视觉遮罩",      ref ModSettings.DisableDamageFx);
             DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_ui_overlays")   ?? "UI 覆盖层",         ref ModSettings.DisableUIOverlays);
+            DrawToggle(x, ref y, width, e, Utils.I18n.Get("fx_fog")           ?? "大雾/雨天雾效",     ref ModSettings.DisableFogFx);
         }
 
         private static void DrawToggle(float x, ref float y, float width, Event e, string label, ref bool value)

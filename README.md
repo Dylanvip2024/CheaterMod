@@ -28,6 +28,7 @@
   * **肋骨粉碎者**：打开CPR小游戏后自动粉碎目标的肋骨（会导致自己疲劳）
   * **相机传送**：开启并关闭后传送到屏幕中央位置，可与灵魂出窍搭配使用
   * **闯祸光环**：自动使用选定的功能对指定玩家进行整蛊
+  * **医疗面板++**：增强医疗面板让他更加实用
 
 * **👁️ 视觉模块 (Render)**
   * **物品透视**：在掉落的物品上显示物品名称
@@ -40,6 +41,8 @@
   * **反屏幕特效**：阻止一些视觉效果的渲染
   * **箱子指示器**：指示箱子位置
   * **变色龙**：允许用户自定义自己身体部位的颜色
+  * **开锁指示器**：渲染正确的开锁位置，并提供进度信息
+  * **炸药倒计时**：在屏幕上方渲染出炸药的引爆倒计时
 
 * **🏃 移动模块 (Movement)**
   * **超级飞侠**：允许你拥有飞行能力
@@ -62,7 +65,7 @@
   * **菜单设置**：允许你自定义呼出菜单的快捷键
   * **一键引爆**：开启后自动点燃背包内所有炸药
   * **人形音响**：允许你播放放置在/游戏文件夹/music/文件夹内的mp3文件
-  * **人形音响**：开启后会自动为你完成发电小游戏
+  * **自动发电机**：开启后会自动为你完成发电小游戏
 
 ## 📥 安装指南
 1. 确保游戏已安装 BepInEx。
@@ -104,12 +107,13 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **Instant Amputation**: Allows you to perform amputations instantly.
   * **Anti-Ragdoll**: Prevents the ragdoll state; can be used as a makeshift (though potentially unreliable) no-fall-damage feature.
   * **Instant Shrapnel Removal**: Automatically extracts shrapnel at extremely high speed.
-  * **Auto Bone Setter**: Attempts to instantly heal a dislocated joint have a chance of failure.
+  * **Auto Bone Setter**: Attempts to instantly heal a dislocated joint (has a chance of failure).
   * **Auto-Push**: Automatically pushes people near you.
   * **Force Carry**: Right-click on a target to knock them down and carry them on your back; synergizes with Long Arm Mode.
   * **Rib Crusher**: Automatically crushes the target's ribs upon opening the CPR minigame (causes fatigue to yourself).
   * **Camera Teleport**: Teleports you to the center of the screen after toggling it on and off; can be used in combination with Freecam (Out-of-Body mode).
   * **Troublemaker Aura**: Automatically uses selected features to prank a designated player.
+  * **Medical Panel Plus**: Enhances the medical panel UI to be more practical and informative.
 
 * **👁️ Render Module**
   * **Item ESP**: Displays the names of dropped items through walls.
@@ -118,9 +122,12 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **Light Modifier**: Allows you to expand or shrink the local illumination radius.
   * **FOV Changer**: Customizes your Field of View.
   * **Throw Trajectory**: Displays the predicted trajectory and landing point of thrown items.
-  * **Anti-Screen**: Effects: Prevents the rendering of certain visual effects
-  * **Chest Indicator**: Indicates chest locations
+  * **Player Name ESP**: Renders player names through walls.
+  * **Anti-Screen Effects**: Prevents the rendering of certain visual effects.
+  * **Chest Indicator**: Indicates chest locations.
   * **Chameleon**: Allows users to customize the colors of their own body parts.
+  * **Lockpick Indicator**: Highlights the correct lockpick position and provides progress information.
+  * **Dynamite Countdown**: Displays the detonation countdown for explosives at the top of the screen.
 
 * **🏃 Movement Module**
   * **Fly Hack**: Grants you the ability to fly.
@@ -143,6 +150,7 @@ A multi-functional, modular utility mod for *Casualties Unknown*, built on BepIn
   * **Menu Keybind**: Allows you to customize the hotkey to toggle the mod menu.
   * **Ignite Explosives Macro**: Automatically ignites all explosives in your inventory when enabled.
   * **Human Boombox**: Allows you to play MP3 files placed in the `/GameDirectory/music/` folder.
+  * **Auto Generator**: Automatically completes the generator mini-game for you.
 
 ## 📥 Installation
 

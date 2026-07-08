@@ -20,7 +20,7 @@ namespace FullBrightMod
     {
         private const string PluginGuid   = "com.mod.casualties.cheatermod";
         private const string PluginName   = "CheaterMod";
-        private const string PluginVersion = "1.0.8";
+        internal const string PluginVersion = "1.0.9";
 
         public static FullBrightPlugin Instance { get; private set; }
 
@@ -71,6 +71,8 @@ namespace FullBrightMod
                     new AntiScreenEffects(), // 反屏幕特效
                     new ContainerESP(),    // 箱子指示器
                     new Chameleon(),       // 变色龙
+                    new LockpickIndicator(), // 开锁指示器
+                    new DynamiteCountdown(), // 炸药倒计时
                     // --- Player 分类 ---
                     new Freecam(),        // 灵魂出窍
                     new CameraTeleport(),  // 相机传送
@@ -85,6 +87,7 @@ namespace FullBrightMod
                     new AutoPush(),        // 自动推人
                     new AutoCarry(),       // 强制背人
                     new InventorySort(),   // 背包整理
+                    new MedicalPanelPlus()   // 医疗面板++
                     // --- Movement 分类 ---
                     new Flight(),         // 超级飞侠
                     new JumpBoost(),      // 跳跃增强
@@ -113,13 +116,15 @@ namespace FullBrightMod
                     new AntiSolarFlare(), // 反耀斑
                     new PickupAura(),     // 拾取光环
                     new AntiSpikes(),     // 反地刺
+                    new AntiHeadshot(),   // 反爆头
                     new AutoReplenish(),  // 自动补货
                     new SoundCannonIndicator(), // 声波炮指示器
                     new FeatureListModule(), // 功能列表
-                    new AutoGenerator()   // 自动发电
+                    new AutoGenerator(),   // 自动发电
                 );
 
                 _clickGUI = new ClickGUIManager(_moduleManager);
+                CheaterAPI.Init(_moduleManager, _clickGUI);
 
                 // ★ 加载持久化配置（覆盖模块状态、面板位置、Settings）
                 ConfigManager.Load(_moduleManager, _clickGUI);
@@ -217,7 +222,8 @@ namespace FullBrightMod
             }
 
             // 2.3. Glow ESP 材质替换层（发光透视）
-            if (ModSettings.IsGlowEspEnabled)
+            if (ModSettings.IsItemGlowEnabled || ModSettings.IsCreatureGlowEnabled
+                || ModSettings.IsTrapGlowEnabled || ModSettings.IsPlayerGlowEnabled)
                 Utils.GlowESPManager.ProcessESPEntities();
 
             // 2.5. Toast 通知层

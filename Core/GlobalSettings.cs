@@ -64,6 +64,8 @@ namespace FullBrightMod.Core
         public static bool FeatureListBackground = true;
         /// <summary>是否在边缘绘制强调线</summary>
         public static bool FeatureListAccentLine = true;
+        /// <summary>是否在功能列表顶部显示 CheaterMod 标志</summary>
+        public static bool FeatureListShowLogo = false;
 
         // ======== UI 音效 ========
         /// <summary>是否播放模块开关提示音</summary>

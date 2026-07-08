@@ -10,7 +10,7 @@ namespace FullBrightMod.Patches
     /// 反屏幕特效 Harmony Patch — 在 PlayerCamera.HandleScreenShaders() 执行后，
     /// 根据用户选择独立清零对应类别的 Shader 参数或禁用 UI 覆盖层。
     ///
-    /// 7 个独立开关：
+    /// 8 个独立开关：
     /// 1. DisableBloodFx      — 疼痛红屏 (_Pain) / 失血褪色 (_BloodAmount, _Bloodloss)
     /// 2. DisableTemperatureFx — 寒冷冰冻 (_FrostAmount) / 过热灼烧 (_OverheatAmount)
     /// 3. DisableMentalFx      — 疯狂扭曲 (_InsanityFX) / 抑郁呕吐模糊 (_BadFocusAmount) / 药物幻视+屏幕翻转 (bonusPass)
@@ -18,6 +18,7 @@ namespace FullBrightMod.Patches
     /// 5. DisableRadiationFx   — 辐射噪点 (_RadAmount)
     /// 6. DisableDamageFx      — 眼部损伤 (_EyeDamage) / 脑损伤 (_BrainDamage) / 污垢 (_Dirtyness)
     /// 7. DisableUIOverlays    — 昏迷黑屏 / 死亡画面 / 脑损闪光 / 盲眼光 / 背景雪花 / 后处理 Volume
+    /// 8. DisableFogFx         — 大雾/雨天雾效 (fogSprite alpha + fogAmount + _Consciousness)
     /// </summary>
     [HarmonyPatch(typeof(PlayerCamera), "HandleScreenShaders")]
     internal static class AntiScreenEffectsPatch
@@ -30,7 +31,7 @@ namespace FullBrightMod.Patches
             if (!ModSettings.DisableBloodFx && !ModSettings.DisableTemperatureFx &&
                 !ModSettings.DisableMentalFx && !ModSettings.DisableBlurFx &&
                 !ModSettings.DisableRadiationFx && !ModSettings.DisableDamageFx &&
-                !ModSettings.DisableUIOverlays)
+                !ModSettings.DisableUIOverlays && !ModSettings.DisableFogFx)
                 return;
 
             // ==== 1. 流血/疼痛红屏 ====
@@ -123,6 +124,19 @@ namespace FullBrightMod.Patches
                     __instance.backgroundSnow.SetActive(false);
                 if (__instance.volume != null)
                     __instance.volume.weight = 0f;
+            }
+
+            // ==== 8. 大雾/雨天雾效 ====
+            if (ModSettings.DisableFogFx)
+            {
+                if (WorldGeneration.world != null && WorldGeneration.world.fogAmount > 0.01f)
+                {
+                    WorldGeneration.world.fogAmount = 0f;
+                    if (WorldGeneration.world.fogSprite != null)
+                        WorldGeneration.world.fogSprite.color = new Color(0.8f, 0.8f, 0.8f, 0f);
+                }
+                if (__instance.mainScreenPass != null)
+                    __instance.mainScreenPass.SetFloat("_Consciousness", 1f);
             }
         }
     }

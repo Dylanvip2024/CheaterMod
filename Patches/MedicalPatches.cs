@@ -131,6 +131,16 @@ namespace FullBrightMod.Patches
 
             // 状态 0：初始化阶段。给予 0.6 秒缓冲，让游戏完成骨头的 UI 排版。
             _aliveTimers[id] += Time.deltaTime;
+
+            // ★ 缓冲期内屏蔽手部点击，防止 CheckForHit 误触造成手部受伤/骨折
+            if (Minigame.game != null)
+            {
+                Minigame.game.handClicking = false;
+                Minigame.game.handVelocity = Vector2.zero;
+                Minigame.game.handStartedClicking = false;
+                Minigame.game.handStoppedClicking = true;
+            }
+
             if (_aliveTimers[id] < 0.6f) return true;
 
             // 缓冲期结束，切入状态 1，启动协程。
@@ -173,25 +183,34 @@ namespace FullBrightMod.Patches
             Vector2 dir = (targetPos - startPos).normalized;
             if (dir == Vector2.zero) dir = Vector2.left;
 
-            // 3 次大锤：1250f 威力，0.95s 间隔确保衰减到 <60 通过守卫
-            for (int i = 0; i < 3; i++)
+            bool isMP = false;
+            try { isMP = KrokoshaScavMultiplayer.network_system_is_running; } catch { }
+
+            if (isMP)
             {
-                // ---- 存活检测（发包前） ----
-                if (minigame == null || Minigame.game == null)
-                    break;
+                // ★ 多人模式：使用正确数据包 ID (10065)，单发精确速度
+                Vector2 velocity = dir * 50f;
+                SendHitPacket(velocity, minigame.hasWrench);
 
-                SendHitPacket(dir * 1250f);
-
-                // 安全 UI 更新
-                float progress = (i + 1f) / 3f;
-                if (bone != null && bone.gameObject != null && bone.gameObject.activeInHierarchy)
-                    bone.anchoredPosition = Vector2.Lerp(startPos, targetPos, progress);
-
-                yield return new WaitForSeconds(0.95f);
-
-                // ---- 存活检测（等待后） ----
-                if (minigame == null || Minigame.game == null)
-                    break;
+                // 等待服务器响应到达并同步
+                yield return new WaitForSeconds(1.0f);
+            }
+            else
+            {
+                // ★ 单机模式：直接对骨头的 anchoredPosition 做平滑 Lerp
+                float elapsed = 0f;
+                float duration = 0.5f;
+                while (elapsed < duration)
+                {
+                    if (minigame == null || Minigame.game == null) break;
+                    if (bone != null && bone.gameObject != null && bone.gameObject.activeInHierarchy)
+                    {
+                        float t = Mathf.SmoothStep(0f, 1f, elapsed / duration);
+                        bone.anchoredPosition = Vector2.Lerp(startPos, targetPos, t);
+                    }
+                    elapsed += Time.deltaTime;
+                    yield return null;
+                }
             }
 
             // 确保骨头精准停在胜利坐标
@@ -202,12 +221,12 @@ namespace FullBrightMod.Patches
             _instanceStates[id] = 2;
         }
 
-        private static void SendHitPacket(Vector2 velocityDelta)
+        private static void SendHitPacket(Vector2 velocityDelta, bool hasWrench)
         {
-            var writer = Net.CreateWriter((ushort)10079);
-            MyLiteNetLibExtensions.Put(writer, velocityDelta);
-            writer.Put(true);
-            Net.Client_Send(DeliveryMethod.ReliableOrdered, in writer);
+            NetDataWriter writer = Net.CreateWriter(10065);
+            writer.Put(velocityDelta);
+            writer.Put(hasWrench);
+            Net.Client_Send(DeliveryMethod.ReliableOrdered, writer);
         }
     }
 

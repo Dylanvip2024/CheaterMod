@@ -30,10 +30,13 @@ namespace FullBrightMod.UI
         }
 
         // ============================================================
-        //  悬浮调色板状�?        // ============================================================
+        //  悬浮调色板状态
+        // ============================================================
         public static string ActiveColorPickerId = null;
         public static Color ActiveColorBuffer = Color.white;
         public static Rect ColorPickerRect = new Rect(0, 0, 260, 310);
+        public static EventType SavedEventType = EventType.Used;
+        public static bool SavedIsMouse = false;
 
         private static string _hexInputBuffer = "";
         private static float _pickerHue, _pickerSat, _pickerVal, _pickerAlpha;
@@ -122,8 +125,9 @@ namespace FullBrightMod.UI
                     _pickerOriginalColor = currentColor;
                     Color.RGBToHSV(currentColor, out _pickerHue, out _pickerSat, out _pickerVal);
                     _pickerAlpha = currentColor.a;
-                    ColorPickerRect.x = btnRect.x;
-                    ColorPickerRect.y = btnRect.y + 24;
+                    Vector2 screenPos = GUIUtility.GUIToScreenPoint(new Vector2(btnRect.x, btnRect.y + btnRect.height));
+                    ColorPickerRect.x = screenPos.x;
+                    ColorPickerRect.y = screenPos.y;
                     InitPaletteTextures();
                     UpdateSVTexture();
                     UpdateColorFromHSV();
@@ -179,9 +183,11 @@ namespace FullBrightMod.UI
             Rect r = ColorPickerRect;
             float px = r.x, py = r.y, pw = r.width;
             float ph = 305;
-
-            // ── 背景 ──
             var bg = new Rect(px - 3, py - 3, pw + 6, ph);
+
+            // ★ 穿透恢复：面板曾消费事件但鼠标实际在调色板上，恢复事件类型
+            if (SavedIsMouse && bg.Contains(e.mousePosition) && e.type == EventType.Used)
+                Event.current.type = SavedEventType;
             GUI.color = new Color(0.11f, 0.11f, 0.13f, 0.97f);
             GUI.DrawTexture(bg, WhiteTexture);
             GUI.color = ColorOn;
@@ -381,6 +387,10 @@ namespace FullBrightMod.UI
             GUI.Label(applyRect, Utils.I18n.Get("ui_confirm"), btnLbl);
             if (e.type == EventType.MouseDown && e.button == 0 && applyRect.Contains(e.mousePosition))
             { ActiveColorPickerId = null; e.Use(); }
+
+            // ★ 拦截穿透：消费所有落在调色板窗口内且未被控件处理的鼠标事件
+            if (e.isMouse && bg.Contains(e.mousePosition))
+                e.Use();
 
             // 点击窗口外 — 取消并恢复原色
             if (e.type == EventType.MouseDown && !bg.Contains(e.mousePosition))

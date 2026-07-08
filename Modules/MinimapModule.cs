@@ -24,7 +24,7 @@ namespace FullBrightMod.Modules
         public override string Name => "Minimap";
         public override string Description => "Real-time minimap overlay using a second camera.";
         // Category=999 使其不在 Modules 标签页任何面板中显示（通过 Global Settings 控制）
-        public override ModuleCategory Category => (ModuleCategory)999;
+        public override ModuleCategory Category => ModuleCategory.Hidden;
 
         // ---- 摄像机 ----
         private Camera _minimapCamera;

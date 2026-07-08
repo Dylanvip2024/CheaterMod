@@ -97,7 +97,7 @@ namespace FullBrightMod.Utils
             StillValidTargets.Clear();
 
             // ── 1. Creatures (生物) ──
-            if (ModSettings.IsCreatureEspEnabled && ModSettings.IsGlowEspEnabled && ESPCache.CachedEntities != null)
+            if (ModSettings.IsCreatureEspEnabled && ModSettings.IsCreatureGlowEnabled && ESPCache.CachedEntities != null)
             {
                 foreach (var be in ESPCache.CachedEntities)
                 {
@@ -110,7 +110,7 @@ namespace FullBrightMod.Utils
             }
 
             // ── 2. Players (玩家) ──
-            if (ModSettings.IsPlayerEspEnabled && ModSettings.IsGlowEspEnabled && ESPCache.CachedPlayers != null)
+            if (ModSettings.IsPlayerEspEnabled && ModSettings.IsPlayerGlowEnabled && ESPCache.CachedPlayers != null)
             {
                 foreach (var body in ESPCache.CachedPlayers)
                 {
@@ -122,7 +122,7 @@ namespace FullBrightMod.Utils
             }
 
             // ── 3. Items (物品) ──
-            if (ModSettings.IsItemEspEnabled && ModSettings.IsGlowEspEnabled && ESPCache.CachedItems != null)
+            if (ModSettings.IsItemEspEnabled && ModSettings.IsItemGlowEnabled && ESPCache.CachedItems != null)
             {
                 foreach (var item in ESPCache.CachedItems)
                 {
@@ -134,7 +134,7 @@ namespace FullBrightMod.Utils
             }
 
             // ── 4. Traps (陷阱与特定建筑) ──
-            if (ModSettings.IsTrapEspEnabled && ModSettings.IsGlowEspEnabled)
+            if (ModSettings.IsTrapEspEnabled && ModSettings.IsTrapGlowEnabled)
             {
                 Color trapColor = ModSettings.SelectedTrapColor;
 
